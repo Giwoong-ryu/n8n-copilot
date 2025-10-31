@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "N8N AI Copilot",
+  "version": "0.1.0",
+  "description": "AI-powered assistant for N8N workflow automation",
+  
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  
+  "host_permissions": [
+    "https://app.n8n.cloud/*",
+    "http://localhost:5678/*",
+    "https://*.n8n.io/*",
+    "https://n8nryugw10.site/*"
+  ],
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": [
+        "https://app.n8n.cloud/*",
+        "http://localhost:5678/*",
+        "https://*.n8n.io/*",
+        "https://n8nryugw10.site/*"
+      ],
+      "js": ["content.js", "sidebar.js"],
+      "css": ["sidebar.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["sidebar.html", "sidebar-iframe.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
