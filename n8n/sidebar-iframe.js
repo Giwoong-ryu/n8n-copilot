@@ -48,6 +48,95 @@ async function sendMessage() {
   }
 }
 
+// 노드 워크플로우 파싱 및 비주얼 렌더링
+function parseAndRenderNodes(text) {
+  // 워크플로우 패턴 감지:
+  // 1. 제목이 있고
+  // 2. 번호 리스트가 3개 이상
+  // 3. 각 항목에 `노드명` 백틱이 포함
+
+  const lines = text.split('\n').map(line => line.trim());
+
+  // 제목 찾기 (첫 줄 또는 "워크플로우", "단계" 포함)
+  let title = '';
+  let startIdx = 0;
+
+  for (let i = 0; i < Math.min(3, lines.length); i++) {
+    const line = lines[i];
+    if (line && !line.match(/^\d+\./) && line.length < 100) {
+      if (line.includes('워크플로우') || line.includes('단계') || line.endsWith(':') || line.match(/^[^`]*$/)) {
+        title = line.replace(/[:：]/g, '').trim();
+        startIdx = i + 1;
+        break;
+      }
+    }
+  }
+
+  // 번호 리스트 추출 (1. 2. 3. 형식)
+  const nodes = [];
+  const nodeRegex = /^(\d+)\.\s*`([^`]+)`\s*[-–—:：]?\s*(.+)?$/;
+
+  for (let i = startIdx; i < lines.length; i++) {
+    const line = lines[i];
+    const match = line.match(nodeRegex);
+
+    if (match) {
+      const [, number, nodeName, description] = match;
+      nodes.push({
+        number: number,
+        name: nodeName.trim(),
+        description: description ? description.trim() : ''
+      });
+    } else if (nodes.length > 0) {
+      // 노드 추출이 끝났으면 중단
+      break;
+    }
+  }
+
+  // 3개 이상의 노드가 있으면 비주얼 렌더링
+  if (nodes.length >= 3) {
+    console.log('🎨 Rendering', nodes.length, 'nodes as visual cards');
+
+    let html = '<div class="workflow-nodes">';
+
+    if (title) {
+      html += `<div class="workflow-title">${escapeHtml(title)}</div>`;
+    }
+
+    nodes.forEach((node, idx) => {
+      html += `
+        <div class="node-card">
+          <div class="node-number">${node.number}</div>
+          <div class="node-content">
+            <div class="node-name">${escapeHtml(node.name)}</div>
+            ${node.description ? `<div class="node-description">${escapeHtml(node.description)}</div>` : ''}
+          </div>
+          <button class="node-detail-btn" data-step="${node.number}">자세히</button>
+        </div>
+      `;
+    });
+
+    html += '</div>';
+
+    // 나머지 텍스트 추가 (안내 문구 등)
+    const remainingText = lines.slice(startIdx + nodes.length).join('\n').trim();
+    if (remainingText) {
+      html += `<div style="margin-top: 12px;">${marked.parse(remainingText)}</div>`;
+    }
+
+    return html;
+  }
+
+  return null; // 노드 패턴이 아니면 null 반환
+}
+
+// HTML 이스케이프 함수
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
 // 메시지 추가 함수
 function addMessage(text, type = 'assistant') {
   console.log(`💬 Adding message [${type}]:`, text.substring(0, 50));
@@ -59,11 +148,30 @@ function addMessage(text, type = 'assistant') {
   if (type === 'assistant') {
     // marked 라이브러리가 로드되어 있는지 확인
     if (typeof marked !== 'undefined') {
-      // 마크다운을 HTML로 변환
-      messageDiv.innerHTML = marked.parse(text);
+      // 노드 워크플로우 감지 및 비주얼 렌더링
+      const nodesHtml = parseAndRenderNodes(text);
+      if (nodesHtml) {
+        messageDiv.innerHTML = nodesHtml;
+      } else {
+        // 일반 마크다운 렌더링
+        messageDiv.innerHTML = marked.parse(text);
+      }
 
       // 단계 버튼에 이벤트 리스너 추가
       setTimeout(() => {
+        // 0. 노드 카드 "자세히" 버튼 처리 (NEW!)
+        const nodeDetailButtons = messageDiv.querySelectorAll('.node-detail-btn');
+        nodeDetailButtons.forEach(button => {
+          button.addEventListener('click', (e) => {
+            const step = e.target.dataset.step;
+            console.log('🎨 Node detail button clicked:', step);
+
+            // 입력창에 자동으로 메시지 입력
+            messageInput.value = `${step}번 단계 자세히 알려줘`;
+            messageInput.focus();
+          });
+        });
+
         // 1. 기존 HTML 버튼 처리
         const stepButtons = messageDiv.querySelectorAll('.step-button');
         stepButtons.forEach(button => {

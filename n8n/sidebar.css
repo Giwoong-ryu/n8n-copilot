@@ -7,8 +7,8 @@
 #n8n-ai-copilot-sidebar {
   position: fixed;
   bottom: 0; /* top → bottom */
-  right: -400px; /* 초기에는 숨김 */
-  width: 400px;
+  right: -600px; /* 초기에는 숨김 (400px → 600px) */
+  width: 600px; /* 기본 너비 확대 (400px → 600px) */
   height: 50vh; /* 100vh → 50vh (화면 절반) */
   background: white;
   box-shadow: -4px -4px 24px rgba(0, 0, 0, 0.15); /* 위쪽 그림자 추가 */
@@ -64,7 +64,7 @@
 
 /* 사이드바가 열렸을 때 토글 버튼 위치 조정 */
 #n8n-ai-copilot-toggle.sidebar-open {
-  right: 420px;
+  right: 620px; /* 400px + 20px → 600px + 20px */
 }
 
 /* 알림 뱃지 */
@@ -144,7 +144,7 @@
 
 /* N8N 컨텐츠 푸시 효과 (선택사항) */
 body.n8n-copilot-active {
-  margin-right: 400px;
+  margin-right: 600px; /* 400px → 600px */
 }
 
 @media (max-width: 1024px) {

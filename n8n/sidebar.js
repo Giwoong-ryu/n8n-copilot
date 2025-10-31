@@ -45,6 +45,12 @@ function createSidebarElements() {
   const sidebar = document.createElement('div');
   sidebar.id = 'n8n-ai-copilot-sidebar';
 
+  // 리사이즈 핸들 생성
+  const resizeHandle = document.createElement('div');
+  resizeHandle.id = 'n8n-ai-copilot-resize-handle';
+  resizeHandle.title = '드래그해서 크기 조절';
+  sidebar.appendChild(resizeHandle);
+
   // iframe 생성
   const iframe = document.createElement('iframe');
   iframe.src = chrome.runtime.getURL('sidebar.html');
@@ -53,6 +59,9 @@ function createSidebarElements() {
   sidebar.appendChild(iframe);
   document.body.appendChild(sidebar);
   console.log('✅ Sidebar and iframe created');
+
+  // 저장된 너비 불러오기
+  loadSidebarWidth();
 
   console.log('📦 Sidebar elements created');
 }
@@ -80,7 +89,13 @@ function attachEventListeners() {
   
   // iframe과의 메시지 통신 설정
   window.addEventListener('message', handleIframeMessage);
-  
+
+  // 리사이즈 핸들 드래그 이벤트
+  const resizeHandle = document.getElementById('n8n-ai-copilot-resize-handle');
+  if (resizeHandle) {
+    resizeHandle.addEventListener('mousedown', startResize);
+  }
+
   console.log('🔗 Event listeners attached');
 }
 
@@ -157,6 +172,95 @@ window.addEventListener('message', (event) => {
   }
 });
 
+// ========================================
+// 8. 사이드바 리사이즈 기능
+// ========================================
+let isResizing = false;
+let startX = 0;
+let startWidth = 0;
+
+function startResize(e) {
+  isResizing = true;
+  startX = e.clientX;
+
+  const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
+  startWidth = parseInt(window.getComputedStyle(sidebar).width, 10);
+
+  document.addEventListener('mousemove', resize);
+  document.addEventListener('mouseup', stopResize);
+
+  // 드래그 중 텍스트 선택 방지
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = 'ew-resize';
+
+  e.preventDefault();
+}
+
+function resize(e) {
+  if (!isResizing) return;
+
+  const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
+  const toggleButton = document.getElementById('n8n-ai-copilot-toggle');
+
+  // 드래그 거리 계산 (오른쪽에서 왼쪽으로 드래그하면 증가)
+  const deltaX = startX - e.clientX;
+  const newWidth = startWidth + deltaX;
+
+  // 최소/최대 너비 제한
+  const minWidth = 300;
+  const maxWidth = window.innerWidth * 0.8;
+  const constrainedWidth = Math.max(minWidth, Math.min(newWidth, maxWidth));
+
+  // 사이드바 너비 변경
+  sidebar.style.width = constrainedWidth + 'px';
+
+  // 사이드바가 열려 있을 때만 위치 조정
+  if (sidebar.classList.contains('open')) {
+    sidebar.style.right = '0px';
+    toggleButton.style.right = (constrainedWidth + 20) + 'px';
+  } else {
+    sidebar.style.right = `-${constrainedWidth}px`;
+  }
+}
+
+function stopResize() {
+  if (!isResizing) return;
+
+  isResizing = false;
+  document.removeEventListener('mousemove', resize);
+  document.removeEventListener('mouseup', stopResize);
+
+  // 스타일 복구
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+
+  // 너비 저장
+  const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
+  const width = parseInt(window.getComputedStyle(sidebar).width, 10);
+  saveSidebarWidth(width);
+}
+
+function saveSidebarWidth(width) {
+  localStorage.setItem('n8n-copilot-sidebar-width', width.toString());
+  console.log('💾 Sidebar width saved:', width);
+}
+
+function loadSidebarWidth() {
+  const savedWidth = localStorage.getItem('n8n-copilot-sidebar-width');
+
+  if (savedWidth) {
+    const width = parseInt(savedWidth, 10);
+    const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
+    const toggleButton = document.getElementById('n8n-ai-copilot-toggle');
+
+    if (sidebar && toggleButton) {
+      sidebar.style.width = width + 'px';
+      sidebar.style.right = `-${width}px`;
+
+      console.log('📂 Sidebar width loaded:', width);
+    }
+  }
+}
 
 console.log('📦 Sidebar.js loaded');
 console.log('✅ initializeSidebar function exposed to window object');
