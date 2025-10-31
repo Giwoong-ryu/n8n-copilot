@@ -390,7 +390,56 @@ function addMessage(text, type = 'assistant') {
           });
         });
 
-        // 2. 번호 리스트 자동 감지 및 버튼 추가
+        // 2. 노드 설명 감지 및 "자세히 알려줘" 버튼 추가
+        const messageText = messageDiv.textContent || messageDiv.innerText;
+        const nodeSettingMatch = messageText.match(/(.+?)\s*노드\s*설정:/);
+
+        if (nodeSettingMatch && !messageDiv.querySelector('.detail-button')) {
+          const nodeName = nodeSettingMatch[1].trim();
+          console.log('🔍 Node setting detected:', nodeName);
+
+          // 버튼 컨테이너 생성
+          const buttonContainer = document.createElement('div');
+          buttonContainer.className = 'detail-button-container';
+          buttonContainer.style.marginTop = '12px';
+          buttonContainer.style.display = 'flex';
+          buttonContainer.style.gap = '8px';
+
+          // "자세히 알려줘" 버튼 생성
+          const detailButton = document.createElement('button');
+          detailButton.className = 'detail-button';
+          detailButton.innerHTML = '<i class="fa-solid fa-circle-info"></i> 자세히 알려줘';
+          detailButton.style.padding = '8px 16px';
+          detailButton.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+          detailButton.style.color = 'white';
+          detailButton.style.border = 'none';
+          detailButton.style.borderRadius = '8px';
+          detailButton.style.cursor = 'pointer';
+          detailButton.style.fontSize = '14px';
+          detailButton.style.fontWeight = '500';
+          detailButton.style.transition = 'all 0.2s';
+
+          detailButton.addEventListener('mouseover', () => {
+            detailButton.style.transform = 'translateY(-2px)';
+            detailButton.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+          });
+
+          detailButton.addEventListener('mouseout', () => {
+            detailButton.style.transform = 'translateY(0)';
+            detailButton.style.boxShadow = 'none';
+          });
+
+          detailButton.addEventListener('click', () => {
+            console.log(`📖 Detail button clicked for: ${nodeName}`);
+            messageInput.value = `${nodeName} 노드 모든 옵션 자세히 알려줘`;
+            sendMessage();
+          });
+
+          buttonContainer.appendChild(detailButton);
+          messageDiv.appendChild(buttonContainer);
+        }
+
+        // 3. 번호 리스트 자동 감지 및 버튼 추가
         const listItems = messageDiv.querySelectorAll('ol > li, ul > li');
         listItems.forEach((li, index) => {
           const text = li.textContent.trim();

@@ -265,11 +265,15 @@ class AdvancedContextCollector {
    * 에러가 연쇄적으로 발생한 경로 추적
    */
   traceErrorChain(currentErrors) {
-    if (!currentErrors || currentErrors.length === 0) return [];
+    if (!currentErrors) return [];
+
+    // Ensure currentErrors is an array
+    const errors = Array.isArray(currentErrors) ? currentErrors : [currentErrors];
+    if (errors.length === 0) return [];
 
     const chain = [];
 
-    currentErrors.forEach(error => {
+    errors.forEach(error => {
       chain.push({
         nodeId: error.nodeId || error.element?.id,
         message: error.message,
