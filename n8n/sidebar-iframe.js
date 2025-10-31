@@ -422,10 +422,6 @@ function addMessage(text, type = 'assistant') {
           }
         });
       }, 0);
-    } else {
-      // marked 라이브러리가 없으면 텍스트만 표시
-      messageDiv.textContent = text;
-    }
   } else {
     // user, error 메시지는 일반 텍스트
     messageDiv.textContent = text;
