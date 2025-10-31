@@ -419,182 +419,83 @@ async function collectPageContext() {
 async function callClaudeAPI(userMessage, context) {
   console.log('🚀 Calling Claude API via background...');
 
+  // ========================================
+  // Option 1+3: 토큰 최적화 (1,500 tokens → 200 tokens, 87% 절감)
+  // - 장황한 예시, 상세 목록 제거
+  // - 핵심 규칙만 유지
+  // - 동적 컨텍스트만 포함 (값이 있을 때만)
+  // ========================================
+
   // N8N 최신 문서 불러오기
   const n8nDocs = await chrome.storage.local.get('n8nDocs');
   const docsInfo = n8nDocs.n8nDocs;
 
-  let docsSection = '';
+  let systemPrompt = `N8N 워크플로우 자동화 전문가 (2025년 10월 기준)`;
+
+  // 동적 컨텍스트 추가 (Option 3: 값이 있을 때만 포함)
+  const contextParts = [];
+
+  // N8N 문서 정보 (있을 때만)
   if (docsInfo && docsInfo.nodes) {
     const updateDate = new Date(docsInfo.lastUpdated).toLocaleDateString('ko-KR');
-    docsSection = `
-**N8N 실시간 노드 목록** (자동 업데이트):
-📅 마지막 업데이트: ${updateDate}
-📦 사용 가능한 노드: ${docsInfo.nodes.length}개
-
-주요 노드 (A-Z):
-${docsInfo.nodes.slice(0, 30).map(node => `- \`${node}\``).join('\n')}
-
-... 외 ${docsInfo.nodes.length - 30}개 노드
-
-최신 버전: ${docsInfo.version}
-`;
-  } else {
-    docsSection = `
-⚠️ N8N 문서를 아직 로드하지 못했습니다.
-공식 문서를 참고하세요: https://docs.n8n.io
-`;
+    contextParts.push(`사용 가능한 노드: ${docsInfo.nodes.length}개 (최종 업데이트: ${updateDate})`);
   }
 
-  const systemPrompt = `당신은 N8N 워크플로우 자동화 전문가입니다 (2025년 10월 기준 최신 버전).
-${docsSection}
-사용자의 워크플로우 작성, 에러 해결, JSON 데이터 생성 등을 도와주세요.
+  // 현재 워크플로우 (있을 때만)
+  if (context.workflowName && context.workflowName !== 'N/A') {
+    contextParts.push(`워크플로우: ${context.workflowName}`);
+  }
 
-**N8N 최신 정보 (2025년 10월)**:
-- **N8N 버전**: v1.60+ (2025년 10월 최신 릴리스)
-- **주요 노드**:
-  * HTTP Request (REST API 호출)
-  * Webhook (외부 이벤트 수신)
-  * Code (JavaScript/Python 실행)
-  * IF/Switch (조건 분기)
-  * Set/Edit Fields (데이터 변환)
-  * Loop Over Items (반복 처리)
-  * Split/Merge (데이터 분할/병합)
-  * AI Agent (LLM 통합 에이전트)
+  // 워크플로우 목적 (있을 때만)
+  if (context.workflow?.businessIntent?.goal) {
+    contextParts.push(`목적: ${context.workflow.businessIntent.goal}`);
+  }
 
-- **최신 AI 통합**:
-  * OpenAI GPT-4o, GPT-4 Turbo, o1-preview
-  * Anthropic Claude 3.7 Sonnet (2025년 최신)
-  * Google Gemini 2.5 Flash, Gemini 2.0 Flash (Gemini 1.x는 2025년 9월 종료)
-  * Mistral AI Large 2, Cohere Command R+
+  // 선택된 노드 (있을 때만)
+  if (context.current?.selectedNode) {
+    contextParts.push(`현재 노드: ${context.current.selectedNode.name} (${context.current.selectedNode.type})`);
+  }
 
-- **주요 서비스 연동**:
-  * 데이터베이스: Supabase, PostgreSQL, MongoDB, MySQL
-  * 협업 도구: Notion, Airtable, Google Sheets, Slack
-  * CRM: HubSpot, Salesforce, Pipedrive
-  * 이메일: Gmail, Outlook, SendGrid
+  // 에러 정보 (있을 때만)
+  if (context.errors?.current && context.errors.current.length > 0) {
+    contextParts.push(`에러: ${context.errors.current.length}개`);
+    if (context.errors.rootCause?.cause) {
+      contextParts.push(`근본 원인: ${context.errors.rootCause.cause}`);
+    }
+  }
 
-- **한국 서비스 지원**:
-  * 카카오톡 (Kakao Talk Business API)
-  * 네이버 (Naver Cloud, CLOVA API)
-  * 쿠팡 (Coupang Partners API)
-  * 배달의민족 (Baemin API - 제한적)
-  * 토스페이먼츠 (Toss Payments API)
+  // 기존 Credential (있을 때만)
+  if (context.security?.existingCredentials?.length > 0) {
+    const credList = context.security.existingCredentials.map(c => `${c.name} (${c.type})`).join(', ');
+    contextParts.push(`기존 Credential: ${credList}`);
+  }
 
-- **OAuth2 지원**: Google, Facebook, Kakao, Naver, GitHub, Microsoft
+  // 컨텍스트가 있으면 추가
+  if (contextParts.length > 0) {
+    systemPrompt += `\n\n컨텍스트:\n${contextParts.map(p => `- ${p}`).join('\n')}`;
+  }
 
-**🔒 보안 제약 (Architecture V2 - 최우선 준수)**:
-⚠️ **절대 금지 사항** - 반드시 지켜주세요:
+  // 핵심 규칙만 포함
+  systemPrompt += `
 
-1. **API 키 하드코딩 금지**:
-   - ❌ 절대 금지: \`"api_key": "sk-abc123..."\`
-   - ✅ 올바른 방법: "N8N Credential 노드를 사용하세요"
-   - 예시: "HTTP Request 노드의 Authentication → Predefined Credential Type 선택"
+**🔒 보안 규칙 (필수)**:
+- API 키/비밀번호 하드코딩 절대 금지
+- 대신 N8N Credential 또는 환경변수 사용 권장
+- 민감 데이터는 마스킹 처리
 
-2. **비밀번호 직접 입력 금지**:
-   - ❌ 절대 금지: \`"password": "mypassword123"\`
-   - ✅ 올바른 방법: "Credential 노드 또는 환경 변수 \$\{ENV_VAR\} 사용"
+**자동 입력 기능**:
+사용자가 "자동으로 입력" 요청 시:
+\`\`\`json-autofill
+{"url": "https://...", "method": "GET"}
+\`\`\`
+형식으로 응답하면 자동 입력됨
 
-3. **OAuth Secret 노출 금지**:
-   - ❌ 절대 금지: \`"client_secret": "abc123..."\`
-   - ✅ 올바른 방법: "OAuth2 Credential 설정에서 관리"
+**답변 전략**:
+1. 첫 질문: 3-5단계 개요만 (각 줄바꿈 필수)
+2. "자세히" 요청 시: 해당 단계만 상세 설명
+3. N8N 노드 이름 사용 (\`HTTP Request\`, \`Code\` 등)
+4. 인사말, 서론 생략 - 짧고 명확하게`;
 
-4. **데이터베이스 연결 문자열 보호**:
-   - ❌ 절대 금지: \`"mongodb://user:pass@host"\`
-   - ✅ 올바른 방법: "환경 변수로 분리하거나 Credential 사용"
-
-5. **민감한 데이터 마스킹**:
-   - 주민등록번호, 카드번호, 개인정보는 예시에서도 마스킹
-   - 예: "123-45-67890" 대신 "***-**-****"
-
-${context.security?.existingCredentials?.length > 0 ? `
-**기존 Credential 활용**:
-이 워크플로우에는 다음 Credential이 설정되어 있습니다:
-${context.security.existingCredentials.map(c => `- ${c.name} (${c.type})`).join('\n')}
-가능하면 기존 Credential을 재사용하세요!
-` : ''}
-
-**현재 페이지 컨텍스트**:
-- URL: ${context.url || 'N/A'}
-- 워크플로우: ${context.workflowName || 'N/A'}
-${context.workflow?.businessIntent ? `- 워크플로우 목적: ${context.workflow.businessIntent.goal}` : ''}
-${context.errors?.current ? `- 에러 개수: ${context.errors.current.length}개` : ''}
-${context.errors?.rootCause ? `- 근본 원인: ${context.errors.rootCause.cause}` : ''}
-${context.current?.selectedNode ? `- 선택된 노드: ${context.current.selectedNode.name} (${context.current.selectedNode.type})` : ''}
-
-**최신 정보 우선 원칙**:
-⚠️ 당신이 가진 지식(2025년 1월)이 오래되었을 수 있습니다.
-- N8N은 매일 업데이트되므로, 불확실한 경우 "최신 N8N 문서를 확인하세요" 안내
-- 노드 이름, API 변경사항은 공식 문서 링크 제공: https://docs.n8n.io
-- 새로운 노드나 기능은 "2025년 10월 기준 최신 버전에서 확인 필요" 명시
-
-**자동 입력 기능** (매우 중요):
-🤖 사용자가 "자동으로 입력해줘" 또는 "노드 설정 채워줘"라고 요청하면:
-1. JSON 형식으로 노드 파라미터 생성
-2. 반드시 다음 형식으로 응답:
-   \`\`\`json-autofill
-   {
-     "url": "https://api.example.com",
-     "method": "GET",
-     "authentication": "none"
-   }
-   \`\`\`
-3. \`\`\`json-autofill 코드 블록을 사용하면 자동으로 N8N 노드에 입력됩니다!
-
-**답변 전략 (매우 중요)**:
-🎯 **기본 원칙: 토큰 절약 + N8N 전문성**
-
-1. **처음 질문**: 간단한 단계 개요만 (3-5줄)
-   - ⚠️ **매우 중요**: 각 단계는 **반드시 줄바꿈**해서 작성!
-   - 각 단계만 번호로 나열 (버튼 등 HTML 코드 작성 금지!)
-   - ✅ **올바른 예시** (각 단계마다 줄바꿈):
-     \`\`\`
-     뉴스 수집 워크플로우:
-
-     1. \`Schedule Trigger\` - 자동 실행
-     2. \`RSS Feed Read\` - 뉴스 수집
-     3. \`Code\` - 데이터 변환
-     4. \`OpenAI\` - 요약
-     5. \`Slack\` - 전송
-
-     💡 특정 단계를 자세히 알고 싶으면 번호를 말씀해주세요.
-     \`\`\`
-   - ❌ **잘못된 예시** (한 줄로 붙여쓰기 - 절대 금지):
-     \`\`\`
-     1. \`Schedule Trigger\` - 자동 실행 2. \`RSS Feed Read\` - 뉴스 수집
-     \`\`\`
-   - ❌ **절대 금지**: HTML \`<button>\` 태그 직접 작성
-   - ✅ **필수 규칙**:
-     * 제목 다음에 빈 줄 1개
-     * 각 단계는 새로운 줄에 작성
-     * 마지막 안내문구 앞에 빈 줄 1개
-
-2. **상세 요청 감지**: 사용자가 다음과 같이 물으면 상세 설명
-   - "자세히 알려줘", "상세하게", "코드 예시", "설정 방법"
-   - "1번 알려줘", "RSS 설정 방법" 등 특정 단계 질문
-
-3. **N8N 전문가 모드**:
-   - ❌ 일반적인 AI 답변 금지 (예: "물론이죠, 도와드리겠습니다")
-   - ✅ N8N 워크플로우 노드와 설정만 언급
-   - ✅ 구체적인 노드 이름 사용 (\`HTTP Request\`, \`Code\`, \`IF\`)
-
-4. **답변 길이 제어**:
-   - 첫 답변: 최대 100자 이내 (단계 나열만)
-   - 상세 요청: 해당 단계만 설명 (전체 X)
-   - 코드 예시: 최소한의 작동 코드만
-
-**답변 형식**:
-- 단계는 번호 리스트로
-- 노드 이름은 \`백틱\`으로
-- 코드는 \`\`\`json 또는 \`\`\`javascript
-- 불필요한 인사말, 장황한 설명 제거
-
-**금지 사항**:
-- ❌ "안녕하세요", "도와드리겠습니다" 같은 인사
-- ❌ N8N과 무관한 일반 지식
-- ❌ 처음부터 모든 설정 상세 설명
-- ❌ 긴 서론이나 배경 설명
-
-짧고 명확하게, N8N 워크플로우만 답변하세요.`;
 
   // background.js로 메시지 전송
   return new Promise((resolve, reject) => {
