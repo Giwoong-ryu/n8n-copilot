@@ -21,9 +21,32 @@ async function getApiKey() {
 
 
 // ========================================
-// 2. Gemini API 호출
+// 2. AI API 호출 (Multi-Provider)
 // ========================================
 
+// 2-1. Provider에 따라 적절한 API 호출
+async function callAI(userMessage, systemPrompt = '', context = {}) {
+  const result = await chrome.storage.local.get('aiProvider');
+  const provider = result.aiProvider || 'gemini';
+
+  console.log('🤖 Using AI Provider:', provider);
+
+  switch(provider) {
+    case 'gemini':
+      return await callGeminiAPI(userMessage, systemPrompt, context);
+    case 'openai':
+      return await callOpenAIAPI(userMessage, systemPrompt, context);
+    case 'claude':
+      return await callClaudeAPI(userMessage, systemPrompt, context);
+    default:
+      return {
+        error: true,
+        message: '알 수 없는 AI Provider입니다.'
+      };
+  }
+}
+
+// 2-2. Gemini API 호출
 async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
   console.log('🤖 Calling Gemini API...');
   console.log('Message:', userMessage);
@@ -126,6 +149,135 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
 }
 
 
+// 2-3. OpenAI API 호출
+async function callOpenAIAPI(userMessage, systemPrompt = '', context = {}) {
+  console.log('🤖 Calling OpenAI API...');
+
+  const apiKey = await getApiKey();
+
+  if (!apiKey) {
+    return {
+      error: true,
+      message: 'API 키가 설정되지 않았습니다.'
+    };
+  }
+
+  const result = await chrome.storage.local.get('selectedModel');
+  const selectedModel = result.selectedModel || 'gpt-4o';
+
+  console.log('📌 Using model:', selectedModel);
+
+  try {
+    const fullMessage = systemPrompt
+      ? `${systemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`
+      : formatMessageWithContext(userMessage, context);
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: selectedModel,
+        messages: [
+          { role: 'system', content: systemPrompt || 'You are a helpful N8N workflow automation assistant.' },
+          { role: 'user', content: formatMessageWithContext(userMessage, context) }
+        ],
+        temperature: 0.7,
+        max_tokens: 4096
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const text = data.choices?.[0]?.message?.content;
+
+    console.log('✅ OpenAI API response received');
+
+    return {
+      success: true,
+      content: text,
+      usage: data.usage || {}
+    };
+
+  } catch (error) {
+    console.error('❌ OpenAI API Error:', error);
+    return {
+      error: true,
+      message: `API 호출 실패: ${error.message}`
+    };
+  }
+}
+
+// 2-4. Claude API 호출
+async function callClaudeAPI(userMessage, systemPrompt = '', context = {}) {
+  console.log('🤖 Calling Claude API...');
+
+  const apiKey = await getApiKey();
+
+  if (!apiKey) {
+    return {
+      error: true,
+      message: 'API 키가 설정되지 않았습니다.'
+    };
+  }
+
+  const result = await chrome.storage.local.get('selectedModel');
+  const selectedModel = result.selectedModel || 'claude-3-5-sonnet-20241022';
+
+  console.log('📌 Using model:', selectedModel);
+
+  try {
+    const fullMessage = formatMessageWithContext(userMessage, context);
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: selectedModel,
+        max_tokens: 4096,
+        system: systemPrompt || 'You are a helpful N8N workflow automation assistant.',
+        messages: [
+          { role: 'user', content: fullMessage }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error?.message || `API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text;
+
+    console.log('✅ Claude API response received');
+
+    return {
+      success: true,
+      content: text,
+      usage: data.usage || {}
+    };
+
+  } catch (error) {
+    console.error('❌ Claude API Error:', error);
+    return {
+      error: true,
+      message: `API 호출 실패: ${error.message}`
+    };
+  }
+}
+
+
 // ========================================
 // 3. 메시지 포맷팅
 // ========================================
@@ -161,8 +313,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('📨 Message received:', request);
   
   if (request.action === 'callClaude') {
-    // Gemini API 호출 (callClaude 액션 이름 유지하되 Gemini 사용)
-    callGeminiAPI(request.message, request.systemPrompt, request.context)
+    // Multi-Provider AI 호출 (callClaude 액션 이름 유지하되 선택된 provider 사용)
+    callAI(request.message, request.systemPrompt, request.context)
       .then(result => {
         sendResponse(result);
       })

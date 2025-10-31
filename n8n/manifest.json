@@ -16,6 +16,8 @@
     "https://*.n8n.io/*",
     "https://n8nryugw10.site/*",
     "https://generativelanguage.googleapis.com/*",
+    "https://api.openai.com/*",
+    "https://api.anthropic.com/*",
     "https://api.github.com/*",
     "https://raw.githubusercontent.com/*",
     "https://docs.n8n.io/*"
