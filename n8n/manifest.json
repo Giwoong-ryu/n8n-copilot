@@ -33,7 +33,15 @@
         "https://*.n8n.io/*",
         "https://n8nryugw10.site/*"
       ],
-      "js": ["content.js", "sidebar.js"],
+      "js": [
+        "core/adapters/BaseAdapter.js",
+        "core/security/SecurityScanner.js",
+        "core/universal/DataFlowTracer.js",
+        "core/universal/AdvancedContextCollector.js",
+        "core/adapters/N8NAdapter.js",
+        "content.js",
+        "sidebar.js"
+      ],
       "css": ["sidebar.css"],
       "run_at": "document_idle"
     }
