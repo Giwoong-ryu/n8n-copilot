@@ -478,7 +478,7 @@ async function callClaudeAPI(userMessage, context) {
   // 핵심 규칙만 포함
   systemPrompt += `
 
-**🔒 보안 규칙 (필수)**:
+**보안 규칙 (필수)**:
 - API 키/비밀번호 하드코딩 절대 금지
 - 대신 N8N Credential 또는 환경변수 사용 권장
 - 민감 데이터는 마스킹 처리

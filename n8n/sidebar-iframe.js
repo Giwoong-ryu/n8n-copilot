@@ -212,25 +212,44 @@ function parseNumberedList(text) {
   return null;
 }
 
-// 노드 아이콘 매핑
+// 노드 아이콘 매핑 (Font Awesome 아이콘)
 function getNodeIcon(nodeName) {
   const name = nodeName.toLowerCase();
 
-  if (name.includes('trigger') || name.includes('schedule') || name.includes('webhook')) return '⚡';
-  if (name.includes('rss') || name.includes('feed')) return '📰';
-  if (name.includes('http') || name.includes('api')) return '🌐';
-  if (name.includes('gpt') || name.includes('openai') || name.includes('ai')) return '🤖';
-  if (name.includes('slack')) return '💬';
-  if (name.includes('email') || name.includes('gmail')) return '✉️';
-  if (name.includes('code') || name.includes('function')) return '⚙️';
-  if (name.includes('filter') || name.includes('if')) return '🔀';
-  if (name.includes('limit') || name.includes('split')) return '✂️';
-  if (name.includes('serp') || name.includes('google')) return '🔍';
-  if (name.includes('kakao') || name.includes('카톡')) return '💛';
-  if (name.includes('notion')) return '📝';
-  if (name.includes('database') || name.includes('db')) return '🗄️';
+  if (name.includes('trigger') || name.includes('schedule') || name.includes('webhook'))
+    return '<i class="fa-solid fa-bolt"></i>';
+  if (name.includes('rss') || name.includes('feed'))
+    return '<i class="fa-solid fa-rss"></i>';
+  if (name.includes('http') || name.includes('api'))
+    return '<i class="fa-solid fa-globe"></i>';
+  if (name.includes('gpt') || name.includes('openai') || name.includes('ai'))
+    return '<i class="fa-solid fa-robot"></i>';
+  if (name.includes('slack'))
+    return '<i class="fa-brands fa-slack"></i>';
+  if (name.includes('email') || name.includes('gmail'))
+    return '<i class="fa-solid fa-envelope"></i>';
+  if (name.includes('code') || name.includes('function'))
+    return '<i class="fa-solid fa-code"></i>';
+  if (name.includes('filter') || name.includes('if'))
+    return '<i class="fa-solid fa-filter"></i>';
+  if (name.includes('limit') || name.includes('split'))
+    return '<i class="fa-solid fa-scissors"></i>';
+  if (name.includes('serp') || name.includes('google'))
+    return '<i class="fa-solid fa-magnifying-glass"></i>';
+  if (name.includes('kakao') || name.includes('카톡'))
+    return '<i class="fa-solid fa-comment"></i>';
+  if (name.includes('notion'))
+    return '<i class="fa-solid fa-book"></i>';
+  if (name.includes('database') || name.includes('db'))
+    return '<i class="fa-solid fa-database"></i>';
+  if (name.includes('discord'))
+    return '<i class="fa-brands fa-discord"></i>';
+  if (name.includes('github'))
+    return '<i class="fa-brands fa-github"></i>';
+  if (name.includes('twitter') || name.includes('x'))
+    return '<i class="fa-brands fa-x-twitter"></i>';
 
-  return '📦';
+  return '<i class="fa-solid fa-cube"></i>';
 }
 
 // HTML 이스케이프 함수

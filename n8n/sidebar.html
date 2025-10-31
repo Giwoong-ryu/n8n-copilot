@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>N8N AI Copilot</title>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     * {
       margin: 0;
@@ -26,6 +28,13 @@
       font-weight: 600;
       font-size: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-icon {
+      font-size: 20px;
     }
     
     .messages-container {
@@ -366,8 +375,17 @@
     }
 
     .node-icon {
-      font-size: 20px;
+      font-size: 18px;
       margin-bottom: 4px;
+      color: #667eea;
+    }
+
+    .node-box.trigger .node-icon {
+      color: #10b981;
+    }
+
+    .node-box.output .node-icon {
+      color: #f59e0b;
     }
 
     .node-label {
@@ -469,21 +487,28 @@
 </head>
 <body>
   <div class="header">
-    🤖 N8N AI Copilot
+    <i class="fa-solid fa-robot header-icon"></i>
+    <span>N8N AI Copilot</span>
   </div>
   
   <div class="messages-container scrollbar-thin" id="messagesContainer">
     <div class="message assistant">
-      N8N 워크플로우 전문가입니다. 🚀<br><br>
+      N8N 워크플로우 전문가입니다.<br><br>
       무엇을 만들고 싶으신가요?
     </div>
   </div>
   
   <div class="input-container">
     <div class="quick-actions">
-      <button class="quick-action-btn" data-action="analyze-error">🔍 에러 분석</button>
-      <button class="quick-action-btn" data-action="generate-json">📝 JSON 생성</button>
-      <button class="quick-action-btn" data-action="detail">💡 자세히 알려줘</button>
+      <button class="quick-action-btn" data-action="analyze-error">
+        <i class="fa-solid fa-magnifying-glass"></i> 에러 분석
+      </button>
+      <button class="quick-action-btn" data-action="generate-json">
+        <i class="fa-solid fa-code"></i> JSON 생성
+      </button>
+      <button class="quick-action-btn" data-action="detail">
+        <i class="fa-solid fa-circle-info"></i> 자세히 알려줘
+      </button>
     </div>
     
     <div class="input-wrapper">
