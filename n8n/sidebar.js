@@ -36,7 +36,7 @@ function createSidebarElements() {
   // 토글 버튼 생성
   const toggleButton = document.createElement('button');
   toggleButton.id = 'n8n-ai-copilot-toggle';
-  toggleButton.innerHTML = '🤖';
+  toggleButton.innerHTML = '<i class="fa-solid fa-robot"></i>';
   toggleButton.title = 'N8N AI Copilot 열기';
   document.body.appendChild(toggleButton);
   console.log('✅ Toggle button created');

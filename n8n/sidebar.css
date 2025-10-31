@@ -3,6 +3,9 @@
  * N8N 페이지에 삽입될 AI 사이드바 스타일
  */
 
+/* Font Awesome Icons */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
 /* 사이드바 컨테이너 - 오른쪽 하단 절반 크기 */
 #n8n-ai-copilot-sidebar {
   position: fixed;
