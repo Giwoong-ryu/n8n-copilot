@@ -50,16 +50,21 @@ async function sendMessage() {
 
 // 가로 워크플로우 파싱 및 렌더링
 function parseAndRenderNodes(text) {
+  console.log('[DEBUG] parseAndRenderNodes called with text:', text.substring(0, 100));
+
   // 1. 워크플로우 패턴 감지: [노드1] > [노드2] > [노드3]
   // 개선: 마지막 노드도 캡처 (> 없어도 OK)
   const flowPattern = /\[([^\]]+)\]/g;
   const flowMatches = [...text.matchAll(flowPattern)];
 
+  console.log('[DEBUG] flowMatches:', flowMatches.length, 'nodes found');
+
   // 화살표로 연결되어 있는지 확인
   const hasArrows = text.includes('>') || text.includes('→') || text.includes('➜');
+  console.log('[DEBUG] hasArrows:', hasArrows);
 
   if (flowMatches.length >= 3 && hasArrows) {
-    console.log('🎨 Rendering horizontal flow with', flowMatches.length, 'nodes');
+    console.log('✅ Rendering horizontal flow with', flowMatches.length, 'nodes');
 
     const nodes = flowMatches.map((match, idx) => {
       const nodeText = match[1].trim();
@@ -72,7 +77,10 @@ function parseAndRenderNodes(text) {
       };
     });
 
+    console.log('[DEBUG] Nodes parsed:', nodes);
     return renderHorizontalFlow(nodes, text);
+  } else {
+    console.log('[DEBUG] Flow pattern NOT detected. Matches:', flowMatches.length, 'Arrows:', hasArrows);
   }
 
   // 2. 옵션 버튼 패턴 감지: [option1], [option2], [option3]
@@ -258,20 +266,28 @@ function addMessage(text, type = 'assistant') {
 
   // assistant 메시지는 마크다운을 HTML로 변환
   if (type === 'assistant') {
-    // marked 라이브러리가 로드되어 있는지 확인
-    if (typeof marked !== 'undefined') {
-      // 노드 워크플로우 감지 및 비주얼 렌더링
-      const nodesHtml = parseAndRenderNodes(text);
-      if (nodesHtml) {
-        messageDiv.innerHTML = nodesHtml;
-      } else {
+    console.log('[DEBUG] marked library loaded?', typeof marked !== 'undefined');
+
+    // 노드 워크플로우 감지 및 비주얼 렌더링 (marked 여부와 무관)
+    const nodesHtml = parseAndRenderNodes(text);
+    if (nodesHtml) {
+      console.log('[DEBUG] Using horizontal flow rendering');
+      messageDiv.innerHTML = nodesHtml;
+    } else {
+      console.log('[DEBUG] Using markdown/text rendering');
+      // marked 라이브러리가 로드되어 있는지 확인
+      if (typeof marked !== 'undefined') {
         // 일반 마크다운 렌더링
         messageDiv.innerHTML = marked.parse(text);
+      } else {
+        // 마크다운 라이브러리 없으면 일반 텍스트
+        messageDiv.textContent = text;
       }
+    }
 
-      // 인터랙티브 요소 이벤트 리스너 추가
-      setTimeout(() => {
-        // 0. 가로 플로우 노드 클릭 (NEW!)
+    // 인터랙티브 요소 이벤트 리스너 추가
+    setTimeout(() => {
+      // 0. 가로 플로우 노드 클릭 (NEW!)
         const flowNodes = messageDiv.querySelectorAll('.flow-node');
         flowNodes.forEach(node => {
           node.addEventListener('click', (e) => {
