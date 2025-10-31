@@ -53,17 +53,34 @@ function parseAndRenderNodes(text) {
   console.log('[DEBUG] parseAndRenderNodes called with text:', text.substring(0, 100));
 
   // 1. 워크플로우 패턴 감지: [노드1] > [노드2] > [노드3]
-  // 개선: 마지막 노드도 캡처 (> 없어도 OK)
+  // 개선: 첫 번째 플로우 라인만 감지 (한 줄 단위)
+  const lines = text.split('\n');
+  let flowLine = null;
+  let flowLineIndex = -1;
+
+  // 화살표가 있는 첫 번째 라인 찾기
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if ((line.includes('>') || line.includes('→') || line.includes('➜')) && line.includes('[')) {
+      flowLine = line;
+      flowLineIndex = i;
+      break;
+    }
+  }
+
+  if (!flowLine) {
+    console.log('[DEBUG] No flow line detected');
+    return parseOptions(text);
+  }
+
+  console.log('[DEBUG] Flow line found:', flowLine);
+
   const flowPattern = /\[([^\]]+)\]/g;
-  const flowMatches = [...text.matchAll(flowPattern)];
+  const flowMatches = [...flowLine.matchAll(flowPattern)];
 
   console.log('[DEBUG] flowMatches:', flowMatches.length, 'nodes found');
 
-  // 화살표로 연결되어 있는지 확인
-  const hasArrows = text.includes('>') || text.includes('→') || text.includes('➜');
-  console.log('[DEBUG] hasArrows:', hasArrows);
-
-  if (flowMatches.length >= 3 && hasArrows) {
+  if (flowMatches.length >= 3) {
     console.log('✅ Rendering horizontal flow with', flowMatches.length, 'nodes');
 
     const nodes = flowMatches.map((match, idx) => {
@@ -78,10 +95,20 @@ function parseAndRenderNodes(text) {
     });
 
     console.log('[DEBUG] Nodes parsed:', nodes);
-    return renderHorizontalFlow(nodes, text);
+
+    // 제목 추출 (플로우 라인 이전 텍스트)
+    const titleLines = lines.slice(0, flowLineIndex).join('\n');
+    const fullText = titleLines + '\n' + flowLine + '\n' + lines.slice(flowLineIndex + 1).join('\n');
+
+    return renderHorizontalFlow(nodes, fullText, flowLineIndex);
   } else {
-    console.log('[DEBUG] Flow pattern NOT detected. Matches:', flowMatches.length, 'Arrows:', hasArrows);
+    console.log('[DEBUG] Flow pattern NOT detected. Matches:', flowMatches.length);
+    return parseOptions(text);
   }
+}
+
+// 옵션 패턴 파싱 (분리)
+function parseOptions(text) {
 
   // 2. 옵션 버튼 패턴 감지: [option1], [option2], [option3]
   const optionPattern = /\[([^\]]+)\](?:\s*,\s*|\s+|$)/g;
@@ -107,13 +134,16 @@ function parseAndRenderNodes(text) {
 }
 
 // 가로 플로우 렌더링
-function renderHorizontalFlow(nodes, originalText) {
+function renderHorizontalFlow(nodes, originalText, flowLineIndex) {
   let html = '<div class="workflow-container">';
 
-  // 제목 추출 (첫 줄 또는 괄호 앞 텍스트)
-  const titleMatch = originalText.match(/^(.+?)(?=\[)/);
-  if (titleMatch && titleMatch[1].trim()) {
-    html += `<div class="workflow-title">${escapeHtml(titleMatch[1].trim())}</div>`;
+  // 제목 추출 (플로우 라인 이전 텍스트)
+  const lines = originalText.split('\n');
+  const titleLines = lines.slice(0, flowLineIndex);
+  const title = titleLines.join(' ').trim();
+
+  if (title) {
+    html += `<div class="workflow-title">${escapeHtml(title)}</div>`;
   }
 
   html += '<div class="workflow-flow">';
@@ -138,9 +168,10 @@ function renderHorizontalFlow(nodes, originalText) {
 
   html += '</div></div>';
 
-  // 나머지 텍스트 (안내 문구 등)
-  const bracketText = originalText.match(/\[.+\]/g)?.join('');
-  const remainingText = originalText.replace(bracketText, '').replace(/^.+?(?=\[)/, '').trim();
+  // 나머지 텍스트 (플로우 라인 다음 텍스트)
+  const remainingLines = lines.slice(flowLineIndex + 1);
+  const remainingText = remainingLines.join('\n').trim();
+
   if (remainingText && remainingText.length > 10) {
     // marked 라이브러리가 있으면 마크다운 파싱, 없으면 일반 텍스트
     const parsedText = (typeof marked !== 'undefined')
@@ -201,13 +232,24 @@ function parseNumberedList(text) {
   }
 
   if (nodes.length >= 2) {
+    // 첫 번째 노드가 나오는 라인 찾기
+    const lines = text.split('\n');
+    let flowLineIndex = 0;
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].trim().match(/^\d+\./)) {
+        flowLineIndex = i;
+        break;
+      }
+    }
+
     return renderHorizontalFlow(
       nodes.map((n, idx) => ({
         name: n.name,
         description: n.description,
         type: idx === 0 ? 'trigger' : (idx === nodes.length - 1 ? 'output' : 'action')
       })),
-      text
+      text,
+      flowLineIndex
     );
   }
 

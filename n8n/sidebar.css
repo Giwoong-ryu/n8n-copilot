@@ -157,18 +157,23 @@ body.n8n-copilot-active {
   }
 }
 
-/* 드래그 핸들 (사이드바 크기 조절용 - 추후 구현) */
+/* 드래그 핸들 (사이드바 크기 조절용) */
 #n8n-ai-copilot-resize-handle {
   position: absolute;
   left: 0;
   top: 0;
-  width: 4px;
+  width: 10px; /* 4px → 10px (더 넓게) */
   height: 100%;
   cursor: ew-resize;
-  background: transparent;
-  z-index: 1;
+  background: rgba(102, 126, 234, 0.2); /* 약간 보이게 */
+  z-index: 10; /* z-index 높이기 */
+  transition: background 0.2s;
 }
 
 #n8n-ai-copilot-resize-handle:hover {
-  background: #667eea;
+  background: rgba(102, 126, 234, 0.5); /* hover 시 더 진하게 */
+}
+
+#n8n-ai-copilot-resize-handle:active {
+  background: #667eea; /* 드래그 중에는 완전히 보이게 */
 }
