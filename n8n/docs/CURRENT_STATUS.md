@@ -1,7 +1,8 @@
 # 📍 현재 상태 및 다음 작업
 
-> **마지막 업데이트**: 2025-10-31 (오후)
-> **현재 Phase**: MVP Week 1 - 기술 안정화
+> **마지막 업데이트**: 2025-10-31 (저녁)
+> **현재 Phase**: Architecture V2 + Universal 전략 수립 완료
+> **전략적 방향**: n8n → Make/Zapier → Universal Copilot
 
 ## ✅ 완료된 작업
 
@@ -65,9 +66,91 @@
 - "페이지를 새로고침해주세요 (Ctrl+R)" 안내
 - 응답 null 체크 및 예외 처리 강화
 
+## 🚀 새로운 전략적 방향
+
+### Architecture V2 핵심 개선
+1. **AdvancedContextCollector** - 전체 워크플로우 + 데이터 흐름 추적
+2. **SecurityValidator** - 하드코딩 credential 방지 (322% 보안 결함 해결)
+3. **TypeValidator** - JSON 스키마 검증
+4. **SmartPromptBuilder** - 노드 타입별 전문 프롬프트
+5. **ProductivityTracker** - 실제 생산성 측정
+
+### Universal Expansion 전략
+```
+Phase 1: n8n Master (0-3개월)
+→ n8n 전용 도구로 시장 검증
+→ 목표: 1,000명, MRR $5K
+
+Phase 2: Workflow Automation (3-6개월)
+→ Make, Zapier까지 확장
+→ 목표: 10,000명, MRR $50K
+
+Phase 3: Universal Copilot (6-12개월)
+→ 모든 크롬 페이지 지원 (AWS, GitHub, Notion 등)
+→ 목표: 100,000명, MRR $500K
+```
+
+자세한 내용:
+- `docs/ARCHITECTURE_V2.md` - 기술 설계
+- `docs/UNIVERSAL_EXPANSION_STRATEGY.md` - 확장 전략
+
+---
+
 ## 📋 다음 작업 (우선순위)
 
-### 🔥 Priority 1: 테스트 & 안정화 (이번 주 완료)
+### 🔥 Priority 0: Architecture V2 준비 (Week 1-2) - NEW!
+
+**목표:** 기존 코드를 Adapter 패턴으로 리팩토링 + 보안/컨텍스트 강화
+
+```
+[리팩토링]
+1. [ ] 폴더 구조 재설계
+   - core/universal/ 폴더 생성
+   - core/adapters/ 폴더 생성
+   - core/security/ 폴더 생성
+   - core/validation/ 폴더 생성
+
+2. [ ] BaseAdapter 인터페이스 작성
+   - getContext() 메서드
+   - applyChanges() 메서드
+   - detectErrors() 메서드
+
+3. [ ] N8NAdapter로 기존 코드 이동
+   - 현재 N8NController → N8NAdapter
+   - Adapter 패턴 적용
+   - 확장 가능한 구조
+
+[보안 강화 - 최우선!]
+4. [ ] SecurityScanner 구현
+   - 하드코딩 credential 감지
+   - 민감한 데이터 노출 체크
+   - 과도한 권한 감지
+
+5. [ ] 프롬프트에 보안 제약 추가
+   - "절대 API 키를 하드코딩하지 마세요"
+   - 기존 Credential 목록 제공
+   - 보안 체크 응답 포함
+
+[컨텍스트 강화]
+6. [ ] AdvancedContextCollector 구현
+   - 전체 워크플로우 구조
+   - 데이터 흐름 추적
+   - 비즈니스 의도 추론
+
+7. [ ] DataFlowTracer 구현
+   - 이전 노드 출력값 수집
+   - 노드 간 연결 추적
+   - 타입 정보 추론
+```
+
+**예상 효과:**
+- 보안 결함 95% 감소
+- 컨텍스트 부족 문제 해결 (65% 개발자 불만)
+- 향후 Make/Zapier 확장 준비 완료
+
+---
+
+### 🔥 Priority 1: 테스트 & 안정화 (Week 3-4)
 ```
 [필수 테스트 시나리오]
 1. [ ] 설치 플로우
@@ -169,18 +252,36 @@ ls -la extension/
 
 ## 📝 작업 로그
 
+### 2025-10-31 (저녁) ✅
+**전략적 의사결정 완료**:
+- ✅ 시장 적합성 분석 완료 (8/10 - 매우 긍정적)
+- ✅ AI 코딩 도구 7가지 핵심 문제점 조사 (2025 실제 데이터)
+- ✅ 경쟁사 분석 (Lindy, Lleverage, FillApp 등)
+- ✅ Architecture V2 설계 (문제점 해결 방안)
+- ✅ Universal Copilot 확장 전략 수립
+
+**새로운 문서 생성**:
+- ✅ ARCHITECTURE_V2.md - AI 문제점 해결 설계
+- ✅ UNIVERSAL_EXPANSION_STRATEGY.md - 3단계 확장 전략
+
+**핵심 결정사항**:
+1. n8n Master (0-3개월) → Make/Zapier (3-6개월) → Universal (6-12개월)
+2. 보안 레이어 최우선 (하드코딩 credential 방지)
+3. 깊은 컨텍스트 수집 (전체 워크플로우 추적)
+4. Adapter 패턴으로 확장성 확보
+
+**시장 기회**:
+- Phase 1 (n8n): 연 $324K
+- Phase 2 (Workflow Tools): 연 $4.3M
+- Phase 3 (Universal): 연 $18M
+
 ### 2025-10-31 (오후) ✅
-**완료된 작업**:
+**기술적 안정화 완료**:
 - ✅ CORS 에러 완전 해결
 - ✅ Extension context invalidated 에러 처리
 - ✅ sidebar-iframe.js 분리 (CSP 준수)
 - ✅ 에러 처리 강화 (3단계 체크)
 - ✅ CURRENT_STATUS.md 대폭 업데이트
-
-**다음 작업**:
-- 전체 플로우 테스트 (5개 시나리오)
-- 엣지 케이스 처리
-- 성능 최적화 및 메모리 누수 확인
 
 ### 2025-10-31 (오전)
 - 프로젝트 문서 체계화
