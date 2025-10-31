@@ -485,23 +485,20 @@ async function callClaudeAPI(userMessage, context) {
 
 **자동 입력 기능**:
 사용자가 "자동으로 입력" 요청 시:
-\`\`\`json-autofill
-{"url": "https://...", "method": "GET"}
-\`\`\`
+json-autofill 코드 블록으로 응답
+예: {"url": "https://...", "method": "GET"}
 형식으로 응답하면 자동 입력됨
 
 **답변 전략** (인터랙티브 워크플로우 빌더):
 1. 워크플로우 제안 시 가로 플로우 형식 사용 (클릭 가능):
-   ```
+   예시:
    뉴스 수집 워크플로우
    [Schedule Trigger] > [RSS] > [Limit] > [GPT] > [Slack]
-   ```
 
 2. 대안 제시 시 옵션 버튼 형식:
-   ```
+   예시:
    다른 방식으로 뉴스를 모으시겠어요?
    [SERP: 세계뉴스], [HTTP: 원하는 내용만 검색]
-   ```
 
 3. 노드 상세 요청 시: 설정, 파라미터, 예시 코드 제공
 
