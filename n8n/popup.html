@@ -59,18 +59,25 @@
     }
     
     input[type="password"],
-    input[type="text"] {
+    input[type="text"],
+    select {
       width: 100%;
       padding: 12px;
       border: 1px solid #d1d5db;
       border-radius: 8px;
       font-size: 14px;
       transition: border-color 0.2s;
+      background: white;
     }
-    
-    input:focus {
+
+    input:focus,
+    select:focus {
       outline: none;
       border-color: #667eea;
+    }
+
+    select {
+      cursor: pointer;
     }
     
     .hint {
@@ -253,15 +260,27 @@
     <div id="auth-screen" class="screen active">
       <form id="settingsForm">
         <div class="form-group">
-          <label for="apiKey">Claude API Key</label>
+          <label for="apiKey">Google Gemini API Key</label>
           <input
             type="password"
             id="apiKey"
-            placeholder="sk-ant-api03-..."
+            placeholder="AIzaSy..."
             autocomplete="off"
           />
           <p class="hint">
-            API 키는 <a href="https://console.anthropic.com/settings/keys" target="_blank">Anthropic Console</a>에서 발급받을 수 있습니다.
+            API 키는 <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>에서 무료로 발급받을 수 있습니다.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label for="modelSelect">AI 모델 선택</label>
+          <select id="modelSelect">
+            <option value="gemini-2.5-flash" selected>⭐ Gemini 2.5 Flash (2025년 최신, 권장)</option>
+            <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash (2024년 12월)</option>
+          </select>
+          <p class="hint">
+            <strong>Gemini 2.5 Flash</strong>를 권장합니다. (2025년 10월 기준)<br>
+            ⚠️ Gemini 1.5는 2025년 9월 24일에 종료되었습니다.
           </p>
         </div>
 

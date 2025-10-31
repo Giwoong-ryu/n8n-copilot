@@ -3,15 +3,16 @@
  * N8N 페이지에 삽입될 AI 사이드바 스타일
  */
 
-/* 사이드바 컨테이너 */
+/* 사이드바 컨테이너 - 오른쪽 하단 절반 크기 */
 #n8n-ai-copilot-sidebar {
   position: fixed;
-  top: 0;
+  bottom: 0; /* top → bottom */
   right: -400px; /* 초기에는 숨김 */
   width: 400px;
-  height: 100vh;
+  height: 50vh; /* 100vh → 50vh (화면 절반) */
   background: white;
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  box-shadow: -4px -4px 24px rgba(0, 0, 0, 0.15); /* 위쪽 그림자 추가 */
+  border-top-left-radius: 16px; /* 왼쪽 상단 모서리 둥글게 */
   z-index: 999999;
   transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;

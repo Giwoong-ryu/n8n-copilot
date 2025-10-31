@@ -28,15 +28,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ========================================
 async function loadSavedApiKey() {
   try {
-    const result = await chrome.storage.local.get('claudeApiKey');
-    
+    const result = await chrome.storage.local.get(['claudeApiKey', 'selectedModel']);
+
     if (result.claudeApiKey) {
       const apiKeyInput = document.getElementById('apiKey');
       // 보안을 위해 일부만 표시
       apiKeyInput.value = maskApiKey(result.claudeApiKey);
       apiKeyInput.dataset.fullKey = result.claudeApiKey;
-      
+
       console.log('✅ Loaded saved API key');
+    }
+
+    // 저장된 모델 불러오기
+    if (result.selectedModel) {
+      const modelSelect = document.getElementById('modelSelect');
+      if (modelSelect) {
+        modelSelect.value = result.selectedModel;
+        console.log('✅ Loaded saved model:', result.selectedModel);
+      }
     }
   } catch (error) {
     console.error('❌ Failed to load API key:', error);
@@ -100,27 +109,33 @@ async function handleFormSubmit(event) {
   console.log('Form submitted');
 
   const apiKeyInput = document.getElementById('apiKey');
+  const modelSelect = document.getElementById('modelSelect');
   const saveButton = document.getElementById('saveButton');
   const apiKey = apiKeyInput.value.trim();
+  const selectedModel = modelSelect.value;
 
   console.log('API Key:', apiKey.substring(0, 10));
-  
+  console.log('Selected Model:', selectedModel);
+
   // 유효성 검사
   if (!isValidApiKey(apiKey)) {
     showStatus('올바른 API 키 형식이 아닙니다.', 'error');
     return;
   }
-  
+
   // 저장 중 UI 업데이트
   saveButton.disabled = true;
   saveButton.textContent = '💾 저장 중...';
-  
+
   try {
-    // Background script를 통해 저장
+    // Background script를 통해 API 키 저장
     await chrome.runtime.sendMessage({
       action: 'saveApiKey',
       apiKey: apiKey
     });
+
+    // 모델 선택 저장
+    await chrome.storage.local.set({ selectedModel: selectedModel });
 
     console.log('Saved to storage');
 
@@ -152,8 +167,8 @@ async function handleFormSubmit(event) {
 // 6. API 키 유효성 검사
 // ========================================
 function isValidApiKey(apiKey) {
-  // Anthropic API 키 형식: sk-ant-api03-...
-  return apiKey.startsWith('sk-ant-') && apiKey.length > 20;
+  // Google Gemini API 키 형식: AIzaSy...
+  return apiKey.startsWith('AIzaSy') && apiKey.length > 30;
 }
 
 function validateApiKey() {

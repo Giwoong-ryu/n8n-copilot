@@ -545,44 +545,410 @@ function collectPageContext() {
 async function callClaudeAPI(userMessage, context) {
   console.log('🚀 Calling Claude API via background...');
 
-  const systemPrompt = `당신은 N8N 워크플로우 자동화 전문가입니다.
+  // N8N 최신 문서 불러오기
+  const n8nDocs = await chrome.storage.local.get('n8nDocs');
+  const docsInfo = n8nDocs.n8nDocs;
+
+  let docsSection = '';
+  if (docsInfo && docsInfo.nodes) {
+    const updateDate = new Date(docsInfo.lastUpdated).toLocaleDateString('ko-KR');
+    docsSection = `
+**N8N 실시간 노드 목록** (자동 업데이트):
+📅 마지막 업데이트: ${updateDate}
+📦 사용 가능한 노드: ${docsInfo.nodes.length}개
+
+주요 노드 (A-Z):
+${docsInfo.nodes.slice(0, 30).map(node => `- \`${node}\``).join('\n')}
+
+... 외 ${docsInfo.nodes.length - 30}개 노드
+
+최신 버전: ${docsInfo.version}
+`;
+  } else {
+    docsSection = `
+⚠️ N8N 문서를 아직 로드하지 못했습니다.
+공식 문서를 참고하세요: https://docs.n8n.io
+`;
+  }
+
+  const systemPrompt = `당신은 N8N 워크플로우 자동화 전문가입니다 (2025년 10월 기준 최신 버전).
+${docsSection}
 사용자의 워크플로우 작성, 에러 해결, JSON 데이터 생성 등을 도와주세요.
 
-현재 페이지 컨텍스트:
+**N8N 최신 정보 (2025년 10월)**:
+- **N8N 버전**: v1.60+ (2025년 10월 최신 릴리스)
+- **주요 노드**:
+  * HTTP Request (REST API 호출)
+  * Webhook (외부 이벤트 수신)
+  * Code (JavaScript/Python 실행)
+  * IF/Switch (조건 분기)
+  * Set/Edit Fields (데이터 변환)
+  * Loop Over Items (반복 처리)
+  * Split/Merge (데이터 분할/병합)
+  * AI Agent (LLM 통합 에이전트)
+
+- **최신 AI 통합**:
+  * OpenAI GPT-4o, GPT-4 Turbo, o1-preview
+  * Anthropic Claude 3.7 Sonnet (2025년 최신)
+  * Google Gemini 2.5 Flash, Gemini 2.0 Flash (Gemini 1.x는 2025년 9월 종료)
+  * Mistral AI Large 2, Cohere Command R+
+
+- **주요 서비스 연동**:
+  * 데이터베이스: Supabase, PostgreSQL, MongoDB, MySQL
+  * 협업 도구: Notion, Airtable, Google Sheets, Slack
+  * CRM: HubSpot, Salesforce, Pipedrive
+  * 이메일: Gmail, Outlook, SendGrid
+
+- **한국 서비스 지원**:
+  * 카카오톡 (Kakao Talk Business API)
+  * 네이버 (Naver Cloud, CLOVA API)
+  * 쿠팡 (Coupang Partners API)
+  * 배달의민족 (Baemin API - 제한적)
+  * 토스페이먼츠 (Toss Payments API)
+
+- **OAuth2 지원**: Google, Facebook, Kakao, Naver, GitHub, Microsoft
+
+**현재 페이지 컨텍스트**:
 - URL: ${context.url}
 - 워크플로우: ${context.workflowName}
 - 에러 개수: ${context.errors.length}개
 ${context.selectedNode ? `- 선택된 노드: ${context.selectedNode.name} (${context.selectedNode.type})` : ''}
 
-간결하고 실용적인 답변을 제공해주세요.`;
+**최신 정보 우선 원칙**:
+⚠️ 당신이 가진 지식(2025년 1월)이 오래되었을 수 있습니다.
+- N8N은 매일 업데이트되므로, 불확실한 경우 "최신 N8N 문서를 확인하세요" 안내
+- 노드 이름, API 변경사항은 공식 문서 링크 제공: https://docs.n8n.io
+- 새로운 노드나 기능은 "2025년 10월 기준 최신 버전에서 확인 필요" 명시
+
+**자동 입력 기능** (매우 중요):
+🤖 사용자가 "자동으로 입력해줘" 또는 "노드 설정 채워줘"라고 요청하면:
+1. JSON 형식으로 노드 파라미터 생성
+2. 반드시 다음 형식으로 응답:
+   \`\`\`json-autofill
+   {
+     "url": "https://api.example.com",
+     "method": "GET",
+     "authentication": "none"
+   }
+   \`\`\`
+3. \`\`\`json-autofill 코드 블록을 사용하면 자동으로 N8N 노드에 입력됩니다!
+
+**답변 전략 (매우 중요)**:
+🎯 **기본 원칙: 토큰 절약 + N8N 전문성**
+
+1. **처음 질문**: 간단한 단계 개요만 (3-5줄)
+   - ⚠️ **매우 중요**: 각 단계는 **반드시 줄바꿈**해서 작성!
+   - 각 단계만 번호로 나열 (버튼 등 HTML 코드 작성 금지!)
+   - ✅ **올바른 예시** (각 단계마다 줄바꿈):
+     \`\`\`
+     뉴스 수집 워크플로우:
+
+     1. \`Schedule Trigger\` - 자동 실행
+     2. \`RSS Feed Read\` - 뉴스 수집
+     3. \`Code\` - 데이터 변환
+     4. \`OpenAI\` - 요약
+     5. \`Slack\` - 전송
+
+     💡 특정 단계를 자세히 알고 싶으면 번호를 말씀해주세요.
+     \`\`\`
+   - ❌ **잘못된 예시** (한 줄로 붙여쓰기 - 절대 금지):
+     \`\`\`
+     1. \`Schedule Trigger\` - 자동 실행 2. \`RSS Feed Read\` - 뉴스 수집
+     \`\`\`
+   - ❌ **절대 금지**: HTML \`<button>\` 태그 직접 작성
+   - ✅ **필수 규칙**:
+     * 제목 다음에 빈 줄 1개
+     * 각 단계는 새로운 줄에 작성
+     * 마지막 안내문구 앞에 빈 줄 1개
+
+2. **상세 요청 감지**: 사용자가 다음과 같이 물으면 상세 설명
+   - "자세히 알려줘", "상세하게", "코드 예시", "설정 방법"
+   - "1번 알려줘", "RSS 설정 방법" 등 특정 단계 질문
+
+3. **N8N 전문가 모드**:
+   - ❌ 일반적인 AI 답변 금지 (예: "물론이죠, 도와드리겠습니다")
+   - ✅ N8N 워크플로우 노드와 설정만 언급
+   - ✅ 구체적인 노드 이름 사용 (\`HTTP Request\`, \`Code\`, \`IF\`)
+
+4. **답변 길이 제어**:
+   - 첫 답변: 최대 100자 이내 (단계 나열만)
+   - 상세 요청: 해당 단계만 설명 (전체 X)
+   - 코드 예시: 최소한의 작동 코드만
+
+**답변 형식**:
+- 단계는 번호 리스트로
+- 노드 이름은 \`백틱\`으로
+- 코드는 \`\`\`json 또는 \`\`\`javascript
+- 불필요한 인사말, 장황한 설명 제거
+
+**금지 사항**:
+- ❌ "안녕하세요", "도와드리겠습니다" 같은 인사
+- ❌ N8N과 무관한 일반 지식
+- ❌ 처음부터 모든 설정 상세 설명
+- ❌ 긴 서론이나 배경 설명
+
+짧고 명확하게, N8N 워크플로우만 답변하세요.`;
 
   // background.js로 메시지 전송
   return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(
-      {
-        action: 'callClaude',
-        message: userMessage,
-        systemPrompt: systemPrompt,
-        context: context
-      },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          console.error('❌ Runtime error:', chrome.runtime.lastError);
-          reject(new Error(chrome.runtime.lastError.message));
-          return;
-        }
+    try {
+      chrome.runtime.sendMessage(
+        {
+          action: 'callClaude',
+          message: userMessage,
+          systemPrompt: systemPrompt,
+          context: context
+        },
+        (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('❌ Runtime error:', chrome.runtime.lastError);
 
-        if (response.error) {
-          console.error('❌ API error:', response.message);
-          reject(new Error(response.message));
-          return;
-        }
+            // Extension context invalidated 에러 처리
+            if (chrome.runtime.lastError.message.includes('Extension context invalidated')) {
+              console.log('🔄 Extension이 업데이트되었습니다. 3초 후 페이지를 자동 새로고침합니다...');
 
-        console.log('✅ Claude API response received');
-        resolve(response.content);
-      }
-    );
+              // iframe에 새로고침 알림 먼저 전송
+              sendMessageToIframe({
+                type: 'error',
+                message: '확장 프로그램이 업데이트되었습니다.\n\n🔄 3초 후 페이지가 자동으로 새로고침됩니다...'
+              });
+
+              // 3초 후 자동 새로고침
+              setTimeout(() => {
+                window.location.reload();
+              }, 3000);
+
+              reject(new Error('확장 프로그램이 업데이트되었습니다. 페이지를 새로고침합니다.'));
+            } else {
+              reject(new Error(chrome.runtime.lastError.message));
+            }
+            return;
+          }
+
+          if (!response) {
+            console.error('❌ No response from background');
+            reject(new Error('Background script에서 응답이 없습니다. 페이지를 새로고침해주세요.'));
+            return;
+          }
+
+          if (response.error) {
+            console.error('❌ API error:', response.message);
+            reject(new Error(response.message));
+            return;
+          }
+
+          console.log('✅ Claude API response received');
+          resolve(response.content);
+        }
+      );
+    } catch (error) {
+      console.error('❌ Exception in callClaudeAPI:', error);
+      reject(new Error('확장 프로그램 연결 오류가 발생했습니다. 페이지를 새로고침해주세요.'));
+    }
   });
 }
 
 console.log('✅ Message listener initialized');
+
+
+// ========================================
+// 7. 노드 자동 입력 기능
+// ========================================
+
+// N8N 노드 패널 감지
+function detectNodePanel() {
+  // N8N의 노드 설정 패널 선택자 (여러 버전 대응)
+  const selectors = [
+    '[data-test-id="node-parameters"]',
+    '[data-test-id="parameter-input"]',
+    '.node-settings',
+    '[class*="NodeSettings"]',
+    '[class*="ParameterInput"]',
+    '.ndv-panel'
+  ];
+
+  for (const selector of selectors) {
+    const panel = document.querySelector(selector);
+    if (panel) {
+      console.log('✅ Node panel detected:', selector);
+      return panel;
+    }
+  }
+
+  console.warn('⚠️ Node panel not found');
+  return null;
+}
+
+// 입력 필드 찾기 및 분석
+function findInputFields(container) {
+  const inputs = [];
+
+  // 모든 입력 요소 찾기
+  const inputElements = container.querySelectorAll(
+    'input[type="text"], input[type="number"], input[type="email"], input[type="url"], ' +
+    'textarea, select, [contenteditable="true"], [data-test-id*="parameter"]'
+  );
+
+  inputElements.forEach(element => {
+    // 라벨 찾기 (여러 방법 시도)
+    let label = '';
+
+    // 1. 가장 가까운 라벨 요소
+    const labelElement = element.closest('[class*="parameter"]')?.querySelector('label');
+    if (labelElement) {
+      label = labelElement.textContent.trim();
+    }
+
+    // 2. data-test-id에서 추출
+    if (!label) {
+      const testId = element.getAttribute('data-test-id');
+      if (testId) {
+        label = testId.replace('parameter-input-', '').replace(/-/g, ' ');
+      }
+    }
+
+    // 3. placeholder 사용
+    if (!label && element.placeholder) {
+      label = element.placeholder;
+    }
+
+    // 파라미터 이름
+    const paramName = element.getAttribute('data-name') ||
+                     element.getAttribute('name') ||
+                     element.id ||
+                     label.toLowerCase().replace(/\s+/g, '_');
+
+    inputs.push({
+      element: element,
+      label: label,
+      name: paramName,
+      type: element.tagName.toLowerCase(),
+      inputType: element.type || 'text',
+      value: element.value || element.textContent,
+      isVisible: element.offsetParent !== null
+    });
+  });
+
+  // 보이는 필드만 필터링
+  const visibleInputs = inputs.filter(input => input.isVisible);
+
+  console.log(`📋 Found ${visibleInputs.length} visible input fields (${inputs.length} total)`);
+  return visibleInputs;
+}
+
+// AI로부터 받은 JSON을 필드에 자동 입력
+function autoFillNodeFields(jsonData) {
+  console.log('🤖 Auto-filling node fields with data:', jsonData);
+
+  const panel = detectNodePanel();
+  if (!panel) {
+    return { success: false, message: '노드 설정 패널을 찾을 수 없습니다.' };
+  }
+
+  const fields = findInputFields(panel);
+  if (fields.length === 0) {
+    return { success: false, message: '입력 필드를 찾을 수 없습니다.' };
+  }
+
+  let filledCount = 0;
+  const results = [];
+
+  // JSON 데이터를 각 필드에 매핑
+  Object.keys(jsonData).forEach(key => {
+    const value = jsonData[key];
+
+    // 키와 매칭되는 필드 찾기 (대소문자 무시, 부분 일치)
+    const field = fields.find(f => {
+      const keyLower = key.toLowerCase().replace(/[_\s-]/g, '');
+      const nameLower = (f.name || '').toLowerCase().replace(/[_\s-]/g, '');
+      const labelLower = (f.label || '').toLowerCase().replace(/[_\s-]/g, '');
+
+      return nameLower.includes(keyLower) ||
+             labelLower.includes(keyLower) ||
+             keyLower.includes(nameLower) ||
+             keyLower.includes(labelLower);
+    });
+
+    if (field) {
+      try {
+        const valueStr = typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
+
+        // 값 입력
+        if (field.element.tagName === 'INPUT' || field.element.tagName === 'TEXTAREA') {
+          // 기존 값 저장
+          const oldValue = field.element.value;
+
+          // 새 값 설정
+          field.element.value = valueStr;
+
+          // React/Vue의 상태 업데이트를 위한 이벤트 트리거
+          field.element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+          field.element.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+          field.element.dispatchEvent(new Event('blur', { bubbles: true }));
+
+          // Vue용 이벤트
+          field.element.__vue__?.emit?.('input', valueStr);
+
+          filledCount++;
+          results.push({ field: field.label || field.name, value: valueStr, status: 'success' });
+          console.log(`✅ Filled: ${field.label || field.name} = ${valueStr}`);
+
+        } else if (field.element.tagName === 'SELECT') {
+          // 드롭다운 선택
+          const option = Array.from(field.element.options).find(opt =>
+            opt.value === value || opt.text === value
+          );
+
+          if (option) {
+            field.element.value = option.value;
+            field.element.dispatchEvent(new Event('change', { bubbles: true }));
+            filledCount++;
+            results.push({ field: field.label || field.name, value: value, status: 'success' });
+            console.log(`✅ Selected: ${field.label || field.name} = ${value}`);
+          }
+
+        } else if (field.element.contentEditable === 'true') {
+          // ContentEditable 요소
+          field.element.textContent = valueStr;
+          field.element.dispatchEvent(new Event('input', { bubbles: true }));
+          filledCount++;
+          results.push({ field: field.label || field.name, value: valueStr, status: 'success' });
+          console.log(`✅ Filled (contentEditable): ${field.label || field.name} = ${valueStr}`);
+        }
+
+      } catch (error) {
+        console.error(`❌ Failed to fill ${key}:`, error);
+        results.push({ field: key, value: value, status: 'error', error: error.message });
+      }
+    } else {
+      console.warn(`⚠️ No matching field found for: ${key}`);
+      results.push({ field: key, value: value, status: 'not_found' });
+    }
+  });
+
+  const message = `${filledCount}개 필드가 자동으로 입력되었습니다.`;
+  console.log(`✅ Auto-fill complete: ${message}`);
+
+  return {
+    success: filledCount > 0,
+    filledCount: filledCount,
+    totalFields: fields.length,
+    message: message,
+    results: results
+  };
+}
+
+// 메시지 리스너: iframe에서 자동 입력 요청 받기
+window.addEventListener('message', (event) => {
+  if (event.data.type === 'auto-fill-node') {
+    console.log('📥 Auto-fill request received from iframe');
+
+    const result = autoFillNodeFields(event.data.data);
+
+    // 결과를 iframe에 전송
+    sendMessageToIframe({
+      type: 'auto-fill-result',
+      ...result
+    });
+  }
+});

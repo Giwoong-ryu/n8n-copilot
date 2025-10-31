@@ -21,61 +21,103 @@ async function getApiKey() {
 
 
 // ========================================
-// 2. Claude API 호출
+// 2. Gemini API 호출
 // ========================================
 
-async function callClaudeAPI(userMessage, systemPrompt = '', context = {}) {
-  console.log('🤖 Calling Claude API...');
+async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
+  console.log('🤖 Calling Gemini API...');
   console.log('Message:', userMessage);
   console.log('Context:', context);
-  
+
   const apiKey = await getApiKey();
-  
+
   if (!apiKey) {
     return {
       error: true,
       message: 'API 키가 설정되지 않았습니다. Extension 아이콘을 클릭하여 API 키를 입력해주세요.'
     };
   }
-  
+
+  // 저장된 모델 불러오기 (기본값: gemini-2.5-flash)
+  const result = await chrome.storage.local.get('selectedModel');
+  const selectedModel = result.selectedModel || 'gemini-2.5-flash';
+
+  console.log('📌 Using model:', selectedModel);
+
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Gemini API 엔드포인트
+    // 사용자가 선택한 모델 사용 (2025년 10월 기준)
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
+
+    // System prompt와 user message 결합
+    const fullMessage = systemPrompt
+      ? `${systemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`
+      : formatMessageWithContext(userMessage, context);
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4096,
-        system: systemPrompt || 'You are an expert N8N workflow automation assistant.',
-        messages: [
+        contents: [
           {
-            role: 'user',
-            content: formatMessageWithContext(userMessage, context)
+            parts: [
+              {
+                text: fullMessage
+              }
+            ]
           }
-        ]
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 8192,  // 2048 → 8192로 증가 (thinking 토큰 + 실제 응답)
+          responseModalities: ["TEXT"]  // TEXT 모달리티만 사용
+        }
       })
     });
-    
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.error?.message || `API Error: ${response.status}`);
     }
-    
+
     const data = await response.json();
-    
-    console.log('✅ Claude API response received');
-    
+
+    console.log('✅ Gemini API response received');
+    console.log('📊 Response data:', JSON.stringify(data, null, 2));
+
+    // Gemini API 응답 형식에서 텍스트 추출
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    // parts가 없는 경우 (thinking mode)
+    if (!text) {
+      console.warn('⚠️ No text in parts, checking for thinking tokens');
+
+      // finishReason 확인
+      const finishReason = data.candidates?.[0]?.finishReason;
+      const thoughtsTokenCount = data.usageMetadata?.thoughtsTokenCount;
+
+      if (finishReason === 'MAX_TOKENS' && thoughtsTokenCount > 0) {
+        text = '⚠️ AI가 생각하는 데 너무 많은 리소스를 사용했습니다.\n\n더 간단한 질문으로 다시 시도해주세요.';
+      } else {
+        text = '응답을 받을 수 없습니다.\n\n다시 시도해주세요.';
+      }
+
+      console.error('❌ Failed to extract text from response');
+      console.error('Response structure:', data);
+    }
+
     return {
       success: true,
-      content: data.content[0].text,
-      usage: data.usage
+      content: text,
+      usage: data.usageMetadata || {}
     };
-    
+
   } catch (error) {
-    console.error('❌ Claude API Error:', error);
+    console.error('❌ Gemini API Error:', error);
     return {
       error: true,
       message: `API 호출 실패: ${error.message}`
@@ -119,8 +161,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('📨 Message received:', request);
   
   if (request.action === 'callClaude') {
-    // 비동기 처리를 위해 Promise 사용
-    callClaudeAPI(request.message, request.systemPrompt, request.context)
+    // Gemini API 호출 (callClaude 액션 이름 유지하되 Gemini 사용)
+    callGeminiAPI(request.message, request.systemPrompt, request.context)
       .then(result => {
         sendResponse(result);
       })
@@ -130,7 +172,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           message: error.message
         });
       });
-    
+
     // 비동기 응답을 위해 true 반환
     return true;
   }
@@ -176,3 +218,136 @@ chrome.runtime.onInstalled.addListener((details) => {
 
 
 console.log('🚀 N8N AI Copilot Background Service Worker loaded');
+
+
+// ========================================
+// 6. N8N 문서 자동 업데이트 시스템
+// ========================================
+
+// N8N 문서 소스
+const N8N_DOCS_SOURCES = {
+  github_nodes: 'https://api.github.com/repos/n8n-io/n8n/contents/packages/nodes-base/nodes',
+  changelog: 'https://raw.githubusercontent.com/n8n-io/n8n/master/CHANGELOG.md'
+};
+
+// 문서 가져오기
+async function fetchN8NDocs() {
+  console.log('📥 Fetching N8N docs...');
+
+  try {
+    const [nodesRes, changelogRes] = await Promise.all([
+      fetch(N8N_DOCS_SOURCES.github_nodes, {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      }),
+      fetch(N8N_DOCS_SOURCES.changelog)
+    ]);
+
+    const nodes = await nodesRes.json();
+    const changelog = await changelogRes.text();
+
+    // 노드 목록 추출
+    const nodeList = nodes
+      .filter(item => item.type === 'dir')
+      .map(item => item.name)
+      .sort();
+
+    // 최신 버전 추출
+    const latestVersion = changelog.split('\n## ')[1]?.split('\n')[0] || 'Unknown';
+
+    return {
+      nodes: nodeList,
+      changelog: changelog.split('\n## ').slice(0, 3).join('\n## '),
+      version: latestVersion,
+      lastUpdated: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    };
+
+  } catch (error) {
+    console.error('❌ Failed to fetch N8N docs:', error);
+    return null;
+  }
+}
+
+// 문서 저장
+async function saveN8NDocs(docs) {
+  try {
+    await chrome.storage.local.set({ n8nDocs: docs });
+    console.log(`✅ N8N docs saved (${docs.nodes.length} nodes)`);
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to save docs:', error);
+    return false;
+  }
+}
+
+// 문서 불러오기
+async function loadN8NDocs() {
+  try {
+    const result = await chrome.storage.local.get('n8nDocs');
+
+    if (!result.n8nDocs) {
+      console.log('⚠️ No docs found, fetching...');
+      return await updateN8NDocsNow();
+    }
+
+    const docs = result.n8nDocs;
+    const expiresAt = new Date(docs.expiresAt);
+
+    // 만료 체크
+    if (new Date() > expiresAt) {
+      console.log('⚠️ Docs expired, updating...');
+      return await updateN8NDocsNow();
+    }
+
+    console.log(`✅ Docs loaded (${docs.nodes.length} nodes)`);
+    return docs;
+
+  } catch (error) {
+    console.error('❌ Failed to load docs:', error);
+    return null;
+  }
+}
+
+// 즉시 업데이트
+async function updateN8NDocsNow() {
+  console.log('🔄 Updating N8N docs now...');
+  const docs = await fetchN8NDocs();
+
+  if (docs) {
+    await saveN8NDocs(docs);
+  }
+
+  return docs;
+}
+
+// 1주일마다 자동 업데이트 (Chrome Alarms API)
+chrome.alarms.create('updateN8NDocs', {
+  periodInMinutes: 10080 // 7일 = 10080분
+});
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'updateN8NDocs') {
+    console.log('⏰ Weekly N8N docs update triggered');
+    updateN8NDocsNow();
+  }
+});
+
+// 확장 프로그램 설치 시 즉시 문서 가져오기
+chrome.runtime.onInstalled.addListener(async (details) => {
+  if (details.reason === 'install') {
+    console.log('🎉 N8N AI Copilot installed! Fetching docs...');
+    await updateN8NDocsNow();
+  } else if (details.reason === 'update') {
+    console.log('🔄 N8N AI Copilot updated!');
+  }
+});
+
+// 백그라운드 스크립트 로드 시 즉시 문서 가져오기 (오늘 날짜로)
+console.log('📥 Initializing N8N docs on startup...');
+loadN8NDocs().then(docs => {
+  if (docs) {
+    console.log(`✅ N8N docs ready: ${docs.nodes.length} nodes, version ${docs.version}`);
+  } else {
+    console.log('⚠️ Failed to load docs on startup');
+  }
+});

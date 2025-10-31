@@ -77,7 +77,30 @@ cd n8n-ai-copilot
 ## 📂 프로젝트 구조
 
 ```
-n8n-ai-copilot/
+C:\Users\user\Desktop\gpt\n8n\
+├── 📁 docs/                    # 📋 관리 문서 (당신이 읽는 용)
+│   ├── INDEX.md               # 전체 가이드
+│   ├── PROJECT_OVERVIEW.md    # 프로젝트 개요
+│   ├── CURRENT_STATUS.md      # ⭐ 가장 중요! 현재 상태
+│   ├── ROADMAP.md             # 개발 일정
+│   └── TECHNICAL_SPEC.md      # 기술 설계
+│
+├── 📁 guides/                  # 🤖 클로드 코드용 지침
+│   ├── CLAUDE_CODE_GUIDE.md   # ⭐ 클로드 코드 작업 규칙
+│   └── n8n_GUIDE.md       # 최초 설계
+│
+├── 📁 src/                     # 💻 실제 소스코드
+│   ├── manifest.json
+│   ├── popup.html
+│   ├── popup.js
+│   ├── content.js
+│   ├── background.js
+│   └── styles/
+│
+├── 📁 archive/                 # 🗄️ 이전 버전/참고자료
+│   ├── n8n-ai-copilot.zip
+│   └── 01_종합_실행_계획서.md
+│
 ├── manifest.json          # Chrome Extension 설정
 ├── background.js          # Service Worker (API 통신)
 ├── content.js             # N8N DOM 조작
