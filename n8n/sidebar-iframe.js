@@ -48,38 +48,146 @@ async function sendMessage() {
   }
 }
 
-// 노드 워크플로우 파싱 및 비주얼 렌더링
+// 가로 워크플로우 파싱 및 렌더링
 function parseAndRenderNodes(text) {
-  // 워크플로우 패턴 감지:
-  // 1. 제목이 있고
-  // 2. 번호 리스트가 3개 이상
-  // 3. 각 항목에 `노드명` 백틱이 포함
+  // 1. 워크플로우 패턴 감지: [노드1] > [노드2] > [노드3]
+  const flowPattern = /\[([^\]]+)\]\s*(?:>|→|➜)\s*/g;
+  const flowMatches = [...text.matchAll(flowPattern)];
 
-  const lines = text.split('\n').map(line => line.trim());
+  if (flowMatches.length >= 2) {
+    console.log('🎨 Rendering horizontal flow with', flowMatches.length, 'nodes');
 
-  // 제목 찾기 (첫 줄 또는 "워크플로우", "단계" 포함)
-  let title = '';
-  let startIdx = 0;
+    const nodes = flowMatches.map((match, idx) => {
+      const nodeText = match[1].trim();
+      // 노드명과 설명 분리 (예: "RSS: 뉴스 수집")
+      const parts = nodeText.split(':');
+      return {
+        name: parts[0].trim(),
+        description: parts[1] ? parts[1].trim() : '',
+        type: idx === 0 ? 'trigger' : (idx === flowMatches.length - 1 ? 'output' : 'action')
+      };
+    });
 
-  for (let i = 0; i < Math.min(3, lines.length); i++) {
-    const line = lines[i];
-    if (line && !line.match(/^\d+\./) && line.length < 100) {
-      if (line.includes('워크플로우') || line.includes('단계') || line.endsWith(':') || line.match(/^[^`]*$/)) {
-        title = line.replace(/[:：]/g, '').trim();
-        startIdx = i + 1;
-        break;
-      }
+    // 마지막 노드 (닫는 괄호 뒤에 남은 텍스트 처리)
+    const lastMatch = flowMatches[flowMatches.length - 1];
+    const afterLastNode = text.substring(lastMatch.index + lastMatch[0].length);
+    const lastNodeMatch = afterLastNode.match(/^\[([^\]]+)\]/);
+    if (lastNodeMatch) {
+      const nodeText = lastNodeMatch[1].trim();
+      const parts = nodeText.split(':');
+      nodes.push({
+        name: parts[0].trim(),
+        description: parts[1] ? parts[1].trim() : '',
+        type: 'output'
+      });
     }
+
+    return renderHorizontalFlow(nodes, text);
   }
 
-  // 번호 리스트 추출 (1. 2. 3. 형식)
+  // 2. 옵션 버튼 패턴 감지: [option1], [option2], [option3]
+  const optionPattern = /\[([^\]]+)\](?:\s*,\s*|\s+|$)/g;
+  const optionMatches = [...text.matchAll(optionPattern)];
+
+  if (optionMatches.length >= 2 && text.includes('선택') || text.includes('옵션')) {
+    console.log('🎨 Rendering option buttons:', optionMatches.length);
+
+    const options = optionMatches.map(match => {
+      const optionText = match[1].trim();
+      const parts = optionText.split(':');
+      return {
+        name: parts[0].trim(),
+        description: parts[1] ? parts[1].trim() : ''
+      };
+    });
+
+    return renderOptions(options, text);
+  }
+
+  // 3. 번호 리스트 패턴 (폴백)
+  return parseNumberedList(text);
+}
+
+// 가로 플로우 렌더링
+function renderHorizontalFlow(nodes, originalText) {
+  let html = '<div class="workflow-container">';
+
+  // 제목 추출 (첫 줄 또는 괄호 앞 텍스트)
+  const titleMatch = originalText.match(/^(.+?)(?=\[)/);
+  if (titleMatch && titleMatch[1].trim()) {
+    html += `<div class="workflow-title">${escapeHtml(titleMatch[1].trim())}</div>`;
+  }
+
+  html += '<div class="workflow-flow">';
+
+  nodes.forEach((node, idx) => {
+    if (idx > 0) {
+      html += '<div class="flow-arrow">→</div>';
+    }
+
+    const icon = getNodeIcon(node.name);
+
+    html += `
+      <div class="flow-node" data-node="${escapeHtml(node.name)}" data-index="${idx}">
+        <div class="node-box ${node.type}">
+          <div class="node-icon">${icon}</div>
+          <div class="node-label">${escapeHtml(node.name)}</div>
+          ${node.description ? `<div class="node-sublabel">${escapeHtml(node.description)}</div>` : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  html += '</div></div>';
+
+  // 나머지 텍스트 (안내 문구 등)
+  const bracketText = originalText.match(/\[.+\]/g)?.join('');
+  const remainingText = originalText.replace(bracketText, '').replace(/^.+?(?=\[)/, '').trim();
+  if (remainingText && remainingText.length > 10) {
+    html += `<div style="margin-top: 12px; padding: 0 12px;">${marked.parse(remainingText)}</div>`;
+  }
+
+  return html;
+}
+
+// 옵션 버튼 렌더링
+function renderOptions(options, originalText) {
+  let html = '';
+
+  // 질문/안내 텍스트 추출
+  const questionText = originalText.split('[')[0].trim();
+  if (questionText) {
+    html += `<div style="margin: 12px 0; font-size: 14px; color: #1f2937;">${escapeHtml(questionText)}</div>`;
+  }
+
+  html += '<div class="node-options">';
+  html += '<div class="option-label">선택하세요:</div>';
+  html += '<div style="width: 100%; display: flex; flex-wrap: wrap; gap: 8px;">';
+
+  options.forEach((option, idx) => {
+    const icon = getNodeIcon(option.name);
+    html += `
+      <button class="option-btn" data-option="${escapeHtml(option.name)}" data-index="${idx}">
+        <span>${icon}</span>
+        <span>${escapeHtml(option.name)}</span>
+        ${option.description ? `<span style="font-size: 10px; color: #6b7280;">: ${escapeHtml(option.description)}</span>` : ''}
+      </button>
+    `;
+  });
+
+  html += '</div></div>';
+
+  return html;
+}
+
+// 번호 리스트 패턴 (폴백)
+function parseNumberedList(text) {
+  const lines = text.split('\n').map(line => line.trim());
   const nodes = [];
   const nodeRegex = /^(\d+)\.\s*`([^`]+)`\s*[-–—:：]?\s*(.+)?$/;
 
-  for (let i = startIdx; i < lines.length; i++) {
-    const line = lines[i];
+  for (const line of lines) {
     const match = line.match(nodeRegex);
-
     if (match) {
       const [, number, nodeName, description] = match;
       nodes.push({
@@ -87,47 +195,42 @@ function parseAndRenderNodes(text) {
         name: nodeName.trim(),
         description: description ? description.trim() : ''
       });
-    } else if (nodes.length > 0) {
-      // 노드 추출이 끝났으면 중단
-      break;
     }
   }
 
-  // 3개 이상의 노드가 있으면 비주얼 렌더링
-  if (nodes.length >= 3) {
-    console.log('🎨 Rendering', nodes.length, 'nodes as visual cards');
-
-    let html = '<div class="workflow-nodes">';
-
-    if (title) {
-      html += `<div class="workflow-title">${escapeHtml(title)}</div>`;
-    }
-
-    nodes.forEach((node, idx) => {
-      html += `
-        <div class="node-card">
-          <div class="node-number">${node.number}</div>
-          <div class="node-content">
-            <div class="node-name">${escapeHtml(node.name)}</div>
-            ${node.description ? `<div class="node-description">${escapeHtml(node.description)}</div>` : ''}
-          </div>
-          <button class="node-detail-btn" data-step="${node.number}">자세히</button>
-        </div>
-      `;
-    });
-
-    html += '</div>';
-
-    // 나머지 텍스트 추가 (안내 문구 등)
-    const remainingText = lines.slice(startIdx + nodes.length).join('\n').trim();
-    if (remainingText) {
-      html += `<div style="margin-top: 12px;">${marked.parse(remainingText)}</div>`;
-    }
-
-    return html;
+  if (nodes.length >= 2) {
+    return renderHorizontalFlow(
+      nodes.map((n, idx) => ({
+        name: n.name,
+        description: n.description,
+        type: idx === 0 ? 'trigger' : (idx === nodes.length - 1 ? 'output' : 'action')
+      })),
+      text
+    );
   }
 
-  return null; // 노드 패턴이 아니면 null 반환
+  return null;
+}
+
+// 노드 아이콘 매핑
+function getNodeIcon(nodeName) {
+  const name = nodeName.toLowerCase();
+
+  if (name.includes('trigger') || name.includes('schedule') || name.includes('webhook')) return '⚡';
+  if (name.includes('rss') || name.includes('feed')) return '📰';
+  if (name.includes('http') || name.includes('api')) return '🌐';
+  if (name.includes('gpt') || name.includes('openai') || name.includes('ai')) return '🤖';
+  if (name.includes('slack')) return '💬';
+  if (name.includes('email') || name.includes('gmail')) return '✉️';
+  if (name.includes('code') || name.includes('function')) return '⚙️';
+  if (name.includes('filter') || name.includes('if')) return '🔀';
+  if (name.includes('limit') || name.includes('split')) return '✂️';
+  if (name.includes('serp') || name.includes('google')) return '🔍';
+  if (name.includes('kakao') || name.includes('카톡')) return '💛';
+  if (name.includes('notion')) return '📝';
+  if (name.includes('database') || name.includes('db')) return '🗄️';
+
+  return '📦';
 }
 
 // HTML 이스케이프 함수
@@ -157,9 +260,40 @@ function addMessage(text, type = 'assistant') {
         messageDiv.innerHTML = marked.parse(text);
       }
 
-      // 단계 버튼에 이벤트 리스너 추가
+      // 인터랙티브 요소 이벤트 리스너 추가
       setTimeout(() => {
-        // 0. 노드 카드 "자세히" 버튼 처리 (NEW!)
+        // 0. 가로 플로우 노드 클릭 (NEW!)
+        const flowNodes = messageDiv.querySelectorAll('.flow-node');
+        flowNodes.forEach(node => {
+          node.addEventListener('click', (e) => {
+            const nodeName = e.currentTarget.dataset.node;
+            const index = e.currentTarget.dataset.index;
+            console.log('🎨 Flow node clicked:', nodeName, 'at index', index);
+
+            // 해당 노드에 대한 질문 자동 생성
+            messageInput.value = `${nodeName} 노드 설정 방법 알려줘`;
+            messageInput.focus();
+          });
+        });
+
+        // 1. 옵션 버튼 클릭 (NEW!)
+        const optionButtons = messageDiv.querySelectorAll('.option-btn');
+        optionButtons.forEach(button => {
+          button.addEventListener('click', (e) => {
+            const option = e.currentTarget.dataset.option;
+            console.log('✅ Option selected:', option);
+
+            // 선택 상태 표시
+            optionButtons.forEach(btn => btn.classList.remove('selected'));
+            e.currentTarget.classList.add('selected');
+
+            // 자동으로 선택 메시지 전송
+            messageInput.value = option;
+            setTimeout(() => sendMessage(), 100);
+          });
+        });
+
+        // 2. 노드 카드 "자세히" 버튼 처리
         const nodeDetailButtons = messageDiv.querySelectorAll('.node-detail-btn');
         nodeDetailButtons.forEach(button => {
           button.addEventListener('click', (e) => {
@@ -172,7 +306,7 @@ function addMessage(text, type = 'assistant') {
           });
         });
 
-        // 1. 기존 HTML 버튼 처리
+        // 3. 기존 HTML 버튼 처리
         const stepButtons = messageDiv.querySelectorAll('.step-button');
         stepButtons.forEach(button => {
           button.addEventListener('click', (e) => {

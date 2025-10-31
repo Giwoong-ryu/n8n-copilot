@@ -296,117 +296,174 @@
     }
 
     /* ========================================
-       노드 카드 비주얼 컴포넌트
+       가로 워크플로우 (Horizontal Flow)
        ======================================== */
 
-    .workflow-nodes {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
+    .workflow-container {
       margin: 16px 0;
-      padding: 16px;
+      padding: 20px;
       background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
       border-radius: 12px;
-      border: 2px dashed #d1d5db;
-    }
-
-    .node-card {
-      background: white;
-      border-radius: 10px;
-      padding: 14px 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.2s ease;
-      border-left: 4px solid #667eea;
-      position: relative;
-    }
-
-    .node-card:hover {
-      transform: translateX(-4px);
-      box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
-    }
-
-    .node-card::after {
-      content: '↓';
-      position: absolute;
-      bottom: -24px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 20px;
-      color: #9ca3af;
-      font-weight: 600;
-    }
-
-    .node-card:last-child::after {
-      display: none;
-    }
-
-    .node-number {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-
-    .node-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .node-name {
-      font-weight: 600;
-      font-size: 14px;
-      color: #1f2937;
-      font-family: 'Courier New', monospace;
-      background: rgba(102, 126, 234, 0.1);
-      padding: 2px 8px;
-      border-radius: 4px;
-      display: inline-block;
-      align-self: flex-start;
-    }
-
-    .node-description {
-      font-size: 13px;
-      color: #6b7280;
-      line-height: 1.5;
-    }
-
-    .node-detail-btn {
-      padding: 6px 12px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-
-    .node-detail-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+      border: 2px solid #e5e7eb;
+      overflow-x: auto;
     }
 
     .workflow-title {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       color: #1f2937;
-      margin-bottom: 8px;
+      margin-bottom: 16px;
       padding-bottom: 8px;
       border-bottom: 2px solid #e5e7eb;
+    }
+
+    .workflow-flow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: min-content;
+      padding: 8px 0;
+    }
+
+    .flow-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 100px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .flow-node:hover .node-box {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+    }
+
+    .node-box {
+      background: white;
+      border-radius: 8px;
+      padding: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 2px solid #667eea;
+      transition: all 0.2s;
+      text-align: center;
+      min-width: 100px;
+    }
+
+    .node-box.trigger {
+      border-color: #10b981;
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    }
+
+    .node-box.action {
+      border-color: #667eea;
+      background: white;
+    }
+
+    .node-box.output {
+      border-color: #f59e0b;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    }
+
+    .node-icon {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .node-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1f2937;
+      font-family: 'Courier New', monospace;
+    }
+
+    .node-sublabel {
+      font-size: 10px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    .flow-arrow {
+      font-size: 24px;
+      color: #9ca3af;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    /* 노드 옵션 선택 (드롭다운 스타일) */
+    .node-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      border: 2px dashed #d1d5db;
+    }
+
+    .option-btn {
+      padding: 8px 16px;
+      background: white;
+      border: 2px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .option-btn:hover {
+      border-color: #667eea;
+      background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+    }
+
+    .option-btn.selected {
+      border-color: #667eea;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .option-label {
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    /* 인라인 파라미터 입력 */
+    .inline-input {
+      margin: 8px 0;
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #e5e7eb;
+    }
+
+    .inline-input input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .inline-input input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .inline-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
     }
   </style>
 </head>
