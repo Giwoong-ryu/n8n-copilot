@@ -142,7 +142,11 @@ function renderHorizontalFlow(nodes, originalText) {
   const bracketText = originalText.match(/\[.+\]/g)?.join('');
   const remainingText = originalText.replace(bracketText, '').replace(/^.+?(?=\[)/, '').trim();
   if (remainingText && remainingText.length > 10) {
-    html += `<div style="margin-top: 12px; padding: 0 12px;">${marked.parse(remainingText)}</div>`;
+    // marked 라이브러리가 있으면 마크다운 파싱, 없으면 일반 텍스트
+    const parsedText = (typeof marked !== 'undefined')
+      ? marked.parse(remainingText)
+      : escapeHtml(remainingText).replace(/\n/g, '<br>');
+    html += `<div style="margin-top: 12px; padding: 0 12px;">${parsedText}</div>`;
   }
 
   return html;
