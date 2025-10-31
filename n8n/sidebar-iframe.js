@@ -51,10 +51,14 @@ async function sendMessage() {
 // 가로 워크플로우 파싱 및 렌더링
 function parseAndRenderNodes(text) {
   // 1. 워크플로우 패턴 감지: [노드1] > [노드2] > [노드3]
-  const flowPattern = /\[([^\]]+)\]\s*(?:>|→|➜)\s*/g;
+  // 개선: 마지막 노드도 캡처 (> 없어도 OK)
+  const flowPattern = /\[([^\]]+)\]/g;
   const flowMatches = [...text.matchAll(flowPattern)];
 
-  if (flowMatches.length >= 2) {
+  // 화살표로 연결되어 있는지 확인
+  const hasArrows = text.includes('>') || text.includes('→') || text.includes('➜');
+
+  if (flowMatches.length >= 3 && hasArrows) {
     console.log('🎨 Rendering horizontal flow with', flowMatches.length, 'nodes');
 
     const nodes = flowMatches.map((match, idx) => {
@@ -67,20 +71,6 @@ function parseAndRenderNodes(text) {
         type: idx === 0 ? 'trigger' : (idx === flowMatches.length - 1 ? 'output' : 'action')
       };
     });
-
-    // 마지막 노드 (닫는 괄호 뒤에 남은 텍스트 처리)
-    const lastMatch = flowMatches[flowMatches.length - 1];
-    const afterLastNode = text.substring(lastMatch.index + lastMatch[0].length);
-    const lastNodeMatch = afterLastNode.match(/^\[([^\]]+)\]/);
-    if (lastNodeMatch) {
-      const nodeText = lastNodeMatch[1].trim();
-      const parts = nodeText.split(':');
-      nodes.push({
-        name: parts[0].trim(),
-        description: parts[1] ? parts[1].trim() : '',
-        type: 'output'
-      });
-    }
 
     return renderHorizontalFlow(nodes, text);
   }
