@@ -210,6 +210,9 @@ function renderHorizontalFlow(nodes, originalText, flowLineIndex) {
           <div class="node-label">${escapeHtml(node.name)}</div>
           ${node.description ? `<div class="node-sublabel">${escapeHtml(node.description)}</div>` : ''}
         </div>
+        <button class="step-button node-setup-btn" data-node="${escapeHtml(node.name)}" style="margin-top: 8px; font-size: 12px;">
+          ⚙️ 설정하기
+        </button>
       </div>
     `;
   });
@@ -448,21 +451,43 @@ function addMessage(text, type = 'assistant') {
 
     // 인터랙티브 요소 이벤트 리스너 추가
     setTimeout(() => {
-      // 0. 가로 플로우 노드 클릭 (NEW!)
-        const flowNodes = messageDiv.querySelectorAll('.flow-node');
-        flowNodes.forEach(node => {
-          node.addEventListener('click', (e) => {
+      // 0. 가로 플로우 "설정하기" 버튼 클릭 (NEW!)
+        const setupButtons = messageDiv.querySelectorAll('.node-setup-btn');
+        setupButtons.forEach(button => {
+          button.addEventListener('click', (e) => {
+            e.stopPropagation(); // 부모 .flow-node 클릭 이벤트 방지
             const nodeName = e.currentTarget.dataset.node;
-            const index = e.currentTarget.dataset.index;
-            console.log('🎨 Flow node clicked:', nodeName, 'at index', index);
+            console.log('⚙️ Setup button clicked:', nodeName);
 
             // 마지막 클릭된 노드 저장
             lastClickedNode = nodeName;
             console.log('💾 Last clicked node saved:', lastClickedNode);
 
-            // 해당 노드에 대한 질문 자동 생성 및 전송
+            // 버튼 상태 변경
+            e.currentTarget.textContent = '⏳ 로딩 중...';
+            e.currentTarget.disabled = true;
+
+            // 해당 노드에 대한 설정 요청 전송
             messageInput.value = `${nodeName} 노드 설정 방법 알려줘`;
             sendMessage();
+          });
+        });
+
+      // 0-1. 가로 플로우 노드 박스 클릭 (하이라이트만)
+        const flowNodes = messageDiv.querySelectorAll('.flow-node');
+        flowNodes.forEach(node => {
+          node.addEventListener('click', (e) => {
+            // 버튼 클릭이면 무시
+            if (e.target.classList.contains('node-setup-btn')) {
+              return;
+            }
+
+            const nodeName = e.currentTarget.dataset.node;
+            console.log('🎨 Flow node clicked (info only):', nodeName);
+
+            // 노드 하이라이트 표시 (선택적)
+            flowNodes.forEach(n => n.querySelector('.node-box').style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.1)');
+            e.currentTarget.querySelector('.node-box').style.boxShadow = '0 6px 16px rgba(102, 126, 234, 0.3)';
           });
         });
 
