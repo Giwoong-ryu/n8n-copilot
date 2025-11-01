@@ -68,13 +68,30 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
   console.log('📌 Using model:', selectedModel);
 
   try {
+    // N8N 문서 로드 및 시스템 프롬프트에 추가
+    const n8nDocs = await loadN8NDocs();
+    let enhancedSystemPrompt = systemPrompt;
+
+    if (n8nDocs && n8nDocs.nodes) {
+      enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
+- 버전: ${n8nDocs.version}
+- 사용 가능한 노드: ${n8nDocs.nodes.length}개
+
+**주요 노드 목록** (정확한 이름 사용):
+${n8nDocs.nodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
+
+**중요**: 위 노드 이름을 정확히 사용하세요. 예: "RSS Feed"가 아니라 "${n8nDocs.nodes.find(n => n.name.includes('RSS'))?.name || 'RSS Feed Trigger'}"`;
+
+      console.log('✅ N8N docs added to system prompt');
+    }
+
     // Gemini API 엔드포인트
     // 사용자가 선택한 모델 사용 (2025년 10월 기준)
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
 
     // System prompt와 user message 결합
-    const fullMessage = systemPrompt
-      ? `${systemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`
+    const fullMessage = enhancedSystemPrompt
+      ? `${enhancedSystemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`
       : formatMessageWithContext(userMessage, context);
 
     const response = await fetch(apiUrl, {
@@ -168,8 +185,23 @@ async function callOpenAIAPI(userMessage, systemPrompt = '', context = {}) {
   console.log('📌 Using model:', selectedModel);
 
   try {
-    const fullMessage = systemPrompt
-      ? `${systemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`
+    // N8N 문서 로드 및 시스템 프롬프트에 추가
+    const n8nDocs = await loadN8NDocs();
+    let enhancedSystemPrompt = systemPrompt;
+
+    if (n8nDocs && n8nDocs.nodes) {
+      enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
+- 버전: ${n8nDocs.version}
+- 사용 가능한 노드: ${n8nDocs.nodes.length}개
+
+**주요 노드 목록** (정확한 이름 사용):
+${n8nDocs.nodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
+
+**중요**: 위 노드 이름을 정확히 사용하세요. 예: "RSS Feed"가 아니라 "${n8nDocs.nodes.find(n => n.name.includes('RSS'))?.name || 'RSS Feed Trigger'}"`;
+    }
+
+    const fullMessage = enhancedSystemPrompt
+      ? `${enhancedSystemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`
       : formatMessageWithContext(userMessage, context);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -233,6 +265,21 @@ async function callClaudeAPI(userMessage, systemPrompt = '', context = {}) {
   console.log('📌 Using model:', selectedModel);
 
   try {
+    // N8N 문서 로드 및 시스템 프롬프트에 추가
+    const n8nDocs = await loadN8NDocs();
+    let enhancedSystemPrompt = systemPrompt || 'You are a helpful N8N workflow automation assistant.';
+
+    if (n8nDocs && n8nDocs.nodes) {
+      enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
+- 버전: ${n8nDocs.version}
+- 사용 가능한 노드: ${n8nDocs.nodes.length}개
+
+**주요 노드 목록** (정확한 이름 사용):
+${n8nDocs.nodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
+
+**중요**: 위 노드 이름을 정확히 사용하세요. 예: "RSS Feed"가 아니라 "${n8nDocs.nodes.find(n => n.name.includes('RSS'))?.name || 'RSS Feed Trigger'}"`;
+    }
+
     const fullMessage = formatMessageWithContext(userMessage, context);
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -245,7 +292,7 @@ async function callClaudeAPI(userMessage, systemPrompt = '', context = {}) {
       body: JSON.stringify({
         model: selectedModel,
         max_tokens: 4096,
-        system: systemPrompt || 'You are a helpful N8N workflow automation assistant.',
+        system: enhancedSystemPrompt,
         messages: [
           { role: 'user', content: fullMessage }
         ]
