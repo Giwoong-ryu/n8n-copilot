@@ -105,6 +105,15 @@ function attachEventListeners() {
       showAuthScreen();
     });
   }
+
+  // N8N 연결 테스트 버튼
+  const testN8nButton = document.getElementById('testN8nConnection');
+  if (testN8nButton) {
+    testN8nButton.addEventListener('click', testN8nConnection);
+  }
+
+  // 저장된 N8N 설정 불러오기
+  loadN8NSettings();
 }
 
 // ========================================
@@ -187,10 +196,14 @@ async function handleFormSubmit(event) {
   const apiKeyInput = document.getElementById('apiKey');
   const modelSelect = document.getElementById('modelSelect');
   const providerSelect = document.getElementById('providerSelect');
+  const n8nUrlInput = document.getElementById('n8nUrl');
+  const n8nApiKeyInput = document.getElementById('n8nApiKey');
   const saveButton = document.getElementById('saveButton');
   const apiKey = apiKeyInput.value.trim();
   const selectedModel = modelSelect.value;
   const aiProvider = providerSelect.value;
+  const n8nUrl = n8nUrlInput ? n8nUrlInput.value.trim() : '';
+  const n8nApiKey = n8nApiKeyInput ? n8nApiKeyInput.value.trim() : '';
 
   console.log('Provider:', aiProvider);
   console.log('API Key:', apiKey.substring(0, 10));
@@ -213,10 +226,12 @@ async function handleFormSubmit(event) {
       apiKey: apiKey
     });
 
-    // Provider와 모델 선택 저장
+    // Provider, 모델, N8N 설정 저장
     await chrome.storage.local.set({
       aiProvider: aiProvider,
-      selectedModel: selectedModel
+      selectedModel: selectedModel,
+      n8nUrl: n8nUrl,
+      n8nApiKey: n8nApiKey
     });
 
     console.log('Saved to storage');
@@ -370,6 +385,79 @@ function switchScreen(screenId) {
   if (targetScreen) {
     targetScreen.classList.add('active');
     console.log(`🔄 Switched to ${screenId}`);
+  }
+}
+
+// ========================================
+// N8N 연결 설정
+// ========================================
+
+// 저장된 N8N 설정 불러오기
+async function loadN8NSettings() {
+  try {
+    const result = await chrome.storage.local.get(['n8nUrl', 'n8nApiKey']);
+
+    const n8nUrlInput = document.getElementById('n8nUrl');
+    const n8nApiKeyInput = document.getElementById('n8nApiKey');
+
+    if (result.n8nUrl && n8nUrlInput) {
+      n8nUrlInput.value = result.n8nUrl;
+    }
+
+    if (result.n8nApiKey && n8nApiKeyInput) {
+      n8nApiKeyInput.value = result.n8nApiKey;
+    }
+
+    console.log('✅ Loaded N8N settings');
+  } catch (error) {
+    console.error('❌ Failed to load N8N settings:', error);
+  }
+}
+
+// N8N 연결 테스트
+async function testN8nConnection() {
+  const n8nUrlInput = document.getElementById('n8nUrl');
+  const n8nApiKeyInput = document.getElementById('n8nApiKey');
+  const statusDiv = document.getElementById('n8nConnectionStatus');
+  const testButton = document.getElementById('testN8nConnection');
+
+  const n8nUrl = n8nUrlInput.value.trim();
+  const n8nApiKey = n8nApiKeyInput.value.trim();
+
+  if (!n8nUrl) {
+    statusDiv.innerHTML = '<span style="color: #ef4444;">❌ N8N URL을 입력하세요</span>';
+    return;
+  }
+
+  testButton.disabled = true;
+  testButton.textContent = '🔌 연결 중...';
+  statusDiv.innerHTML = '<span style="color: #6b7280;">연결 테스트 중...</span>';
+
+  try {
+    const headers = {};
+    if (n8nApiKey) {
+      headers['X-N8N-API-KEY'] = n8nApiKey;
+    }
+
+    const response = await fetch(`${n8nUrl}/api/v1/workflows`, {
+      method: 'GET',
+      headers: headers
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      statusDiv.innerHTML = `<span style="color: #10b981;">✅ 연결 성공! (워크플로우 ${data.data ? data.data.length : 0}개)</span>`;
+    } else if (response.status === 401) {
+      statusDiv.innerHTML = '<span style="color: #ef4444;">❌ API Key가 올바르지 않습니다</span>';
+    } else {
+      statusDiv.innerHTML = `<span style="color: #ef4444;">❌ 연결 실패: ${response.status}</span>`;
+    }
+  } catch (error) {
+    console.error('N8N connection error:', error);
+    statusDiv.innerHTML = `<span style="color: #ef4444;">❌ 연결 실패: ${error.message}</span>`;
+  } finally {
+    testButton.disabled = false;
+    testButton.textContent = '🔌 연결 테스트';
   }
 }
 

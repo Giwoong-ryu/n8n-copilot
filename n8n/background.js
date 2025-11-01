@@ -68,15 +68,19 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
   console.log('📌 Using model:', selectedModel);
 
   try {
-    // N8N 문서 로드 및 시스템 프롬프트에 추가
-    const n8nDocs = await loadN8NDocs();
+    // N8N 실시간 정보 로드 및 시스템 프롬프트에 추가
+    const n8nDocs = await getRealTimeN8NNodeInfo();
     let enhancedSystemPrompt = systemPrompt;
 
     if (n8nDocs && n8nDocs.nodes) {
       const validNodes = n8nDocs.nodes.filter(node => node && node.name);
 
+      const versionInfo = n8nDocs.version === 'real-time'
+        ? '실시간 (사용자 N8N 인스턴스)'
+        : n8nDocs.version;
+
       enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
-- 버전: ${n8nDocs.version}
+- 버전: ${versionInfo}
 - 사용 가능한 노드: ${validNodes.length}개
 
 **주요 노드 목록** (정확한 이름 사용):
@@ -84,7 +88,7 @@ ${validNodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
 
 **중요**: 위 노드 이름을 정확히 사용하세요.`;
 
-      console.log('✅ N8N docs added to system prompt');
+      console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'})`);
     }
 
     // Gemini API 엔드포인트
@@ -187,15 +191,19 @@ async function callOpenAIAPI(userMessage, systemPrompt = '', context = {}) {
   console.log('📌 Using model:', selectedModel);
 
   try {
-    // N8N 문서 로드 및 시스템 프롬프트에 추가
-    const n8nDocs = await loadN8NDocs();
+    // N8N 실시간 정보 로드 및 시스템 프롬프트에 추가
+    const n8nDocs = await getRealTimeN8NNodeInfo();
     let enhancedSystemPrompt = systemPrompt;
 
     if (n8nDocs && n8nDocs.nodes) {
       const validNodes = n8nDocs.nodes.filter(node => node && node.name);
 
+      const versionInfo = n8nDocs.version === 'real-time'
+        ? '실시간 (사용자 N8N 인스턴스)'
+        : n8nDocs.version;
+
       enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
-- 버전: ${n8nDocs.version}
+- 버전: ${versionInfo}
 - 사용 가능한 노드: ${validNodes.length}개
 
 **주요 노드 목록** (정확한 이름 사용):
@@ -269,15 +277,19 @@ async function callClaudeAPI(userMessage, systemPrompt = '', context = {}) {
   console.log('📌 Using model:', selectedModel);
 
   try {
-    // N8N 문서 로드 및 시스템 프롬프트에 추가
-    const n8nDocs = await loadN8NDocs();
+    // N8N 실시간 정보 로드 및 시스템 프롬프트에 추가
+    const n8nDocs = await getRealTimeN8NNodeInfo();
     let enhancedSystemPrompt = systemPrompt || 'You are a helpful N8N workflow automation assistant.';
 
     if (n8nDocs && n8nDocs.nodes) {
       const validNodes = n8nDocs.nodes.filter(node => node && node.name);
 
+      const versionInfo = n8nDocs.version === 'real-time'
+        ? '실시간 (사용자 N8N 인스턴스)'
+        : n8nDocs.version;
+
       enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
-- 버전: ${n8nDocs.version}
+- 버전: ${versionInfo}
 - 사용 가능한 노드: ${validNodes.length}개
 
 **주요 노드 목록** (정확한 이름 사용):
@@ -556,3 +568,97 @@ loadN8NDocs().then(docs => {
     console.log('⚠️ Failed to load docs on startup');
   }
 });
+
+// ========================================
+// 7. N8N API Client
+// ========================================
+
+// N8N에서 사용 가능한 노드 타입 목록 가져오기
+async function fetchN8NNodeTypes() {
+  try {
+    const result = await chrome.storage.local.get(['n8nUrl', 'n8nApiKey']);
+    const { n8nUrl, n8nApiKey } = result;
+
+    if (!n8nUrl) {
+      console.log('⚠️ N8N URL not configured, using static docs');
+      return null;
+    }
+
+    const headers = {};
+    if (n8nApiKey) {
+      headers['X-N8N-API-KEY'] = n8nApiKey;
+    }
+
+    const response = await fetch(`${n8nUrl}/api/v1/node-types`, {
+      method: 'GET',
+      headers: headers
+    });
+
+    if (!response.ok) {
+      console.error(`❌ Failed to fetch N8N node types: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log(`✅ Fetched ${data.length} node types from N8N`);
+    return data;
+  } catch (error) {
+    console.error('❌ Error fetching N8N node types:', error);
+    return null;
+  }
+}
+
+// 특정 노드의 스키마(필드 정보) 가져오기
+async function fetchN8NNodeSchema(nodeName) {
+  try {
+    const result = await chrome.storage.local.get(['n8nUrl', 'n8nApiKey']);
+    const { n8nUrl, n8nApiKey } = result;
+
+    if (!n8nUrl) {
+      return null;
+    }
+
+    const headers = {};
+    if (n8nApiKey) {
+      headers['X-N8N-API-KEY'] = n8nApiKey;
+    }
+
+    const response = await fetch(`${n8nUrl}/api/v1/node-types/${encodeURIComponent(nodeName)}`, {
+      method: 'GET',
+      headers: headers
+    });
+
+    if (!response.ok) {
+      console.error(`❌ Failed to fetch schema for ${nodeName}: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log(`✅ Fetched schema for ${nodeName}`);
+    return data;
+  } catch (error) {
+    console.error(`❌ Error fetching schema for ${nodeName}:`, error);
+    return null;
+  }
+}
+
+// N8N에서 실시간 노드 정보 가져오기 (AI 컨텍스트용)
+async function getRealTimeN8NNodeInfo() {
+  const nodeTypes = await fetchN8NNodeTypes();
+
+  if (!nodeTypes || !nodeTypes.length) {
+    // N8N 연결 안 되면 기존 정적 문서 사용
+    return await loadN8NDocs();
+  }
+
+  // N8N API에서 가져온 노드 목록을 docs 형식으로 변환
+  return {
+    nodes: nodeTypes.map(node => ({
+      name: node.displayName || node.name,
+      description: node.description || '',
+      version: node.version || 1
+    })),
+    version: 'real-time',
+    fetchedAt: new Date().toISOString()
+  };
+}
