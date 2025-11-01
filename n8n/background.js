@@ -573,32 +573,70 @@ const N8N_DOCS_SOURCES = {
   changelog: 'https://raw.githubusercontent.com/n8n-io/n8n/master/CHANGELOG.md'
 };
 
-// 문서 가져오기
+// 문서 가져오기 - 재귀적으로 모든 노드 수집
 async function fetchN8NDocs() {
   console.log('📥 Fetching N8N docs...');
 
   try {
-    const [nodesRes, changelogRes] = await Promise.all([
+    // 최상위 디렉토리 가져오기
+    const [topLevelRes, changelogRes] = await Promise.all([
       fetch(N8N_DOCS_SOURCES.github_nodes, {
         headers: { 'Accept': 'application/vnd.github.v3+json' }
       }),
       fetch(N8N_DOCS_SOURCES.changelog)
     ]);
 
-    const nodes = await nodesRes.json();
+    const topLevelNodes = await topLevelRes.json();
     const changelog = await changelogRes.text();
 
-    // 노드 목록 추출
-    const nodeList = nodes
-      .filter(item => item.type === 'dir')
-      .map(item => item.name)
-      .sort();
+    console.log(`📁 Found ${topLevelNodes.length} top-level directories`);
+
+    // 모든 노드 수집 (최상위 + 서브디렉토리)
+    const allNodes = [];
+
+    // 최상위 디렉토리 추가
+    const topDirs = topLevelNodes.filter(item => item.type === 'dir');
+    allNodes.push(...topDirs.map(item => item.name));
+
+    // 각 최상위 디렉토리의 서브디렉토리 탐색
+    const subDirPromises = topDirs.map(async (dir) => {
+      try {
+        const subRes = await fetch(dir.url, {
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        });
+        const subItems = await subRes.json();
+
+        // 서브디렉토리 필터링 (파일 제외)
+        const subDirs = subItems
+          .filter(item => item.type === 'dir')
+          .map(item => item.name);
+
+        if (subDirs.length > 0) {
+          console.log(`  └─ ${dir.name}/: ${subDirs.join(', ')}`);
+        }
+
+        return subDirs;
+      } catch (error) {
+        console.warn(`⚠️ Failed to fetch subdirs for ${dir.name}:`, error.message);
+        return [];
+      }
+    });
+
+    const subDirArrays = await Promise.all(subDirPromises);
+    const allSubDirs = subDirArrays.flat();
+
+    allNodes.push(...allSubDirs);
+
+    // 중복 제거 및 정렬
+    const uniqueNodes = [...new Set(allNodes)].sort();
+
+    console.log(`✅ Collected ${uniqueNodes.length} total nodes (${topDirs.length} top-level + ${allSubDirs.length} sub-level)`);
 
     // 최신 버전 추출
     const latestVersion = changelog.split('\n## ')[1]?.split('\n')[0] || 'Unknown';
 
     return {
-      nodes: nodeList,
+      nodes: uniqueNodes,
       changelog: changelog.split('\n## ').slice(0, 3).join('\n## '),
       version: latestVersion,
       lastUpdated: new Date().toISOString(),
@@ -685,15 +723,27 @@ chrome.runtime.onInstalled.addListener(async (details) => {
   }
 });
 
-// 백그라운드 스크립트 로드 시 즉시 문서 가져오기 (오늘 날짜로)
+// 백그라운드 스크립트 로드 시 즉시 문서 가져오기
 console.log('📥 Initializing N8N docs on startup...');
 loadN8NDocs().then(docs => {
   if (docs) {
     console.log(`✅ N8N docs ready: ${docs.nodes.length} nodes, version ${docs.version}`);
+
+    // YouTube 노드 확인
+    const hasYouTube = docs.nodes.some(node => node.toLowerCase().includes('youtube'));
+    console.log(`🔍 YouTube in docs? ${hasYouTube}`);
+
+    if (!hasYouTube) {
+      console.warn('⚠️ YouTube not found in docs. This may indicate incomplete data. Consider forcing an update.');
+      console.warn('💡 Run: updateN8NDocsNow() in console to force update');
+    }
   } else {
     console.log('⚠️ Failed to load docs on startup');
   }
 });
+
+// 강제 업데이트 함수를 전역으로 노출 (디버깅용)
+window.forceUpdateN8NDocs = updateN8NDocsNow;
 
 // ========================================
 // 7. N8N API Client
