@@ -225,14 +225,22 @@ async function initializeAICopilot() {
     console.log('  - DataFlowTracer:', !!n8nAdapter.dataFlowTracer);
 
     // 사이드바 초기화 (sidebar.js에서 처리)
-    console.log('🔍 Checking if initializeSidebar exists:', typeof initializeSidebar);
+    // sidebar.js가 로드될 때까지 대기 (최대 3초)
+    const waitForSidebar = (retries = 30, delay = 100) => {
+      console.log(`🔍 Checking if initializeSidebar exists (attempt ${31 - retries}/30):`, typeof window.initializeSidebar);
 
-    if (typeof initializeSidebar === 'function') {
-      console.log('🎨 Calling initializeSidebar...');
-      initializeSidebar();
-    } else {
-      console.error('❌ initializeSidebar function not found!');
-    }
+      if (typeof window.initializeSidebar === 'function') {
+        console.log('✅ initializeSidebar found, initializing sidebar...');
+        window.initializeSidebar();
+      } else if (retries > 0) {
+        setTimeout(() => waitForSidebar(retries - 1, delay), delay);
+      } else {
+        console.error('❌ initializeSidebar function not found after waiting 3 seconds!');
+        console.error('   sidebar.js may not have loaded properly.');
+      }
+    };
+
+    waitForSidebar();
 
     // 에러 자동 감지 (5초마다) - Architecture V2: 깊은 에러 분석
     setInterval(async () => {
