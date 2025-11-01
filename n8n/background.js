@@ -73,14 +73,16 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
     let enhancedSystemPrompt = systemPrompt;
 
     if (n8nDocs && n8nDocs.nodes) {
+      const validNodes = n8nDocs.nodes.filter(node => node && node.name);
+
       enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
 - 버전: ${n8nDocs.version}
-- 사용 가능한 노드: ${n8nDocs.nodes.length}개
+- 사용 가능한 노드: ${validNodes.length}개
 
 **주요 노드 목록** (정확한 이름 사용):
-${n8nDocs.nodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
+${validNodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
 
-**중요**: 위 노드 이름을 정확히 사용하세요. 예: "RSS Feed"가 아니라 "${n8nDocs.nodes.find(n => n.name.includes('RSS'))?.name || 'RSS Feed Trigger'}"`;
+**중요**: 위 노드 이름을 정확히 사용하세요.`;
 
       console.log('✅ N8N docs added to system prompt');
     }
@@ -190,14 +192,16 @@ async function callOpenAIAPI(userMessage, systemPrompt = '', context = {}) {
     let enhancedSystemPrompt = systemPrompt;
 
     if (n8nDocs && n8nDocs.nodes) {
+      const validNodes = n8nDocs.nodes.filter(node => node && node.name);
+
       enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
 - 버전: ${n8nDocs.version}
-- 사용 가능한 노드: ${n8nDocs.nodes.length}개
+- 사용 가능한 노드: ${validNodes.length}개
 
 **주요 노드 목록** (정확한 이름 사용):
-${n8nDocs.nodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
+${validNodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
 
-**중요**: 위 노드 이름을 정확히 사용하세요. 예: "RSS Feed"가 아니라 "${n8nDocs.nodes.find(n => n.name.includes('RSS'))?.name || 'RSS Feed Trigger'}"`;
+**중요**: 위 노드 이름을 정확히 사용하세요.`;
     }
 
     const fullMessage = enhancedSystemPrompt
@@ -270,14 +274,16 @@ async function callClaudeAPI(userMessage, systemPrompt = '', context = {}) {
     let enhancedSystemPrompt = systemPrompt || 'You are a helpful N8N workflow automation assistant.';
 
     if (n8nDocs && n8nDocs.nodes) {
+      const validNodes = n8nDocs.nodes.filter(node => node && node.name);
+
       enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
 - 버전: ${n8nDocs.version}
-- 사용 가능한 노드: ${n8nDocs.nodes.length}개
+- 사용 가능한 노드: ${validNodes.length}개
 
 **주요 노드 목록** (정확한 이름 사용):
-${n8nDocs.nodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
+${validNodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
 
-**중요**: 위 노드 이름을 정확히 사용하세요. 예: "RSS Feed"가 아니라 "${n8nDocs.nodes.find(n => n.name.includes('RSS'))?.name || 'RSS Feed Trigger'}"`;
+**중요**: 위 노드 이름을 정확히 사용하세요.`;
     }
 
     const fullMessage = formatMessageWithContext(userMessage, context);
