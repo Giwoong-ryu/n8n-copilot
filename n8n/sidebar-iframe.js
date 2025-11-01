@@ -12,6 +12,9 @@ const messagesContainer = document.getElementById('messagesContainer');
 const messageInput = document.getElementById('messageInput');
 const sendButton = document.getElementById('sendButton');
 
+// 마지막 클릭된 노드 추적 (전역 변수)
+let lastClickedNode = null;
+
 // 메시지 전송 함수
 async function sendMessage() {
   const message = messageInput.value.trim();
@@ -46,6 +49,49 @@ async function sendMessage() {
     addMessage('메시지 전송 중 오류가 발생했습니다.', 'error');
     sendButton.disabled = false;
   }
+}
+
+// 노드별 한글 설명 반환
+function getNodeDescription(nodeName) {
+  const name = nodeName.toLowerCase();
+
+  // 트리거
+  if (name.includes('schedule') || name.includes('trigger')) return '지정시간 자동실행';
+  if (name.includes('webhook')) return '외부 요청 수신';
+  if (name.includes('cron')) return '주기적 실행';
+
+  // 데이터 수집
+  if (name.includes('rss')) return '뉴스/피드 수집';
+  if (name.includes('http')) return '웹 데이터 요청';
+  if (name.includes('serp') || name.includes('google')) return '구글 검색';
+  if (name.includes('twitter') || name.includes('x ')) return '트위터 수집';
+  if (name.includes('reddit')) return '레딧 수집';
+
+  // 데이터 처리
+  if (name.includes('limit') || name.includes('item lists')) return '항목 제한/분류';
+  if (name.includes('filter')) return '조건 필터링';
+  if (name.includes('function')) return '코드 변환';
+  if (name.includes('gpt') || name.includes('openai') || name.includes('ai')) return 'AI 처리';
+  if (name.includes('split')) return '데이터 분할';
+  if (name.includes('merge')) return '데이터 병합';
+  if (name.includes('aggregate')) return '데이터 집계';
+
+  // 출력/전송
+  if (name.includes('slack')) return '슬랙 전송';
+  if (name.includes('discord')) return '디스코드 전송';
+  if (name.includes('telegram')) return '텔레그램 전송';
+  if (name.includes('kakaotalk') || name.includes('kakao')) return '카카오톡 전송';
+  if (name.includes('email') || name.includes('gmail')) return '이메일 전송';
+  if (name.includes('notion')) return '노션 저장';
+  if (name.includes('sheets') || name.includes('excel')) return '스프레드시트 저장';
+  if (name.includes('database') || name.includes('postgres') || name.includes('mysql')) return '데이터베이스 저장';
+
+  // 기타
+  if (name.includes('wait')) return '대기';
+  if (name.includes('switch')) return '조건 분기';
+  if (name.includes('if')) return '조건 판단';
+
+  return ''; // 기본값: 빈 문자열
 }
 
 // 가로 워크플로우 파싱 및 렌더링
@@ -85,11 +131,13 @@ function parseAndRenderNodes(text) {
 
     const nodes = flowMatches.map((match, idx) => {
       const nodeText = match[1].trim();
-      // 노드명과 설명 분리 (예: "RSS: 뉴스 수집")
+      // 노드명과 AI 제공 설명 분리 (예: "RSS: 뉴스 수집")
       const parts = nodeText.split(':');
+      const nodeName = parts[0].trim();
+
       return {
-        name: parts[0].trim(),
-        description: parts[1] ? parts[1].trim() : '',
+        name: nodeName,
+        description: getNodeDescription(nodeName), // 하드코딩된 한글 설명
         type: idx === 0 ? 'trigger' : (idx === flowMatches.length - 1 ? 'output' : 'action')
       };
     });
@@ -341,9 +389,13 @@ function addMessage(text, type = 'assistant') {
             const index = e.currentTarget.dataset.index;
             console.log('🎨 Flow node clicked:', nodeName, 'at index', index);
 
-            // 해당 노드에 대한 질문 자동 생성
+            // 마지막 클릭된 노드 저장
+            lastClickedNode = nodeName;
+            console.log('💾 Last clicked node saved:', lastClickedNode);
+
+            // 해당 노드에 대한 질문 자동 생성 및 전송
             messageInput.value = `${nodeName} 노드 설정 방법 알려줘`;
-            messageInput.focus();
+            sendMessage();
           });
         });
 
@@ -390,56 +442,7 @@ function addMessage(text, type = 'assistant') {
           });
         });
 
-        // 2. 노드 설명 감지 및 "자세히 알려줘" 버튼 추가
-        const messageText = messageDiv.textContent || messageDiv.innerText;
-        const nodeSettingMatch = messageText.match(/(.+?)\s*노드\s*설정:/);
-
-        if (nodeSettingMatch && !messageDiv.querySelector('.detail-button')) {
-          const nodeName = nodeSettingMatch[1].trim();
-          console.log('🔍 Node setting detected:', nodeName);
-
-          // 버튼 컨테이너 생성
-          const buttonContainer = document.createElement('div');
-          buttonContainer.className = 'detail-button-container';
-          buttonContainer.style.marginTop = '12px';
-          buttonContainer.style.display = 'flex';
-          buttonContainer.style.gap = '8px';
-
-          // "자세히 알려줘" 버튼 생성
-          const detailButton = document.createElement('button');
-          detailButton.className = 'detail-button';
-          detailButton.innerHTML = '<i class="fa-solid fa-circle-info"></i> 자세히 알려줘';
-          detailButton.style.padding = '8px 16px';
-          detailButton.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-          detailButton.style.color = 'white';
-          detailButton.style.border = 'none';
-          detailButton.style.borderRadius = '8px';
-          detailButton.style.cursor = 'pointer';
-          detailButton.style.fontSize = '14px';
-          detailButton.style.fontWeight = '500';
-          detailButton.style.transition = 'all 0.2s';
-
-          detailButton.addEventListener('mouseover', () => {
-            detailButton.style.transform = 'translateY(-2px)';
-            detailButton.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
-          });
-
-          detailButton.addEventListener('mouseout', () => {
-            detailButton.style.transform = 'translateY(0)';
-            detailButton.style.boxShadow = 'none';
-          });
-
-          detailButton.addEventListener('click', () => {
-            console.log(`📖 Detail button clicked for: ${nodeName}`);
-            messageInput.value = `${nodeName} 노드 모든 옵션 자세히 알려줘`;
-            sendMessage();
-          });
-
-          buttonContainer.appendChild(detailButton);
-          messageDiv.appendChild(buttonContainer);
-        }
-
-        // 3. 번호 리스트 자동 감지 및 버튼 추가
+        // 2. 번호 리스트 자동 감지 및 버튼 추가
         const listItems = messageDiv.querySelectorAll('ol > li, ul > li');
         listItems.forEach((li, index) => {
           const text = li.textContent.trim();
@@ -578,13 +581,21 @@ document.querySelectorAll('.quick-action-btn').forEach(btn => {
         message = 'JSON 샘플 데이터를 생성해주세요';
         break;
       case 'detail':
-        message = '자세히 알려줘';
+        // 마지막 클릭된 노드가 있으면 그 노드에 대해서만 자세히 설명
+        if (lastClickedNode) {
+          message = `${lastClickedNode} 노드 모든 옵션 자세히 알려줘`;
+          console.log('📌 Detail request for specific node:', lastClickedNode);
+        } else {
+          message = '모든 노드 자세히 설명해줘';
+          console.log('📌 Detail request for all nodes');
+        }
         break;
     }
 
     if (message) {
       messageInput.value = message;
-      messageInput.focus();
+      // 바로 전송
+      sendMessage();
     }
   });
 });

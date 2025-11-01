@@ -494,9 +494,9 @@ async function callClaudeAPI(userMessage, context) {
    RSS 대신 다른 방법:
    [HTTP: 커스텀 검색], [SERP: 구글 검색]
 
-3. 노드 상세 설명 형식 (간단하고 실용적으로):
+3. 노드 기본 설명 (간단하게):
    - 각 설정 항목마다 줄바꿈
-   - 실제 사용 예시 하나만 선택해서 설명
+   - 가장 실용적인 예시 하나만 선택
    - 형식: "- 항목명: 값 (간단 설명)"
 
    예시:
@@ -506,10 +506,37 @@ async function callClaudeAPI(userMessage, context) {
    - Days Between Triggers: 1 (매일 1회)
    - Trigger at Hour: 7am (오전 7시 실행)
 
+4. 노드 상세 설명 (사용자가 "모든 옵션 자세히" 요청 시):
+   모든 설정 항목을 카테고리별로 나열하고 각 옵션 상세 설명
+
+   예시:
+   Schedule Trigger 노드 전체 옵션:
+
+   **Trigger Type** (트리거 유형)
+   - Interval: 일정 주기로 반복 실행
+   - Cron: Cron 표현식으로 정교한 스케줄 설정
+   - Custom: 수동 설정
+
+   **Interval 모드**
+   - Trigger Interval: seconds/minutes/hours/days/weeks/months
+   - Days Between Triggers: 1-365일
+   - Trigger at Hour: 0-23시
+   - Trigger at Minute: 0-59분
+
+   **Cron 모드**
+   - Cron Expression: "분 시 일 월 요일"
+     예: "0 9 * * 1-5" (평일 오전 9시)
+     예: "*/30 * * * *" (30분마다)
+   - Timezone: UTC, Asia/Seoul 등
+
+   **주의사항**
+   - 최소 실행 간격: 1분
+   - N8N 재시작 시 재설정됨
+
 규칙:
 - JSON 코드 블록 사용 금지
-- 처음부터 모든 옵션 나열하지 말기
-- 가장 실용적인 예시 하나만 선택
+- 기본 질문: 간단한 예시 하나만
+- "모든 옵션 자세히" 요청: 모든 옵션 상세 설명
 - 각 항목은 한 줄로 깔끔하게
 - 인사말 생략, N8N 노드 중심으로 답변`;
 
