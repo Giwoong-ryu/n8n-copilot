@@ -501,6 +501,10 @@ async function testN8nConnection() {
   testButton.textContent = '🔌 연결 중...';
   statusDiv.innerHTML = '<span style="color: #6b7280;">연결 테스트 중...</span>';
 
+  // 타임아웃 설정 (10초)
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000);
+
   try {
     const headers = {};
     if (n8nApiKey) {
@@ -509,8 +513,11 @@ async function testN8nConnection() {
 
     const response = await fetch(`${n8nUrl}/api/v1/workflows`, {
       method: 'GET',
-      headers: headers
+      headers: headers,
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     if (response.ok) {
       const data = await response.json();
@@ -521,8 +528,16 @@ async function testN8nConnection() {
       statusDiv.innerHTML = `<span style="color: #ef4444;">❌ 연결 실패: ${response.status}</span>`;
     }
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error('N8N connection error:', error);
-    statusDiv.innerHTML = `<span style="color: #ef4444;">❌ 연결 실패: ${error.message}</span>`;
+
+    if (error.name === 'AbortError') {
+      statusDiv.innerHTML = '<span style="color: #ef4444;">❌ 연결 시간 초과 (10초)</span>';
+    } else if (error.message.includes('Failed to fetch')) {
+      statusDiv.innerHTML = '<span style="color: #ef4444;">❌ 서버에 연결할 수 없습니다. URL을 확인하세요</span>';
+    } else {
+      statusDiv.innerHTML = `<span style="color: #ef4444;">❌ 연결 실패: ${error.message}</span>`;
+    }
   } finally {
     testButton.disabled = false;
     testButton.textContent = '🔌 연결 테스트';
