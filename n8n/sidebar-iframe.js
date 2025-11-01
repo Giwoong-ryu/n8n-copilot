@@ -620,51 +620,7 @@ function addMessage(text, type = 'assistant') {
           }
         });
 
-        // json-autofill 코드 블록 감지 및 자동 입력
-        const codeBlocks = messageDiv.querySelectorAll('pre code');
-        codeBlocks.forEach(codeBlock => {
-          const codeText = codeBlock.textContent;
-
-          // json-autofill 언어 지정 확인
-          if (codeBlock.classList.contains('language-json-autofill') ||
-              codeBlock.parentElement.getAttribute('data-language') === 'json-autofill') {
-
-            console.log('🤖 json-autofill block detected!');
-
-            // JSON 파싱
-            try {
-              const jsonData = JSON.parse(codeText);
-
-              // 자동 입력 버튼 추가
-              const autoFillButton = document.createElement('button');
-              autoFillButton.className = 'step-button';
-              autoFillButton.textContent = '⚡ 자동으로 입력하기';
-              autoFillButton.style.marginTop = '8px';
-
-              autoFillButton.addEventListener('click', () => {
-                console.log('⚡ Auto-fill button clicked');
-
-                // parent window(content.js)로 자동 입력 요청
-                window.parent.postMessage({
-                  type: 'auto-fill-node',
-                  data: jsonData
-                }, '*');
-
-                // 버튼 텍스트 변경
-                autoFillButton.textContent = '⏳ 입력 중...';
-                autoFillButton.disabled = true;
-              });
-
-              // 코드 블록 아래에 버튼 추가
-              codeBlock.parentElement.parentElement.appendChild(autoFillButton);
-
-              console.log('✅ Auto-fill button added');
-
-            } catch (error) {
-              console.error('❌ Failed to parse JSON:', error);
-            }
-          }
-        });
+        // (기존 json-autofill 감지 로직 제거됨 - parseMarkdownManually()에서 처리)
       }, 0);
   } else {
     // user, error 메시지는 일반 텍스트

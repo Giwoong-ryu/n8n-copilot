@@ -731,6 +731,8 @@ function findInputFields(container) {
   const visibleInputs = inputs.filter(input => input.isVisible);
 
   console.log(`📋 Found ${visibleInputs.length} visible input fields (${inputs.length} total)`);
+  console.log('📝 Available field names:', visibleInputs.map(f => f.name).join(', '));
+  console.log('📝 Available field labels:', visibleInputs.map(f => f.label).join(', '));
   return visibleInputs;
 }
 
