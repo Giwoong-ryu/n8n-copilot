@@ -364,12 +364,15 @@ function parseMarkdownManually(text) {
     const dataLang = lang ? ` data-language="${lang}"` : '';
     const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
 
-    // json-autofill 블록인 경우 버튼 추가
+    // json-autofill 블록인 경우 버튼 추가 (코드는 숨김)
     if (lang === 'json-autofill') {
       codeBlocks.push(`
         <div class="code-block-container">
-          <pre${dataLang}><code${langClass}>${escapeHtml(code.trim())}</code></pre>
-          <button class="autofill-button">⚡ 자동으로 입력하기</button>
+          <pre${dataLang} style="display: none;"><code${langClass}>${escapeHtml(code.trim())}</code></pre>
+          <div class="autofill-instructions">
+            <button class="autofill-button">⚡ 자동으로 입력하기</button>
+            <p class="autofill-hint">💡 먼저 N8N에서 해당 노드를 추가하고 더블클릭해서 설정 패널을 열어주세요</p>
+          </div>
         </div>
       `);
     } else {

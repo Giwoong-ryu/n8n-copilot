@@ -175,7 +175,47 @@
     .step-button:active {
       transform: translateY(0);
     }
-    
+
+    /* 자동 입력 안내 스타일 */
+    .autofill-instructions {
+      margin-top: 12px;
+    }
+
+    .autofill-button {
+      display: inline-block;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .autofill-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .autofill-button:active {
+      transform: translateY(0);
+    }
+
+    .autofill-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .autofill-hint {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
+
     .message.error {
       align-self: flex-start;
       background: #fee2e2;
