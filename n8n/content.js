@@ -611,7 +611,7 @@ CRITICAL 3: json-autofill 코드 블록을 정확한 마크다운 문법으로 �
 - 사용자 의도 불명확 시 역질문 또는 일반 사례 3개 제시
 - **CRITICAL: 반드시 마크다운 코드 블록 (백틱 3개 + json-autofill + 중괄호 JSON 객체) 형식 사용**
 - **CRITICAL: "RSS 노드 → url, limit" 같은 텍스트 설명만 쓰지 말고 반드시 실제 코드 블록 생성**
-- **CRITICAL: 백틱 2개(``), 4개(````) 등 잘못된 개수 사용 금지. 정확히 3개만 사용**
+- **CRITICAL: 백틱 개수는 정확히 3개만 사용 (2개나 4개 금지)**
 - **CRITICAL: JSON은 반드시 중괄호로 감싸기. 키-값 쌍만 나열하지 말 것**
 - json-autofill 블록의 키 이름은 N8N 필드명과 유사하게 (camelCase)
 - 인사말 생략, N8N 노드 중심으로 답변
