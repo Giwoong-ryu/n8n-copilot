@@ -356,10 +356,16 @@ function escapeHtml(text) {
 
 // 수동 마크다운 파싱 (marked 라이브러리 없을 때 대체)
 function parseMarkdownManually(text) {
+  console.log('[DEBUG] parseMarkdownManually input:', text);
+
   // 1단계: 코드 블록을 먼저 추출해서 플레이스홀더로 대체
   const codeBlocks = [];
   // 정규식: 하이픈 포함 언어 이름 지원 (예: json-autofill)
   let html = text.replace(/```([\w-]+)?\n([\s\S]+?)```/g, (match, language, code) => {
+    console.log('[DEBUG] Code block matched!');
+    console.log('[DEBUG] - language:', language);
+    console.log('[DEBUG] - code:', code.substring(0, 50));
+
     const lang = language || '';
     const langClass = lang ? ` class="language-${lang}"` : '';
     const dataLang = lang ? ` data-language="${lang}"` : '';
@@ -367,6 +373,7 @@ function parseMarkdownManually(text) {
 
     // json-autofill 블록인 경우 버튼 추가 (코드는 숨김)
     if (lang === 'json-autofill') {
+      console.log('[DEBUG] ✅ json-autofill block detected! Adding button...');
       codeBlocks.push(`
         <div class="code-block-container">
           <pre${dataLang} style="display: none;"><code${langClass}>${escapeHtml(code.trim())}</code></pre>
