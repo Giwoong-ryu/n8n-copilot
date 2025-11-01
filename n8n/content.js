@@ -174,28 +174,7 @@ ${JSON.stringify(contextData.fields, null, 2)}
 // ========================================
 // 7. Background Script와 통신
 // ========================================
-async function callClaudeAPI(message, systemPrompt = '', context = {}) {
-  return new Promise((resolve) => {
-    chrome.runtime.sendMessage(
-      {
-        action: 'callClaude',
-        message: message,
-        systemPrompt: systemPrompt,
-        context: context
-      },
-      (response) => {
-        if (chrome.runtime.lastError) {
-          resolve({
-            error: true,
-            message: chrome.runtime.lastError.message
-          });
-        } else {
-          resolve(response);
-        }
-      }
-    );
-  });
-}
+// (callClaudeAPI 함수는 아래 416번 줄에서 정의됨)
 
 
 // ========================================
