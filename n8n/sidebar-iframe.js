@@ -351,6 +351,30 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+// 수동 마크다운 파싱 (marked 라이브러리 없을 때 대체)
+function parseMarkdownManually(text) {
+  let html = escapeHtml(text);
+
+  // **bold** → <strong>bold</strong>
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  // *italic* → <em>italic</em>
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // 줄바꿈 처리
+  html = html.replace(/\n/g, '<br>');
+
+  // 빈 줄은 문단 구분
+  html = html.replace(/(<br>){2,}/g, '</p><p>');
+  html = '<p>' + html + '</p>';
+
+  // 리스트 처리: - 항목
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+  return html;
+}
+
 // 메시지 추가 함수
 function addMessage(text, type = 'assistant') {
   console.log(`💬 Adding message [${type}]:`, text.substring(0, 50));
@@ -369,13 +393,22 @@ function addMessage(text, type = 'assistant') {
       messageDiv.innerHTML = nodesHtml;
     } else {
       console.log('[DEBUG] Using markdown/text rendering');
+
       // marked 라이브러리가 로드되어 있는지 확인
-      if (typeof marked !== 'undefined') {
+      // 여러 번 시도하여 로드 대기
+      if (typeof marked !== 'undefined' && marked.parse) {
         // 일반 마크다운 렌더링
-        messageDiv.innerHTML = marked.parse(text);
+        try {
+          messageDiv.innerHTML = marked.parse(text);
+        } catch (e) {
+          console.error('Marked parsing error:', e);
+          // 에러 발생 시 수동으로 줄바꿈 처리
+          messageDiv.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+        }
       } else {
-        // 마크다운 라이브러리 없으면 일반 텍스트
-        messageDiv.textContent = text;
+        // marked 라이브러리 없으면 수동으로 기본 마크다운 처리
+        console.log('[WARN] marked not loaded, using manual markdown parsing');
+        messageDiv.innerHTML = parseMarkdownManually(text);
       }
     }
 

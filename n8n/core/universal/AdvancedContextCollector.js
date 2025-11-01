@@ -289,6 +289,11 @@ class AdvancedContextCollector {
    * 에러 원인 찾기
    */
   findErrorCause(error) {
+    // null/undefined 체크
+    if (!error || !error.message) {
+      return 'unknown';
+    }
+
     const message = error.message.toLowerCase();
 
     // 일반적인 원인 패턴
