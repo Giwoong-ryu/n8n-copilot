@@ -24,12 +24,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 
 // ========================================
-// 2. 저장된 API 키 불러오기
+// 2. 저장된 API 키 및 임시 입력값 불러오기
 // ========================================
 async function loadSavedApiKey() {
   try {
-    const result = await chrome.storage.local.get(['claudeApiKey', 'selectedModel']);
+    const result = await chrome.storage.local.get(['claudeApiKey', 'selectedModel', 'tempInputValues']);
 
+    // 저장된 API 키 불러오기
     if (result.claudeApiKey) {
       const apiKeyInput = document.getElementById('apiKey');
       // 보안을 위해 일부만 표시
@@ -46,6 +47,31 @@ async function loadSavedApiKey() {
         modelSelect.value = result.selectedModel;
         console.log('✅ Loaded saved model:', result.selectedModel);
       }
+    }
+
+    // 임시 입력 중인 값 복원 (popup 닫혔다가 다시 열었을 때)
+    if (result.tempInputValues) {
+      const temp = result.tempInputValues;
+
+      // API Key 입력 중인 값
+      if (temp.apiKey && !result.claudeApiKey) {
+        const apiKeyInput = document.getElementById('apiKey');
+        if (apiKeyInput) apiKeyInput.value = temp.apiKey;
+      }
+
+      // N8N URL
+      if (temp.n8nUrl) {
+        const n8nUrlInput = document.getElementById('n8nUrl');
+        if (n8nUrlInput) n8nUrlInput.value = temp.n8nUrl;
+      }
+
+      // N8N API Key
+      if (temp.n8nApiKey) {
+        const n8nApiKeyInput = document.getElementById('n8nApiKey');
+        if (n8nApiKeyInput) n8nApiKeyInput.value = temp.n8nApiKey;
+      }
+
+      console.log('✅ Restored temporary input values');
     }
   } catch (error) {
     console.error('❌ Failed to load API key:', error);
@@ -114,6 +140,45 @@ function attachEventListeners() {
 
   // 저장된 N8N 설정 불러오기
   loadN8NSettings();
+
+  // 실시간 입력값 저장 (popup 닫혔다가 다시 열 때 복원용)
+  setupAutoSaveInputs();
+}
+
+// 실시간 입력값 자동 저장 설정
+function setupAutoSaveInputs() {
+  const apiKeyInput = document.getElementById('apiKey');
+  const n8nUrlInput = document.getElementById('n8nUrl');
+  const n8nApiKeyInput = document.getElementById('n8nApiKey');
+
+  // Debounce 함수 (너무 자주 저장하지 않도록)
+  let saveTimeout;
+  const debouncedSave = async () => {
+    clearTimeout(saveTimeout);
+    saveTimeout = setTimeout(async () => {
+      const tempValues = {
+        apiKey: apiKeyInput ? apiKeyInput.value : '',
+        n8nUrl: n8nUrlInput ? n8nUrlInput.value : '',
+        n8nApiKey: n8nApiKeyInput ? n8nApiKeyInput.value : ''
+      };
+
+      await chrome.storage.local.set({ tempInputValues: tempValues });
+      console.log('💾 Auto-saved input values');
+    }, 500); // 500ms 후에 저장
+  };
+
+  // 각 input에 리스너 추가
+  if (apiKeyInput) {
+    apiKeyInput.addEventListener('input', debouncedSave);
+  }
+
+  if (n8nUrlInput) {
+    n8nUrlInput.addEventListener('input', debouncedSave);
+  }
+
+  if (n8nApiKeyInput) {
+    n8nApiKeyInput.addEventListener('input', debouncedSave);
+  }
 }
 
 // ========================================
@@ -233,6 +298,9 @@ async function handleFormSubmit(event) {
       n8nUrl: n8nUrl,
       n8nApiKey: n8nApiKey
     });
+
+    // 임시 입력값 삭제 (정식 저장되었으므로)
+    await chrome.storage.local.remove('tempInputValues');
 
     console.log('Saved to storage');
 
