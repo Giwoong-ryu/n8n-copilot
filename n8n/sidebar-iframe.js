@@ -358,7 +358,8 @@ function escapeHtml(text) {
 function parseMarkdownManually(text) {
   // 1단계: 코드 블록을 먼저 추출해서 플레이스홀더로 대체
   const codeBlocks = [];
-  let html = text.replace(/```(\w+)?\n([\s\S]+?)```/g, (match, language, code) => {
+  // 정규식: 하이픈 포함 언어 이름 지원 (예: json-autofill)
+  let html = text.replace(/```([\w-]+)?\n([\s\S]+?)```/g, (match, language, code) => {
     const lang = language || '';
     const langClass = lang ? ` class="language-${lang}"` : '';
     const dataLang = lang ? ` data-language="${lang}"` : '';
