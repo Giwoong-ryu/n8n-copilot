@@ -562,33 +562,29 @@ function addMessage(text, type = 'assistant') {
           });
         });
 
-        // 2. 노드 카드 "자세히" 버튼 처리
+        // 2. 노드 카드 "자세히" 버튼 처리 (자동 입력 제거)
         const nodeDetailButtons = messageDiv.querySelectorAll('.node-detail-btn');
         nodeDetailButtons.forEach(button => {
           button.addEventListener('click', (e) => {
             const step = e.target.dataset.step;
             console.log('🎨 Node detail button clicked:', step);
-
-            // 입력창에 자동으로 메시지 입력
-            messageInput.value = `${step}번 단계 자세히 알려줘`;
-            messageInput.focus();
+            // 자동 메시지 입력 제거 - 사용자가 직접 입력하도록 함
           });
         });
 
-        // 3. 기존 HTML 버튼 처리
+        // 3. 기존 HTML 버튼 처리 (자동 입력 제거)
         const stepButtons = messageDiv.querySelectorAll('.step-button');
         stepButtons.forEach(button => {
           button.addEventListener('click', (e) => {
             const step = e.target.dataset.step;
             console.log('📖 Step button clicked:', step);
-
-            // 입력창에 자동으로 메시지 입력
-            messageInput.value = `${step}번 단계 자세히 알려줘`;
-            messageInput.focus();
+            // 자동 메시지 입력 제거 - 사용자가 직접 입력하도록 함
           });
         });
 
-        // 2. 번호 리스트 자동 감지 및 버튼 추가
+        // 2. 번호 리스트 자동 감지 및 버튼 추가 (기능 제거)
+        // 사용자가 "undefined번 단계" 메시지를 원하지 않으므로 전체 기능 비활성화
+        /*
         const listItems = messageDiv.querySelectorAll('ol > li, ul > li');
         listItems.forEach((li, index) => {
           const text = li.textContent.trim();
@@ -619,6 +615,7 @@ function addMessage(text, type = 'assistant') {
             li.appendChild(button);
           }
         });
+        */
 
         // (기존 json-autofill 감지 로직 제거됨 - parseMarkdownManually()에서 처리)
       }, 0);

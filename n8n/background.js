@@ -76,50 +76,68 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
       // Static docs는 문자열 배열, Real-time API는 객체 배열
       const isStringArray = typeof n8nDocs.nodes[0] === 'string';
 
+      console.log(`📊 [Gemini] Node data type: ${isStringArray ? 'String Array' : 'Object Array'}`);
+      console.log(`📊 [Gemini] First node sample:`, n8nDocs.nodes[0]);
+
       let validNodes;
       if (isStringArray) {
         // Static docs: ["YouTube", "Gmail", ...]
         validNodes = n8nDocs.nodes.map(name => ({ name, description: '', operations: [], resources: [] }));
+        console.log(`📊 [Gemini] Converted ${validNodes.length} string nodes to objects`);
+        console.log(`📊 [Gemini] Sample converted nodes:`, validNodes.slice(0, 5).map(n => n.name));
       } else {
         // Real-time API: [{name: "YouTube", ...}, ...]
         validNodes = n8nDocs.nodes.filter(node => node && node.name);
+      }
+
+      // YouTube가 목록에 있는지 확인
+      const hasYouTube = validNodes.some(node => node.name && node.name.toLowerCase().includes('youtube'));
+      console.log(`🔍 [Gemini] YouTube in node list? ${hasYouTube}`);
+      if (hasYouTube) {
+        const youtubeNode = validNodes.find(node => node.name && node.name.toLowerCase().includes('youtube'));
+        console.log(`📺 [Gemini] YouTube node:`, youtubeNode);
       }
 
       const versionInfo = n8nDocs.version === 'real-time'
         ? '실시간 (사용자 N8N 인스턴스)'
         : n8nDocs.version;
 
+      const nodeListText = validNodes.slice(0, 50).map(node => {
+        let info = `- **${node.name}**`;
+
+        if (node.description) {
+          info += `: ${node.description}`;
+        }
+
+        // Resources 정보 추가
+        if (node.resources && node.resources.length > 0) {
+          info += `\n  Resources: ${node.resources.map(r => r.displayName || r.name).join(', ')}`;
+        }
+
+        // Operations 정보 추가
+        if (node.operations && node.operations.length > 0) {
+          info += `\n  Operations: ${node.operations.map(o => o.displayName || o.name).join(', ')}`;
+        }
+
+        return info;
+      }).join('\n');
+
       enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
 - 버전: ${versionInfo}
 - 사용 가능한 노드: ${validNodes.length}개
 
 **주요 노드 목록** (정확한 이름과 세부 작업):
-${validNodes.slice(0, 50).map(node => {
-  let info = `- **${node.name}**`;
-
-  if (node.description) {
-    info += `: ${node.description}`;
-  }
-
-  // Resources 정보 추가
-  if (node.resources && node.resources.length > 0) {
-    info += `\n  Resources: ${node.resources.map(r => r.displayName || r.name).join(', ')}`;
-  }
-
-  // Operations 정보 추가
-  if (node.operations && node.operations.length > 0) {
-    info += `\n  Operations: ${node.operations.map(o => o.displayName || o.name).join(', ')}`;
-  }
-
-  return info;
-}).join('\n')}
+${nodeListText}
 
 **중요**:
 1. 위 노드 목록에 있는 노드 이름을 정확히 사용하세요
 2. 여러 작업이 있는 노드는 위 Resources/Operations를 참고하여 정확한 작업 이름을 안내하세요
    예: "YouTube 노드에서 'Video Search' 작업 선택" 같이 구체적으로`;
 
-      console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'}, nodes: ${validNodes.length})`);
+      console.log(`✅ [Gemini] N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'}, nodes: ${validNodes.length})`);
+      console.log(`📝 [Gemini] First 10 nodes in prompt:`, validNodes.slice(0, 10).map(n => n.name).join(', '));
+    } else {
+      console.warn('⚠️ [Gemini] No N8N docs available - AI will not have node information');
     }
 
     // Gemini API 엔드포인트

@@ -771,16 +771,22 @@ function autoFillNodeFields(jsonData) {
   Object.keys(filteredData).forEach(key => {
     const value = filteredData[key];
 
+    console.log(`🔍 Trying to match key: "${key}" with value:`, value);
+
     // 키와 매칭되는 필드 찾기 (대소문자 무시, 부분 일치)
     const field = fields.find(f => {
       const keyLower = key.toLowerCase().replace(/[_\s-]/g, '');
       const nameLower = (f.name || '').toLowerCase().replace(/[_\s-]/g, '');
       const labelLower = (f.label || '').toLowerCase().replace(/[_\s-]/g, '');
 
-      return nameLower.includes(keyLower) ||
-             labelLower.includes(keyLower) ||
-             keyLower.includes(nameLower) ||
-             keyLower.includes(labelLower);
+      const nameMatch = nameLower.includes(keyLower) || keyLower.includes(nameLower);
+      const labelMatch = labelLower.includes(keyLower) || keyLower.includes(labelLower);
+
+      if (nameMatch || labelMatch) {
+        console.log(`  ✅ Match found! key: "${keyLower}" matches field.name: "${nameLower}" or field.label: "${labelLower}"`);
+      }
+
+      return nameMatch || labelMatch;
     });
 
     if (field) {
