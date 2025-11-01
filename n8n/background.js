@@ -93,6 +93,21 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
       // YouTube가 목록에 있는지 확인
       const hasYouTube = validNodes.some(node => node.name && node.name.toLowerCase().includes('youtube'));
       console.log(`🔍 [Gemini] YouTube in node list? ${hasYouTube}`);
+
+      // YouTube 관련 노드 찾기 (철자 확인)
+      const youtubeVariants = validNodes.filter(node =>
+        node.name && (
+          node.name.toLowerCase().includes('you') ||
+          node.name.toLowerCase().includes('tube') ||
+          node.name.toLowerCase().includes('video')
+        )
+      );
+      console.log(`📺 [Gemini] YouTube/Video variants found:`, youtubeVariants.map(n => n.name));
+
+      // Y로 시작하는 모든 노드
+      const yNodes = validNodes.filter(node => node.name && node.name.toLowerCase().startsWith('y'));
+      console.log(`📺 [Gemini] Nodes starting with Y:`, yNodes.map(n => n.name));
+
       if (hasYouTube) {
         const youtubeNode = validNodes.find(node => node.name && node.name.toLowerCase().includes('youtube'));
         console.log(`📺 [Gemini] YouTube node:`, youtubeNode);
