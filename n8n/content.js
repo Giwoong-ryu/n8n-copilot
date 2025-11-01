@@ -513,24 +513,24 @@ CRITICAL 2: 추상적 표현 금지. 항상 실제 값만.
 CRITICAL 3: json-autofill 코드 블록을 정확한 마크다운 문법으로 작성
 
 **중요: 코드 블록 작성 규칙**
-- 마크다운 코드 블록 시작: 백틱 기호 3개 연속 + json-autofill
+- 마크다운 코드 블록 시작: 백틱 3개 연속 + json-autofill
 - JSON 객체: 중괄호로 감싸고 각 줄에 "키": "값" 형식
-- 마크다운 코드 블록 종료: 백틱 기호 3개 연속
-- 백틱 기호: 키보드 1번 왼쪽에 있는 ` 기호 (grave accent)
+- 마크다운 코드 블록 종료: 백틱 3개 연속
+- 백틱: 키보드 숫자 1 왼쪽에 있는 특수문자 (grave accent)
 
 **올바른 형식 예시 (실제로 이렇게 작성):**
-세 개의 백틱json-autofill
+백틱백틱백틱json-autofill
 {
   "url": "https://api.example.com",
   "method": "GET"
 }
-세 개의 백틱
+백틱백틱백틱
 
 **잘못된 형식 예시:**
-- 백틱 2개만: ``json-autofill (X)
-- 백틱 4개: ````json-autofill (X)
-- 언어 미지정: 세 개의 백틱{...} (X)
-- 중괄호 없음: 세 개의 백틱json-autofill "url": "..." (X)
+- 백틱 2개만 사용 (X)
+- 백틱 4개 사용 (X)
+- 언어 미지정: 백틱3개만 쓰고 json-autofill 안 씀 (X)
+- 중괄호 없음: JSON 객체를 중괄호로 안 감쌈 (X)
 
 1. 워크플로우 제안 시:
    [Schedule Trigger] > [RSS] > [Limit] > [GPT] > [Slack]
