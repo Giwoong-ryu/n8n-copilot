@@ -767,27 +767,12 @@ function autoFillNodeFields(jsonData) {
 
   console.log(`🔍 Filtered out ${Object.keys(jsonData).length - Object.keys(filteredData).length} metadata keys`);
 
-  // JSON 데이터를 각 필드에 매핑
+  // JSON 데이터를 각 필드에 매핑 (Fuzzy Matching)
   Object.keys(filteredData).forEach(key => {
     const value = filteredData[key];
 
-    console.log(`🔍 Trying to match key: "${key}" with value:`, value);
-
-    // 키와 매칭되는 필드 찾기 (대소문자 무시, 부분 일치)
-    const field = fields.find(f => {
-      const keyLower = key.toLowerCase().replace(/[_\s-]/g, '');
-      const nameLower = (f.name || '').toLowerCase().replace(/[_\s-]/g, '');
-      const labelLower = (f.label || '').toLowerCase().replace(/[_\s-]/g, '');
-
-      const nameMatch = nameLower.includes(keyLower) || keyLower.includes(nameLower);
-      const labelMatch = labelLower.includes(keyLower) || keyLower.includes(labelLower);
-
-      if (nameMatch || labelMatch) {
-        console.log(`  ✅ Match found! key: "${keyLower}" matches field.name: "${nameLower}" or field.label: "${labelLower}"`);
-      }
-
-      return nameMatch || labelMatch;
-    });
+    // Fuzzy matching으로 가장 유사한 필드 찾기
+    const field = findBestMatchingField(key, fields);
 
     if (field) {
       try {
@@ -881,6 +866,106 @@ function autoFillNodeFields(jsonData) {
     message: message,
     results: results
   };
+}
+
+// ========================================
+// Fuzzy Field Matching - Levenshtein Distance
+// ========================================
+
+// Levenshtein distance algorithm (edit distance between two strings)
+// Source: https://gist.github.com/andrei-m/982927
+function getEditDistance(a, b) {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
+
+  const matrix = [];
+
+  // Initialize matrix
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  // Fill matrix
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          Math.min(
+            matrix[i][j - 1] + 1,   // insertion
+            matrix[i - 1][j] + 1    // deletion
+          )
+        );
+      }
+    }
+  }
+
+  return matrix[b.length][a.length];
+}
+
+// Calculate similarity score (0-1, higher is better)
+function getSimilarityScore(str1, str2) {
+  const maxLen = Math.max(str1.length, str2.length);
+  if (maxLen === 0) return 0;
+
+  const distance = getEditDistance(str1, str2);
+  return 1 - (distance / maxLen);
+}
+
+// Find best matching field using fuzzy matching
+function findBestMatchingField(key, fields) {
+  const keyNormalized = key.toLowerCase().replace(/[_\s-]/g, '');
+
+  let bestMatch = null;
+  let bestScore = 0;
+  const threshold = 0.5; // Minimum similarity score (0-1)
+
+  console.log(`🔍 Fuzzy matching for key: "${key}" (normalized: "${keyNormalized}")`);
+
+  fields.forEach(field => {
+    const name = (field.name || '').toLowerCase().replace(/[_\s-]/g, '');
+    const label = (field.label || '').toLowerCase().replace(/[_\s-]/g, '');
+
+    // Skip empty fields
+    if (!name && !label) return;
+
+    // Calculate similarity scores
+    const nameScore = name ? getSimilarityScore(keyNormalized, name) : 0;
+    const labelScore = label ? getSimilarityScore(keyNormalized, label) : 0;
+
+    // Use best score
+    const score = Math.max(nameScore, labelScore);
+    const matchedOn = nameScore > labelScore ? 'name' : 'label';
+    const matchedValue = nameScore > labelScore ? name : label;
+
+    if (score > bestScore && score >= threshold) {
+      bestScore = score;
+      bestMatch = {
+        field: field,
+        score: score,
+        matchedOn: matchedOn,
+        matchedValue: matchedValue
+      };
+    }
+
+    if (score > 0.3) { // Log promising candidates
+      console.log(`  📊 ${field.name || field.label}: score=${score.toFixed(2)} (${matchedOn}="${matchedValue}")`);
+    }
+  });
+
+  if (bestMatch) {
+    console.log(`  ✅ Best match: ${bestMatch.field.name || bestMatch.field.label} (score=${bestMatch.score.toFixed(2)}, ${bestMatch.matchedOn}="${bestMatch.matchedValue}")`);
+  } else {
+    console.log(`  ❌ No match found above threshold (${threshold})`);
+  }
+
+  return bestMatch ? bestMatch.field : null;
 }
 
 // 메시지 리스너: iframe에서 자동 입력 요청 받기
