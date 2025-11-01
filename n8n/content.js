@@ -505,15 +505,11 @@ async function callClaudeAPI(userMessage, context) {
    ⚙️ 각 노드의 "설정하기" 버튼을 클릭하여 설정하세요.
 
 2. 특정 노드 설정 요청 시 (🎯 표시 확인 또는 "XXX 노드 설정" 요청):
-   - 사람이 읽을 수 있는 설명 먼저 제공 (무엇을 어떻게 설정할지)
-   - 그 다음 json-autofill 블록 제공 (자동 입력용, 사용자에게는 숨겨짐)
+   - 인사말, 설명 없이 즉시 json-autofill 블록만 제공
    - 추상적 표현 금지, 실제 값만
+   - 사용자는 자동 입력 후 N8N 노드에서 값 확인
 
    예시 - "RSS 노드 설정 방법 알려줘":
-
-   RSS Feed 노드 설정:
-   • RSS URL을 https://news.google.com/rss?q=AI로 설정
-   • 최대 20개 항목 가져오기
 
    백틱백틱백틱json-autofill
    {
@@ -542,8 +538,8 @@ async function callClaudeAPI(userMessage, context) {
 **규칙**:
 - 워크플로우 요청 시: [Node] > [Node] 형식 사용, json-autofill 제공 안 함
 - 특정 노드 요청 시:
-  1) 먼저 사람이 읽을 수 있는 설명 (• 리스트 형식으로 각 설정 항목 설명)
-  2) 그 다음 json-autofill 블록 (JSON 코드는 UI에서 숨겨짐)
+  - 인사말, 설명 없이 즉시 json-autofill 블록만 제공
+  - JSON 코드는 UI에서 숨겨지고 자동 입력 버튼만 표시됨
 - 추상적 표현 금지 (실제 URL, 실제 값만)
 - 추가 질문 금지 (바로 워크플로우 제안)
 - 보안: API 키는 환경변수 또는 Credential 사용
