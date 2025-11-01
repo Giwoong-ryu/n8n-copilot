@@ -117,14 +117,17 @@ function toggleSidebar() {
   const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
   const toggleButton = document.getElementById('n8n-ai-copilot-toggle');
   const overlay = document.getElementById('n8n-ai-copilot-overlay');
-  
+
   if (sidebar.classList.contains('open')) {
     closeSidebar();
   } else {
     sidebar.classList.add('open');
     toggleButton.classList.add('sidebar-open');
     overlay.classList.add('show');
-    
+
+    // inline style right를 0으로 설정 (inline style이 CSS보다 우선순위 높음)
+    sidebar.style.right = '0';
+
     // 모바일에서 body 스크롤 방지
     if (window.innerWidth <= 1024) {
       document.body.classList.add('n8n-copilot-active');
@@ -136,11 +139,15 @@ function closeSidebar() {
   const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
   const toggleButton = document.getElementById('n8n-ai-copilot-toggle');
   const overlay = document.getElementById('n8n-ai-copilot-overlay');
-  
+
   sidebar.classList.remove('open');
   toggleButton.classList.remove('sidebar-open');
   overlay.classList.remove('show');
   document.body.classList.remove('n8n-copilot-active');
+
+  // 사이드바를 화면 밖으로 이동 (현재 width만큼)
+  const currentWidth = parseInt(getComputedStyle(sidebar).width, 10);
+  sidebar.style.right = `-${currentWidth}px`;
 }
 
 // ========================================
