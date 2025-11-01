@@ -725,7 +725,7 @@ function detectNodePanel() {
     }
   }
 
-  console.warn('⚠️ Node panel not found');
+  // 노드 패널이 없는 것은 정상 (노드가 열려있지 않을 때)
   return null;
 }
 
