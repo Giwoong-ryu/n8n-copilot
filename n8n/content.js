@@ -389,10 +389,17 @@ function sendMessageToIframe(data) {
 // 페이지 컨텍스트 수집 (Architecture V2: AdvancedContextCollector 사용)
 async function collectPageContext() {
   try {
+    // 현재 열린 노드 정보 감지
+    const openNode = detectOpenNode();
+
     if (n8nAdapter && n8nAdapter.contextCollector) {
       // Architecture V2: 깊은 컨텍스트 수집
       console.log('📊 Collecting deep context (Architecture V2)...');
       const fullContext = await n8nAdapter.contextCollector.collectFullContext();
+
+      // 열린 노드 정보 추가
+      fullContext.openNode = openNode;
+
       return fullContext;
     }
 
@@ -402,15 +409,18 @@ async function collectPageContext() {
       url: window.location.href,
       workflowName: document.title,
       errors: await n8nAdapter.detectErrors(),
-      selectedNode: await n8nAdapter.getCurrentNode()
+      selectedNode: await n8nAdapter.getCurrentNode(),
+      openNode: openNode
     };
   } catch (error) {
     console.error('❌ Failed to collect context:', error);
     // 최소 컨텍스트
+    const openNode = detectOpenNode();
     return {
       url: window.location.href,
       workflowName: document.title,
-      error: true
+      error: true,
+      openNode: openNode
     };
   }
 }
@@ -456,6 +466,12 @@ async function callClaudeAPI(userMessage, context) {
     contextParts.push(`현재 노드: ${context.current.selectedNode.name} (${context.current.selectedNode.type})`);
   }
 
+  // 열린 노드 정보 (CRITICAL: 자동 입력 대상)
+  if (context.openNode?.isOpen && context.openNode?.nodeName) {
+    contextParts.push(`🎯 현재 열린 노드: ${context.openNode.nodeName}${context.openNode.nodeType ? ` (${context.openNode.nodeType})` : ''}`);
+    contextParts.push(`💡 자동 입력 가능 상태`);
+  }
+
   // 에러 정보 (있을 때만)
   if (context.errors?.current && context.errors.current.length > 0) {
     contextParts.push(`에러: ${context.errors.current.length}개`);
@@ -482,14 +498,33 @@ async function callClaudeAPI(userMessage, context) {
 - API 키/비밀번호 하드코딩 절대 금지
 - 대신 N8N Credential 또는 환경변수 사용 권장
 
-**답변 전략** (실전 중심, 자동 입력 가능):
+**답변 전략** (자동 입력 우선):
 
-CRITICAL: 추상적 설명 금지. 항상 실제 입력 가능한 구체적 값 제공 + 자동 입력용 JSON 제공.
+CRITICAL 1: 노드가 열려있으면 즉시 json-autofill 블록만 제공. 설명 최소화.
+CRITICAL 2: 추상적 표현 금지. 항상 실제 값만.
 
-1. 워크플로우 제안 시 가로 플로우 형식 (한 줄로):
+1. 워크플로우 제안 시:
    [Schedule Trigger] > [RSS] > [Limit] > [GPT] > [Slack]
 
-2. 노드 설정 질문 시 응답 전략:
+2. 노드가 열려있을 때 (🎯 표시 확인):
+   - 간단한 한 줄 설명 + 즉시 json-autofill 제공
+   - 사용자 의도 불명확 시에만 3가지 사용 사례 제시
+
+   예시 - "HTTP 노드 설정 방법 알려줘" + HTTP 노드 열림:
+
+   HTTP 요청 설정이 필요하신가요? 일반적인 예시입니다:
+
+   ```json-autofill
+   {
+     "url": "https://api.github.com/users/octocat",
+     "method": "GET",
+     "headers": "Accept: application/vnd.github.v3+json"
+   }
+   ```
+
+   다른 용도가 필요하면 말씀해주세요.
+
+3. 노드가 안 열려있을 때:
 
    **사용자 의도가 명확하지 않은 경우:**
    일반적인 사용 사례 3가지 제시 후 각각 실제 설정값 + JSON 제공
@@ -715,14 +750,70 @@ function detectNodePanel() {
   return null;
 }
 
+// 현재 열린 노드 정보 감지
+function detectOpenNode() {
+  // 노드 이름 감지
+  const nodeNameSelectors = [
+    '[data-test-id="node-title"]',
+    '[class*="NodeTitle"]',
+    '.ndv-title',
+    'h2[class*="title"]'
+  ];
+
+  let nodeName = null;
+  for (const selector of nodeNameSelectors) {
+    const element = document.querySelector(selector);
+    if (element && element.textContent) {
+      nodeName = element.textContent.trim();
+      break;
+    }
+  }
+
+  // 노드 타입 감지 (아이콘이나 클래스명에서)
+  const nodeTypeSelectors = [
+    '[data-test-id="node-icon"]',
+    '[class*="NodeIcon"]'
+  ];
+
+  let nodeType = null;
+  for (const selector of nodeTypeSelectors) {
+    const element = document.querySelector(selector);
+    if (element) {
+      // class나 data attribute에서 노드 타입 추출
+      const classes = element.className;
+      const match = classes.match(/node-icon-([a-zA-Z]+)/i);
+      if (match) {
+        nodeType = match[1];
+      }
+      break;
+    }
+  }
+
+  // 노드 패널이 열려있는지 확인
+  const panel = detectNodePanel();
+  const isOpen = panel !== null;
+
+  const result = {
+    isOpen,
+    nodeName,
+    nodeType,
+    panel
+  };
+
+  console.log('🔍 Open node detection:', result);
+  return result;
+}
+
 // 입력 필드 찾기 및 분석
 function findInputFields(container) {
   const inputs = [];
 
-  // 모든 입력 요소 찾기
+  // 모든 입력 요소 찾기 (토글, 체크박스 포함)
   const inputElements = container.querySelectorAll(
     'input[type="text"], input[type="number"], input[type="email"], input[type="url"], ' +
-    'textarea, select, [contenteditable="true"], [data-test-id*="parameter"]'
+    'input[type="checkbox"], input[type="radio"], ' +
+    'textarea, select, [contenteditable="true"], [data-test-id*="parameter"], ' +
+    '[role="switch"], [role="checkbox"], .toggle, .switch'
   );
 
   inputElements.forEach(element => {
@@ -811,23 +902,39 @@ function autoFillNodeFields(jsonData) {
 
         // 값 입력
         if (field.element.tagName === 'INPUT' || field.element.tagName === 'TEXTAREA') {
-          // 기존 값 저장
-          const oldValue = field.element.value;
+          const inputType = field.element.type;
 
-          // 새 값 설정
-          field.element.value = valueStr;
+          // 체크박스 또는 라디오 버튼
+          if (inputType === 'checkbox' || inputType === 'radio') {
+            const boolValue = (value === true || value === 'true' || value === '1' || value === 1 || value === 'on');
+            field.element.checked = boolValue;
+            field.element.dispatchEvent(new Event('change', { bubbles: true }));
+            field.element.dispatchEvent(new Event('click', { bubbles: true }));
 
-          // React/Vue의 상태 업데이트를 위한 이벤트 트리거
-          field.element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
-          field.element.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-          field.element.dispatchEvent(new Event('blur', { bubbles: true }));
+            filledCount++;
+            results.push({ field: field.label || field.name, value: boolValue, status: 'success' });
+            console.log(`✅ Toggled: ${field.label || field.name} = ${boolValue}`);
+          }
+          // 일반 텍스트 입력
+          else {
+            // 기존 값 저장
+            const oldValue = field.element.value;
 
-          // Vue용 이벤트
-          field.element.__vue__?.emit?.('input', valueStr);
+            // 새 값 설정
+            field.element.value = valueStr;
 
-          filledCount++;
-          results.push({ field: field.label || field.name, value: valueStr, status: 'success' });
-          console.log(`✅ Filled: ${field.label || field.name} = ${valueStr}`);
+            // React/Vue의 상태 업데이트를 위한 이벤트 트리거
+            field.element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+            field.element.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+            field.element.dispatchEvent(new Event('blur', { bubbles: true }));
+
+            // Vue용 이벤트
+            field.element.__vue__?.emit?.('input', valueStr);
+
+            filledCount++;
+            results.push({ field: field.label || field.name, value: valueStr, status: 'success' });
+            console.log(`✅ Filled: ${field.label || field.name} = ${valueStr}`);
+          }
 
         } else if (field.element.tagName === 'SELECT') {
           // 드롭다운 선택
@@ -850,6 +957,15 @@ function autoFillNodeFields(jsonData) {
           filledCount++;
           results.push({ field: field.label || field.name, value: valueStr, status: 'success' });
           console.log(`✅ Filled (contentEditable): ${field.label || field.name} = ${valueStr}`);
+
+        } else if (field.element.getAttribute('role') === 'switch' || field.element.getAttribute('role') === 'checkbox') {
+          // ARIA 토글/체크박스
+          const boolValue = (value === true || value === 'true' || value === '1' || value === 1 || value === 'on');
+          field.element.setAttribute('aria-checked', boolValue.toString());
+          field.element.click(); // 토글 클릭
+          filledCount++;
+          results.push({ field: field.label || field.name, value: boolValue, status: 'success' });
+          console.log(`✅ Toggled (ARIA): ${field.label || field.name} = ${boolValue}`);
         }
 
       } catch (error) {
