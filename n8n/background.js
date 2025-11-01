@@ -61,9 +61,9 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
     };
   }
 
-  // 저장된 모델 불러오기 (기본값: gemini-2.5-flash-lite)
+  // 저장된 모델 불러오기 (기본값: gemini-2.0-flash-exp)
   const result = await chrome.storage.local.get('selectedModel');
-  const selectedModel = result.selectedModel || 'gemini-2.5-flash-lite';
+  const selectedModel = result.selectedModel || 'gemini-2.0-flash-exp';
 
   console.log('📌 Using model:', selectedModel);
 
