@@ -519,6 +519,9 @@ async function callClaudeAPI(userMessage, context) {
 - 내용: JSON 객체만 (중괄호로 감싸기, 주석 금지)
 - 종료: \`\`\`
 - **CRITICAL**: 반드시 실제 백틱 문자 3개 사용 (키보드 숫자 1 왼쪽 키)
+- **중요**: 메타데이터 키 사용 금지
+  - ❌ 금지: "parameters", "type", "nodeName", "nodeType", "version", "id"
+  - ✅ 허용: 실제 입력 필드 이름만 (예: "url", "feedUrl", "method", "authentication")
 
 **규칙**:
 - 워크플로우 요청 시: [Node] > [Node] 형식 사용, json-autofill 제공 안 함
@@ -753,9 +756,20 @@ function autoFillNodeFields(jsonData) {
   let filledCount = 0;
   const results = [];
 
+  // 메타데이터 키 필터링 (실제 입력 필드가 아닌 것들)
+  const metadataKeys = ['parameters', 'type', 'nodeName', 'nodeType', 'version', 'id', 'name', 'position'];
+  const filteredData = Object.keys(jsonData)
+    .filter(key => !metadataKeys.includes(key))
+    .reduce((obj, key) => {
+      obj[key] = jsonData[key];
+      return obj;
+    }, {});
+
+  console.log(`🔍 Filtered out ${Object.keys(jsonData).length - Object.keys(filteredData).length} metadata keys`);
+
   // JSON 데이터를 각 필드에 매핑
-  Object.keys(jsonData).forEach(key => {
-    const value = jsonData[key];
+  Object.keys(filteredData).forEach(key => {
+    const value = filteredData[key];
 
     // 키와 매칭되는 필드 찾기 (대소문자 무시, 부분 일치)
     const field = fields.find(f => {
