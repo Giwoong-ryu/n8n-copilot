@@ -83,10 +83,27 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
 - 버전: ${versionInfo}
 - 사용 가능한 노드: ${validNodes.length}개
 
-**주요 노드 목록** (정확한 이름 사용):
-${validNodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
+**주요 노드 목록** (정확한 이름과 세부 작업):
+${validNodes.slice(0, 50).map(node => {
+  let info = `- **${node.name}**: ${node.description || ''}`;
 
-**중요**: 위 노드 이름을 정확히 사용하세요.`;
+  // Resources 정보 추가
+  if (node.resources && node.resources.length > 0) {
+    info += `\n  Resources: ${node.resources.map(r => r.displayName || r.name).join(', ')}`;
+  }
+
+  // Operations 정보 추가
+  if (node.operations && node.operations.length > 0) {
+    info += `\n  Operations: ${node.operations.map(o => o.displayName || o.name).join(', ')}`;
+  }
+
+  return info;
+}).join('\n')}
+
+**중요**:
+1. 노드 이름을 정확히 사용하세요
+2. 여러 작업이 있는 노드는 위 Resources/Operations를 참고하여 정확한 작업 이름을 안내하세요
+   예: "YouTube 노드에서 'Video Search' 작업 선택" 같이 구체적으로`;
 
       console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'})`);
     }
@@ -206,15 +223,30 @@ async function callOpenAIAPI(userMessage, systemPrompt = '', context = {}) {
 - 버전: ${versionInfo}
 - 사용 가능한 노드: ${validNodes.length}개
 
-**주요 노드 목록** (정확한 이름 사용):
-${validNodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
+**주요 노드 목록** (정확한 이름과 세부 작업):
+${validNodes.slice(0, 50).map(node => {
+  let info = `- **${node.name}**: ${node.description || ''}`;
 
-**중요**: 위 노드 이름을 정확히 사용하세요.`;
+  // Resources 정보 추가
+  if (node.resources && node.resources.length > 0) {
+    info += `\n  Resources: ${node.resources.map(r => r.displayName || r.name).join(', ')}`;
+  }
+
+  // Operations 정보 추가
+  if (node.operations && node.operations.length > 0) {
+    info += `\n  Operations: ${node.operations.map(o => o.displayName || o.name).join(', ')}`;
+  }
+
+  return info;
+}).join('\n')}
+
+**중요**:
+1. 노드 이름을 정확히 사용하세요
+2. 여러 작업이 있는 노드는 위 Resources/Operations를 참고하여 정확한 작업 이름을 안내하세요
+   예: "YouTube 노드에서 'Video Search' 작업 선택" 같이 구체적으로`;
+
+      console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'})`);
     }
-
-    const fullMessage = enhancedSystemPrompt
-      ? `${enhancedSystemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`
-      : formatMessageWithContext(userMessage, context);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -225,7 +257,7 @@ ${validNodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
       body: JSON.stringify({
         model: selectedModel,
         messages: [
-          { role: 'system', content: systemPrompt || 'You are a helpful N8N workflow automation assistant.' },
+          { role: 'system', content: enhancedSystemPrompt || 'You are a helpful N8N workflow automation assistant.' },
           { role: 'user', content: formatMessageWithContext(userMessage, context) }
         ],
         temperature: 0.7,
@@ -292,10 +324,29 @@ async function callClaudeAPI(userMessage, systemPrompt = '', context = {}) {
 - 버전: ${versionInfo}
 - 사용 가능한 노드: ${validNodes.length}개
 
-**주요 노드 목록** (정확한 이름 사용):
-${validNodes.slice(0, 50).map(node => `- ${node.name}`).join('\n')}
+**주요 노드 목록** (정확한 이름과 세부 작업):
+${validNodes.slice(0, 50).map(node => {
+  let info = `- **${node.name}**: ${node.description || ''}`;
 
-**중요**: 위 노드 이름을 정확히 사용하세요.`;
+  // Resources 정보 추가
+  if (node.resources && node.resources.length > 0) {
+    info += `\n  Resources: ${node.resources.map(r => r.displayName || r.name).join(', ')}`;
+  }
+
+  // Operations 정보 추가
+  if (node.operations && node.operations.length > 0) {
+    info += `\n  Operations: ${node.operations.map(o => o.displayName || o.name).join(', ')}`;
+  }
+
+  return info;
+}).join('\n')}
+
+**중요**:
+1. 노드 이름을 정확히 사용하세요
+2. 여러 작업이 있는 노드는 위 Resources/Operations를 참고하여 정확한 작업 이름을 안내하세요
+   예: "YouTube 노드에서 'Video Search' 작업 선택" 같이 구체적으로`;
+
+      console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'})`);
     }
 
     const fullMessage = formatMessageWithContext(userMessage, context);
@@ -584,9 +635,14 @@ async function fetchN8NNodeTypes() {
       return null;
     }
 
+    console.log(`🔗 Attempting to connect to N8N: ${n8nUrl}`);
+
     const headers = {};
     if (n8nApiKey) {
       headers['X-N8N-API-KEY'] = n8nApiKey;
+      console.log('🔑 Using N8N API Key');
+    } else {
+      console.log('⚠️ No N8N API Key configured');
     }
 
     const response = await fetch(`${n8nUrl}/api/v1/node-types`, {
@@ -600,7 +656,7 @@ async function fetchN8NNodeTypes() {
     }
 
     const data = await response.json();
-    console.log(`✅ Fetched ${data.length} node types from N8N`);
+    console.log(`✅ Successfully fetched ${data.length} node types from N8N API`);
     return data;
   } catch (error) {
     console.error('❌ Error fetching N8N node types:', error);
@@ -648,16 +704,48 @@ async function getRealTimeN8NNodeInfo() {
 
   if (!nodeTypes || !nodeTypes.length) {
     // N8N 연결 안 되면 기존 정적 문서 사용
+    console.log('📚 Using static N8N docs (N8N API not connected)');
     return await loadN8NDocs();
   }
 
+  console.log('🌐 Using real-time N8N API data');
+
   // N8N API에서 가져온 노드 목록을 docs 형식으로 변환
-  return {
-    nodes: nodeTypes.map(node => ({
+  // operations와 resources 정보도 추출
+  const nodes = nodeTypes.map(node => {
+    const nodeInfo = {
       name: node.displayName || node.name,
       description: node.description || '',
       version: node.version || 1
-    })),
+    };
+
+    // properties에서 resource와 operation 정보 추출
+    if (node.properties) {
+      const resourceProp = node.properties.find(p => p.name === 'resource');
+      const operationProp = node.properties.find(p => p.name === 'operation');
+
+      if (resourceProp && resourceProp.options) {
+        nodeInfo.resources = resourceProp.options.map(opt => ({
+          name: opt.value,
+          displayName: opt.name,
+          description: opt.description || ''
+        }));
+      }
+
+      if (operationProp && operationProp.options) {
+        nodeInfo.operations = operationProp.options.map(opt => ({
+          name: opt.value,
+          displayName: opt.name,
+          description: opt.description || ''
+        }));
+      }
+    }
+
+    return nodeInfo;
+  });
+
+  return {
+    nodes: nodes,
     version: 'real-time',
     fetchedAt: new Date().toISOString()
   };
