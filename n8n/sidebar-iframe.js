@@ -363,7 +363,18 @@ function parseMarkdownManually(text) {
     const langClass = lang ? ` class="language-${lang}"` : '';
     const dataLang = lang ? ` data-language="${lang}"` : '';
     const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
-    codeBlocks.push(`<pre${dataLang}><code${langClass}>${escapeHtml(code.trim())}</code></pre>`);
+
+    // json-autofill 블록인 경우 버튼 추가
+    if (lang === 'json-autofill') {
+      codeBlocks.push(`
+        <div class="code-block-container">
+          <pre${dataLang}><code${langClass}>${escapeHtml(code.trim())}</code></pre>
+          <button class="autofill-button">⚡ 자동으로 입력하기</button>
+        </div>
+      `);
+    } else {
+      codeBlocks.push(`<pre${dataLang}><code${langClass}>${escapeHtml(code.trim())}</code></pre>`);
+    }
     return placeholder;
   });
 
@@ -451,6 +462,38 @@ function addMessage(text, type = 'assistant') {
 
     // 인터랙티브 요소 이벤트 리스너 추가
     setTimeout(() => {
+      // -1. parseMarkdownManually()로 생성된 자동 입력 버튼 (NEW!)
+      const autofillButtons = messageDiv.querySelectorAll('.autofill-button');
+      autofillButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+          console.log('⚡ Auto-fill button clicked (from parseMarkdownManually)');
+
+          // 코드 블록에서 JSON 데이터 추출
+          const container = e.currentTarget.closest('.code-block-container');
+          if (container) {
+            const codeBlock = container.querySelector('code');
+            if (codeBlock) {
+              try {
+                const jsonData = JSON.parse(codeBlock.textContent);
+
+                // parent window(content.js)로 자동 입력 요청
+                window.parent.postMessage({
+                  type: 'auto-fill-node',
+                  data: jsonData
+                }, '*');
+
+                // 버튼 텍스트 변경
+                e.currentTarget.textContent = '⏳ 입력 중...';
+                e.currentTarget.disabled = true;
+              } catch (error) {
+                console.error('❌ Failed to parse JSON:', error);
+                e.currentTarget.textContent = '❌ JSON 오류';
+              }
+            }
+          }
+        });
+      });
+
       // 0. 가로 플로우 "설정하기" 버튼 클릭 (NEW!)
         const setupButtons = messageDiv.querySelectorAll('.node-setup-btn');
         setupButtons.forEach(button => {
