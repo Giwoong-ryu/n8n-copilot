@@ -285,8 +285,8 @@ function resizeVertical(e) {
 
   const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
 
-  // 드래그 거리 계산 (위쪽 핸들: 아래로 드래그하면 높이 증가)
-  const deltaY = e.clientY - startY;
+  // 드래그 거리 계산 (상단 핸들: 위로 드래그하면 높이 증가, 아래로 드래그하면 높이 감소)
+  const deltaY = startY - e.clientY; // 부호 반대로 (상단 핸들이므로)
   const newHeight = startHeight + deltaY;
 
   // 최소/최대 높이 제한
