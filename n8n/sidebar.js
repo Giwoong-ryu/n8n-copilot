@@ -320,11 +320,29 @@ function stopResizeVertical() {
 // 10. 사이드바 크기 저장/불러오기
 // ========================================
 function saveSidebarWidth(width) {
+  const minWidth = 300;
+  const maxWidth = window.innerWidth * 0.8;
+
+  // 유효성 검사
+  if (isNaN(width) || width < minWidth || width > maxWidth) {
+    console.warn('⚠️ Attempted to save invalid width:', width, '- Ignoring');
+    return;
+  }
+
   localStorage.setItem('n8n-copilot-sidebar-width', width.toString());
   console.log('💾 Sidebar width saved:', width);
 }
 
 function saveSidebarHeight(height) {
+  const minHeight = 300;
+  const maxHeight = window.innerHeight * 0.9;
+
+  // 유효성 검사
+  if (isNaN(height) || height < minHeight || height > maxHeight) {
+    console.warn('⚠️ Attempted to save invalid height:', height, '- Ignoring');
+    return;
+  }
+
   localStorage.setItem('n8n-copilot-sidebar-height', height.toString());
   console.log('💾 Sidebar height saved:', height);
 }
@@ -333,8 +351,20 @@ function loadSidebarWidth() {
   const savedWidth = localStorage.getItem('n8n-copilot-sidebar-width');
   const savedHeight = localStorage.getItem('n8n-copilot-sidebar-height');
 
+  const minWidth = 300;
+  const maxWidth = window.innerWidth * 0.8;
+  const defaultWidth = 400;
+
   if (savedWidth) {
-    const width = parseInt(savedWidth, 10);
+    let width = parseInt(savedWidth, 10);
+
+    // 잘못된 값 체크 (NaN, 너무 작음, 너무 큼)
+    if (isNaN(width) || width < minWidth || width > maxWidth) {
+      console.warn('⚠️ Invalid saved width detected:', width, '- Resetting to default:', defaultWidth);
+      width = defaultWidth;
+      localStorage.setItem('n8n-copilot-sidebar-width', defaultWidth.toString());
+    }
+
     const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
     const toggleButton = document.getElementById('n8n-ai-copilot-toggle');
 
@@ -346,8 +376,20 @@ function loadSidebarWidth() {
     }
   }
 
+  const minHeight = 300;
+  const maxHeight = window.innerHeight * 0.9;
+  const defaultHeight = 600;
+
   if (savedHeight) {
-    const height = parseInt(savedHeight, 10);
+    let height = parseInt(savedHeight, 10);
+
+    // 잘못된 값 체크
+    if (isNaN(height) || height < minHeight || height > maxHeight) {
+      console.warn('⚠️ Invalid saved height detected:', height, '- Resetting to default:', defaultHeight);
+      height = defaultHeight;
+      localStorage.setItem('n8n-copilot-sidebar-height', defaultHeight.toString());
+    }
+
     const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
 
     if (sidebar) {
