@@ -92,9 +92,8 @@ function attachEventListeners() {
       closeSidebar();
     }
   });
-  
-  // iframe과의 메시지 통신 설정
-  window.addEventListener('message', handleIframeMessage);
+
+  // iframe과의 메시지 통신은 content.js에서 처리됩니다
 
   // 리사이즈 핸들 드래그 이벤트 (가로)
   const resizeHandle = document.getElementById('n8n-ai-copilot-resize-handle');
