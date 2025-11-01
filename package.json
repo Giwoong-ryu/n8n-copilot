@@ -1,0 +1,12 @@
+{
+  "name": "n8n-copilot",
+  "version": "1.0.0",
+  "description": "N8N AI Copilot Chrome Extension",
+  "scripts": {
+    "verify": "node n8n/scripts/verify-config.js",
+    "test": "npm run verify"
+  },
+  "keywords": ["n8n", "ai", "copilot", "chrome-extension"],
+  "author": "",
+  "license": "MIT"
+}
