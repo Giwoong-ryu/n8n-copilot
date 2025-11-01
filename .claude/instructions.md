@@ -13,14 +13,26 @@
 
 **프로세스:**
 1. WebSearch로 GitHub 레포지토리 검색
-   - 검색어: "github [기술명] [구현명] javascript best practice 2024"
+   - 🚨 **MANDATORY:** "2024" 또는 "2025" 키워드 필수!
+   - 검색어 형식: "github [기술명] [구현명] javascript 2024"
    - 예: "github fuzzy string matching javascript 2024"
-2. 상위 3개 레포지토리 확인 (stars, 최근 업데이트 날짜)
+   - ❌ 나쁜 예: "github fuzzy matching" (연도 없음!)
+2. 상위 3개 레포지토리 확인
+   - Stars 수 (많을수록 좋음)
+   - 최근 업데이트 날짜 (2023년 이후)
+   - 활발한 유지보수 (최근 6개월 내 커밋)
 3. WebFetch로 코드 가져오기
+   - Raw GitHub URL 사용
+   - 최신 버전 (master/main 브랜치)
 4. 프로젝트에 맞게 수정 및 적용
 5. 출처를 주석으로 명시
+   ```javascript
+   // Source: https://github.com/xxx/yyy
+   // License: MIT
+   // Last verified: 2024-XX-XX
+   ```
 
-**예외:** 간단한 유틸리티 함수는 직접 작성 가능
+**예외:** 간단한 유틸리티 함수 (10줄 미만)는 직접 작성 가능
 
 ### 2. 공식 문서 우선 확인 및 최신화
 
@@ -33,8 +45,12 @@
 
 **프로세스:**
 1. WebSearch로 최신 공식 문서 찾기
+   - 🚨 **MANDATORY:** "2024" 또는 "2025" 키워드 필수!
    - 검색어: "[라이브러리명] official documentation 2024"
+   - 예: "Gemini API official documentation 2024"
 2. WebFetch로 관련 섹션 읽기
+   - Migration guides 우선 확인
+   - Changelog 확인
 3. 현재 코드와 비교하여 deprecated API 확인
 4. 최신 권장 사항 적용
 
@@ -43,16 +59,41 @@
 - 파라미터 이름 변경
 - 권장 모델 버전 (Gemini, GPT 등)
 - Breaking changes
+- Security updates
 
 ### 3. 에러 발생 시 자동 디버깅 패턴
 
 **순서:**
-1. 콘솔 로그 먼저 확인 (사용자가 제공한 로그 분석)
-2. 유사한 이슈 GitHub 검색
-   - 검색어: "github [에러 메시지] [라이브러리명]"
-3. Stack Overflow 검색 (최신 답변 우선)
-4. 공식 문서에서 troubleshooting 섹션 확인
+1. **`.claude/lessons-learned.md` 먼저 확인** ← 가장 중요!
+   - 이 에러 이전에 본 적 있나?
+   - 이미 해결 방법이 있나?
+   - 하드코딩된 해결책이 있나?
+
+2. 콘솔 로그 분석 (사용자가 제공한 로그)
+   - 에러 타입 식별
+   - 발생 위치 파악
+
+3. 🚨 **같은 에러 2번째 발생?** → 즉시 하드코딩!
+   ```
+   프로세스:
+   1. config/ 폴더에 설정 파일 생성
+   2. scripts/verify-*.js 검증 스크립트 추가
+   3. .claude/lessons-learned.md에 CRITICAL로 기록
+   4. Git 커밋 메시지에 "HARDCODED" 명시
+   ```
+
+4. 첫 번째 발생인 경우:
+   - GitHub Issues 검색: "github [에러] [라이브러리] 2024"
+   - Stack Overflow 검색 (2023년 이후 답변 우선)
+   - 공식 문서 troubleshooting 섹션
+
 5. 해결책 적용 및 검증
+
+6. `.claude/lessons-learned.md`에 기록
+   - 문제 설명
+   - 해결 방법
+   - 발생 횟수 (1회)
+   - 검증 방법
 
 ### 4. 코드 최적화 기준
 
@@ -115,13 +156,34 @@ After: [개선 결과]
 - Background service worker 최적화
 - Message passing 안정성 확인
 
-## 작업 시작 전 체크리스트
+## 🚨 작업 시작 전 필수 체크리스트 (순서대로)
 
+### 1단계: 과거 교훈 확인 (MANDATORY)
+- [ ] **`.claude/lessons-learned.md` 읽기** ← 가장 중요!
+  - 같은 실수 반복하지 않기 위함
+  - CRITICAL 섹션 특히 주의
+  - 하드코딩된 항목 절대 수정 금지
+
+### 2단계: 검증 실행
+- [ ] `npm run verify` 실행
+  - gemini-2.5-flash-lite 존재 확인
+  - YouTube 노드 존재 확인
+  - 모든 Critical 기능 정상 작동 확인
+
+### 3단계: 최신 정보 확인
+- [ ] 검색 시 "2024" 또는 "2025" 키워드 포함
+- [ ] 공식 문서 최신 버전 확인
+- [ ] Deprecated API 없는지 확인
+
+### 4단계: 일반 체크
 - [ ] 이 작업에 GitHub 예제가 도움이 될까?
-- [ ] 공식 문서 최신 버전 확인했나?
 - [ ] 이전에 비슷한 문제 해결한 적 있나?
 - [ ] 보안 취약점 가능성은?
 - [ ] 성능 최적화 여지는?
+
+### 5단계: 에러 발생 시 특별 규칙
+- [ ] 이 에러 이전에 본 적 있나? → lessons-learned.md 확인
+- [ ] 같은 에러 2번째인가? → 즉시 하드코딩 + 검증 스크립트
 
 ## 응답 형식
 

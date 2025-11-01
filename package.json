@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "N8N AI Copilot Chrome Extension",
   "scripts": {
-    "verify": "node n8n/scripts/verify-config.js",
+    "verify": "node scripts/verify-all.js",
+    "verify-all": "node scripts/verify-all.js",
+    "verify-config": "node n8n/scripts/verify-config.js",
     "test": "npm run verify"
   },
   "keywords": ["n8n", "ai", "copilot", "chrome-extension"],
