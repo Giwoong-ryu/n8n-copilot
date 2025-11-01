@@ -505,18 +505,9 @@ async function callClaudeAPI(userMessage, context) {
    ⚙️ 각 노드의 "설정하기" 버튼을 클릭하여 설정하세요.
 
 2. 특정 노드 설정 요청 시 (🎯 표시 확인 또는 "XXX 노드 설정" 요청):
-   - 인사말, 설명 없이 즉시 json-autofill 블록만 제공
+   - 인사말, 설명 없이 즉시 json-autofill 코드 블록만 제공
    - 추상적 표현 금지, 실제 값만
    - 사용자는 자동 입력 후 N8N 노드에서 값 확인
-
-   예시 - "RSS 노드 설정 방법 알려줘":
-
-   백틱백틱백틱json-autofill
-   {
-     "url": "https://news.google.com/rss?q=AI",
-     "limit": 20
-   }
-   백틱백틱백틱
 
 3. 에러 수정 요청 시:
    - 에러 원인 설명
@@ -524,16 +515,10 @@ async function callClaudeAPI(userMessage, context) {
    - json-autofill로 수정된 값 제공
 
 **json-autofill 코드 블록 형식** (특정 노드 설정 시에만 사용):
-- 시작: 백틱 3개 + json-autofill
-- 내용: JSON 객체 (중괄호로 감싸기)
-- 종료: 백틱 3개
-- 올바른 예시:
-  백틱백틱백틱json-autofill
-  {
-    "url": "https://example.com",
-    "method": "GET"
-  }
-  백틱백틱백틱
+- 마크다운 펜스드 코드 블록 사용: \`\`\`json-autofill
+- 내용: JSON 객체만 (중괄호로 감싸기, 주석 금지)
+- 종료: \`\`\`
+- **CRITICAL**: 반드시 실제 백틱 문자 3개 사용 (키보드 숫자 1 왼쪽 키)
 
 **규칙**:
 - 워크플로우 요청 시: [Node] > [Node] 형식 사용, json-autofill 제공 안 함
