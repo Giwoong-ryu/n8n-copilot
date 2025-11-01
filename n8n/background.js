@@ -72,8 +72,18 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
     const n8nDocs = await getRealTimeN8NNodeInfo();
     let enhancedSystemPrompt = systemPrompt;
 
-    if (n8nDocs && n8nDocs.nodes) {
-      const validNodes = n8nDocs.nodes.filter(node => node && node.name);
+    if (n8nDocs && n8nDocs.nodes && n8nDocs.nodes.length > 0) {
+      // Static docs는 문자열 배열, Real-time API는 객체 배열
+      const isStringArray = typeof n8nDocs.nodes[0] === 'string';
+
+      let validNodes;
+      if (isStringArray) {
+        // Static docs: ["YouTube", "Gmail", ...]
+        validNodes = n8nDocs.nodes.map(name => ({ name, description: '', operations: [], resources: [] }));
+      } else {
+        // Real-time API: [{name: "YouTube", ...}, ...]
+        validNodes = n8nDocs.nodes.filter(node => node && node.name);
+      }
 
       const versionInfo = n8nDocs.version === 'real-time'
         ? '실시간 (사용자 N8N 인스턴스)'
@@ -85,7 +95,11 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
 
 **주요 노드 목록** (정확한 이름과 세부 작업):
 ${validNodes.slice(0, 50).map(node => {
-  let info = `- **${node.name}**: ${node.description || ''}`;
+  let info = `- **${node.name}**`;
+
+  if (node.description) {
+    info += `: ${node.description}`;
+  }
 
   // Resources 정보 추가
   if (node.resources && node.resources.length > 0) {
@@ -101,11 +115,11 @@ ${validNodes.slice(0, 50).map(node => {
 }).join('\n')}
 
 **중요**:
-1. 노드 이름을 정확히 사용하세요
+1. 위 노드 목록에 있는 노드 이름을 정확히 사용하세요
 2. 여러 작업이 있는 노드는 위 Resources/Operations를 참고하여 정확한 작업 이름을 안내하세요
    예: "YouTube 노드에서 'Video Search' 작업 선택" 같이 구체적으로`;
 
-      console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'})`);
+      console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'}, nodes: ${validNodes.length})`);
     }
 
     // Gemini API 엔드포인트
@@ -212,8 +226,18 @@ async function callOpenAIAPI(userMessage, systemPrompt = '', context = {}) {
     const n8nDocs = await getRealTimeN8NNodeInfo();
     let enhancedSystemPrompt = systemPrompt;
 
-    if (n8nDocs && n8nDocs.nodes) {
-      const validNodes = n8nDocs.nodes.filter(node => node && node.name);
+    if (n8nDocs && n8nDocs.nodes && n8nDocs.nodes.length > 0) {
+      // Static docs는 문자열 배열, Real-time API는 객체 배열
+      const isStringArray = typeof n8nDocs.nodes[0] === 'string';
+
+      let validNodes;
+      if (isStringArray) {
+        // Static docs: ["YouTube", "Gmail", ...]
+        validNodes = n8nDocs.nodes.map(name => ({ name, description: '', operations: [], resources: [] }));
+      } else {
+        // Real-time API: [{name: "YouTube", ...}, ...]
+        validNodes = n8nDocs.nodes.filter(node => node && node.name);
+      }
 
       const versionInfo = n8nDocs.version === 'real-time'
         ? '실시간 (사용자 N8N 인스턴스)'
@@ -225,7 +249,11 @@ async function callOpenAIAPI(userMessage, systemPrompt = '', context = {}) {
 
 **주요 노드 목록** (정확한 이름과 세부 작업):
 ${validNodes.slice(0, 50).map(node => {
-  let info = `- **${node.name}**: ${node.description || ''}`;
+  let info = `- **${node.name}**`;
+
+  if (node.description) {
+    info += `: ${node.description}`;
+  }
 
   // Resources 정보 추가
   if (node.resources && node.resources.length > 0) {
@@ -241,11 +269,11 @@ ${validNodes.slice(0, 50).map(node => {
 }).join('\n')}
 
 **중요**:
-1. 노드 이름을 정확히 사용하세요
+1. 위 노드 목록에 있는 노드 이름을 정확히 사용하세요
 2. 여러 작업이 있는 노드는 위 Resources/Operations를 참고하여 정확한 작업 이름을 안내하세요
    예: "YouTube 노드에서 'Video Search' 작업 선택" 같이 구체적으로`;
 
-      console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'})`);
+      console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'}, nodes: ${validNodes.length})`);
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -313,8 +341,18 @@ async function callClaudeAPI(userMessage, systemPrompt = '', context = {}) {
     const n8nDocs = await getRealTimeN8NNodeInfo();
     let enhancedSystemPrompt = systemPrompt || 'You are a helpful N8N workflow automation assistant.';
 
-    if (n8nDocs && n8nDocs.nodes) {
-      const validNodes = n8nDocs.nodes.filter(node => node && node.name);
+    if (n8nDocs && n8nDocs.nodes && n8nDocs.nodes.length > 0) {
+      // Static docs는 문자열 배열, Real-time API는 객체 배열
+      const isStringArray = typeof n8nDocs.nodes[0] === 'string';
+
+      let validNodes;
+      if (isStringArray) {
+        // Static docs: ["YouTube", "Gmail", ...]
+        validNodes = n8nDocs.nodes.map(name => ({ name, description: '', operations: [], resources: [] }));
+      } else {
+        // Real-time API: [{name: "YouTube", ...}, ...]
+        validNodes = n8nDocs.nodes.filter(node => node && node.name);
+      }
 
       const versionInfo = n8nDocs.version === 'real-time'
         ? '실시간 (사용자 N8N 인스턴스)'
@@ -326,7 +364,11 @@ async function callClaudeAPI(userMessage, systemPrompt = '', context = {}) {
 
 **주요 노드 목록** (정확한 이름과 세부 작업):
 ${validNodes.slice(0, 50).map(node => {
-  let info = `- **${node.name}**: ${node.description || ''}`;
+  let info = `- **${node.name}**`;
+
+  if (node.description) {
+    info += `: ${node.description}`;
+  }
 
   // Resources 정보 추가
   if (node.resources && node.resources.length > 0) {
@@ -342,11 +384,11 @@ ${validNodes.slice(0, 50).map(node => {
 }).join('\n')}
 
 **중요**:
-1. 노드 이름을 정확히 사용하세요
+1. 위 노드 목록에 있는 노드 이름을 정확히 사용하세요
 2. 여러 작업이 있는 노드는 위 Resources/Operations를 참고하여 정확한 작업 이름을 안내하세요
    예: "YouTube 노드에서 'Video Search' 작업 선택" 같이 구체적으로`;
 
-      console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'})`);
+      console.log(`✅ N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'}, nodes: ${validNodes.length})`);
     }
 
     const fullMessage = formatMessageWithContext(userMessage, context);
@@ -651,7 +693,12 @@ async function fetchN8NNodeTypes() {
     });
 
     if (!response.ok) {
-      console.error(`❌ Failed to fetch N8N node types: ${response.status}`);
+      if (response.status === 404) {
+        console.warn('⚠️ N8N API endpoint not found (404). This may be N8N Cloud or older version.');
+        console.warn('💡 Using static docs as fallback. For real-time data, ensure N8N API is enabled.');
+      } else {
+        console.error(`❌ Failed to fetch N8N node types: ${response.status}`);
+      }
       return null;
     }
 
