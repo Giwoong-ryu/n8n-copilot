@@ -353,24 +353,58 @@ function escapeHtml(text) {
 
 // 수동 마크다운 파싱 (marked 라이브러리 없을 때 대체)
 function parseMarkdownManually(text) {
-  let html = escapeHtml(text);
+  // 1단계: 코드 블록을 먼저 추출해서 플레이스홀더로 대체
+  const codeBlocks = [];
+  let html = text.replace(/```(\w+)?\n([\s\S]+?)```/g, (match, language, code) => {
+    const lang = language || '';
+    const langClass = lang ? ` class="language-${lang}"` : '';
+    const dataLang = lang ? ` data-language="${lang}"` : '';
+    const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+    codeBlocks.push(`<pre${dataLang}><code${langClass}>${escapeHtml(code.trim())}</code></pre>`);
+    return placeholder;
+  });
 
+  // 2단계: 인라인 코드 추출
+  const inlineCodes = [];
+  html = html.replace(/`([^`]+)`/g, (match, code) => {
+    const placeholder = `__INLINE_CODE_${inlineCodes.length}__`;
+    inlineCodes.push(`<code>${escapeHtml(code)}</code>`);
+    return placeholder;
+  });
+
+  // 3단계: 나머지 텍스트 이스케이프
+  html = escapeHtml(html);
+
+  // 4단계: 마크다운 문법 처리
   // **bold** → <strong>bold</strong>
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
   // *italic* → <em>italic</em>
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
-  // 줄바꿈 처리
-  html = html.replace(/\n/g, '<br>');
+  // 제목 처리
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
 
-  // 빈 줄은 문단 구분
-  html = html.replace(/(<br>){2,}/g, '</p><p>');
-  html = '<p>' + html + '</p>';
-
-  // 리스트 처리: - 항목
+  // 리스트 처리
   html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*?<\/li>\n?)+/g, '<ul>$&</ul>');
+
+  // 줄바꿈 처리
+  html = html.replace(/\n\n/g, '</p><p>');
+  html = html.replace(/\n/g, '<br>');
+  html = '<p>' + html + '</p>';
+  html = html.replace(/<p><\/p>/g, '');
+
+  // 5단계: 플레이스홀더를 실제 코드로 복원
+  inlineCodes.forEach((code, i) => {
+    html = html.replace(`__INLINE_CODE_${i}__`, code);
+  });
+  codeBlocks.forEach((block, i) => {
+    html = html.replace(`__CODE_BLOCK_${i}__`, block);
+  });
 
   return html;
 }
