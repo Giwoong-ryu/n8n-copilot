@@ -230,6 +230,131 @@ const N8N_DOCS_SOURCES = {
   changelog: 'https://raw.githubusercontent.com/n8n-io/n8n/master/CHANGELOG.md'
 };
 
+// Sleep 유틸리티
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// 리소스 폴더에서 operations 추출
+async function fetchOperationsFromResource(resourcePath) {
+  try {
+    const resourceUrl = `https://api.github.com/repos/n8n-io/n8n/contents/${resourcePath}`;
+    const resourceResponse = await fetch(resourceUrl, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+
+    if (!resourceResponse.ok) return [];
+
+    const resourceContent = await resourceResponse.json();
+
+    // .operation.ts 파일들 찾기
+    return resourceContent
+      .filter(item => item.type === 'file' && item.name.endsWith('.operation.ts'))
+      .map(item => {
+        // create.operation.ts -> Create
+        const opName = item.name
+          .replace('.operation.ts', '')
+          .replace(/([A-Z])/g, ' $1')
+          .trim();
+        return opName.charAt(0).toUpperCase() + opName.slice(1);
+      });
+
+  } catch (error) {
+    return [];
+  }
+}
+
+// 버전 폴더에서 operations 추출
+async function fetchOperationsFromVersion(versionPath) {
+  try {
+    // actions 폴더 확인
+    const actionsUrl = `https://api.github.com/repos/n8n-io/n8n/contents/${versionPath}/actions`;
+    const actionsResponse = await fetch(actionsUrl, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+
+    if (!actionsResponse.ok) return [];
+
+    const actionsContent = await actionsResponse.json();
+    const operations = [];
+
+    // 각 리소스 폴더 확인 (record, base 등)
+    for (const item of actionsContent) {
+      if (item.type === 'dir') {
+        const resourceOps = await fetchOperationsFromResource(item.path);
+        operations.push(...resourceOps.map(op => `${item.name}:${op}`));
+      }
+    }
+
+    return operations;
+  } catch (error) {
+    return [];
+  }
+}
+
+// 노드의 operations 가져오기
+async function fetchNodeOperations(nodes) {
+  const results = [];
+
+  // 처음 10개만 샘플링 (GitHub API rate limit 방지)
+  const sampleNodes = nodes.slice(0, 10);
+
+  for (const node of sampleNodes) {
+    try {
+      console.log(`  Fetching operations for ${node.name}...`);
+
+      // 노드 폴더 내부 확인
+      const nodeContentUrl = `https://api.github.com/repos/n8n-io/n8n/contents/${node.path}`;
+      const nodeResponse = await fetch(nodeContentUrl, {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      });
+
+      if (!nodeResponse.ok) {
+        results.push({
+          name: node.name,
+          operations: [],
+          hasOperations: false
+        });
+        continue;
+      }
+
+      const nodeContent = await nodeResponse.json();
+
+      // v2, v1 같은 버전 폴더 찾기
+      const versionFolders = nodeContent
+        .filter(item => item.type === 'dir' && /^v\d+$/.test(item.name))
+        .sort((a, b) => b.name.localeCompare(a.name)); // v2, v1 순서
+
+      let operations = [];
+
+      // 최신 버전 폴더 확인
+      if (versionFolders.length > 0) {
+        const latestVersion = versionFolders[0];
+        operations = await fetchOperationsFromVersion(latestVersion.path);
+      }
+
+      results.push({
+        name: node.name,
+        operations: operations,
+        hasOperations: operations.length > 0
+      });
+
+      // Rate limiting 방지 (GitHub API: 60 requests/hour)
+      await sleep(100);
+
+    } catch (error) {
+      console.error(`  Failed to fetch operations for ${node.name}:`, error.message);
+      results.push({
+        name: node.name,
+        operations: [],
+        hasOperations: false
+      });
+    }
+  }
+
+  return results;
+}
+
 // 문서 가져오기
 async function fetchN8NDocs() {
   console.log('📥 Fetching N8N docs...');
@@ -248,14 +373,25 @@ async function fetchN8NDocs() {
     // 노드 목록 추출
     const nodeList = nodes
       .filter(item => item.type === 'dir')
-      .map(item => item.name)
-      .sort();
+      .map(item => ({
+        name: item.name,
+        path: item.path,
+        url: item.html_url
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    console.log(`✅ Found ${nodeList.length} nodes`);
+
+    // 상세 노드 정보 가져오기 (operations 포함)
+    console.log('📥 Fetching operations for sample nodes...');
+    const detailedNodes = await fetchNodeOperations(nodeList);
 
     // 최신 버전 추출
     const latestVersion = changelog.split('\n## ')[1]?.split('\n')[0] || 'Unknown';
 
     return {
-      nodes: nodeList,
+      allNodes: nodeList,
+      detailedNodes: detailedNodes,
       changelog: changelog.split('\n## ').slice(0, 3).join('\n## '),
       version: latestVersion,
       lastUpdated: new Date().toISOString(),
@@ -272,7 +408,7 @@ async function fetchN8NDocs() {
 async function saveN8NDocs(docs) {
   try {
     await chrome.storage.local.set({ n8nDocs: docs });
-    console.log(`✅ N8N docs saved (${docs.nodes.length} nodes)`);
+    console.log(`✅ N8N docs saved (${docs.allNodes.length} nodes total, ${docs.detailedNodes.length} with operations)`);
     return true;
   } catch (error) {
     console.error('❌ Failed to save docs:', error);
@@ -299,7 +435,7 @@ async function loadN8NDocs() {
       return await updateN8NDocsNow();
     }
 
-    console.log(`✅ Docs loaded (${docs.nodes.length} nodes)`);
+    console.log(`✅ Docs loaded (${docs.allNodes?.length || docs.nodes?.length || 0} nodes)`);
     return docs;
 
   } catch (error) {
@@ -346,7 +482,9 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 console.log('📥 Initializing N8N docs on startup...');
 loadN8NDocs().then(docs => {
   if (docs) {
-    console.log(`✅ N8N docs ready: ${docs.nodes.length} nodes, version ${docs.version}`);
+    const nodeCount = docs.allNodes?.length || docs.nodes?.length || 0;
+    const detailedCount = docs.detailedNodes?.length || 0;
+    console.log(`✅ N8N docs ready: ${nodeCount} nodes (${detailedCount} with operations), version ${docs.version}`);
   } else {
     console.log('⚠️ Failed to load docs on startup');
   }

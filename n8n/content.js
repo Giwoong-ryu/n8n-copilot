@@ -760,18 +760,40 @@ async function callClaudeAPI(userMessage, context) {
   const docsInfo = n8nDocs.n8nDocs;
 
   let docsSection = '';
-  if (docsInfo && docsInfo.nodes) {
+
+  // 이전 버전 호환성 (nodes) + 새 버전 (allNodes, detailedNodes)
+  const nodeList = docsInfo?.allNodes || docsInfo?.nodes || [];
+  const detailedList = docsInfo?.detailedNodes || [];
+
+  if (nodeList.length > 0) {
     const updateDate = new Date(docsInfo.lastUpdated).toLocaleDateString('ko-KR');
+
+    // 상세 노드 정보 (operations 포함)
+    let detailedSection = '';
+    if (detailedList.length > 0) {
+      detailedSection = '\n\n**상세 노드 정보 (operations 포함)**:\n';
+      detailedList.forEach(node => {
+        if (node.hasOperations && node.operations.length > 0) {
+          detailedSection += `- **${node.name}**: ${node.operations.join(', ')}\n`;
+        } else {
+          detailedSection += `- **${node.name}**: (operations 정보 없음)\n`;
+        }
+      });
+    }
+
+    // 노드 이름 추출 (이전 버전: string, 새 버전: object)
+    const nodeNames = nodeList.map(n => typeof n === 'string' ? n : n.name);
+
     docsSection = `
 **N8N 실시간 노드 목록** (자동 업데이트):
 📅 마지막 업데이트: ${updateDate}
-📦 사용 가능한 노드: ${docsInfo.nodes.length}개
+📦 사용 가능한 노드: ${nodeNames.length}개
 
 주요 노드 (A-Z):
-${docsInfo.nodes.slice(0, 30).map(node => `- \`${node}\``).join('\n')}
+${nodeNames.slice(0, 30).map(node => `- \`${node}\``).join('\n')}
 
-... 외 ${docsInfo.nodes.length - 30}개 노드
-
+... 외 ${nodeNames.length - 30}개 노드
+${detailedSection}
 최신 버전: ${docsInfo.version}
 `;
   } else {
