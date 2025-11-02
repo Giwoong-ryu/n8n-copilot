@@ -540,7 +540,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch(error => {
         sendResponse({ error: true, message: error.message });
       });
-    
+
+    return true;
+  }
+
+  if (request.action === 'getN8NNodeList') {
+    getRealTimeN8NNodeInfo()
+      .then(docsInfo => {
+        sendResponse({ docsInfo: docsInfo });
+      })
+      .catch(error => {
+        sendResponse({ error: true, message: error.message });
+      });
+
     return true;
   }
 });

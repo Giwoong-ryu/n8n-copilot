@@ -423,9 +423,19 @@ async function callClaudeAPI(userMessage, context) {
   // - 동적 컨텍스트만 포함 (값이 있을 때만)
   // ========================================
 
-  // N8N 최신 문서 불러오기
-  const n8nDocs = await chrome.storage.local.get('n8nDocs');
-  const docsInfo = n8nDocs.n8nDocs;
+  // Background script에서 N8N 최신 노드 목록 가져오기
+  let docsInfo = null;
+  try {
+    const response = await new Promise((resolve) => {
+      chrome.runtime.sendMessage({ action: 'getN8NNodeList' }, resolve);
+    });
+    docsInfo = response?.docsInfo || null;
+  } catch (error) {
+    console.warn('⚠️ Failed to get N8N node list from background:', error);
+    // Fallback to local storage
+    const n8nDocs = await chrome.storage.local.get('n8nDocs');
+    docsInfo = n8nDocs.n8nDocs;
+  }
 
   let systemPrompt = `N8N 워크플로우 자동화 전문가 (2025년 10월 기준)`;
 
@@ -531,47 +541,42 @@ async function callClaudeAPI(userMessage, context) {
 - 추상적 표현 금지 (실제 URL, 실제 값만)
 - 추가 질문 금지 (바로 워크플로우 제안)
 - 보안: API 키는 환경변수 또는 Credential 사용
-- 인사말 생략, 간결하게
+- 인사말 생략, 간결하게`;
 
-**N8N 노드 이름 목록** (워크플로우 제안 시 이 정확한 이름만 사용):
+  // N8N 실제 노드 목록 추가 (N8N API에서 가져온 정확한 목록)
+  if (docsInfo && docsInfo.nodes && docsInfo.nodes.length > 0) {
+    systemPrompt += `
 
-**데이터 입력/수집**:
-- YouTube (유튜브 영상/채널 데이터)
-- Gmail (이메일)
-- RSS Feed (RSS 피드)
-- HTTP Request (API 호출)
-- Webhook (웹훅 수신)
-- Google Sheets (구글 시트)
-- Airtable (에어테이블)
-- MySQL / PostgreSQL (데이터베이스)
-- MongoDB (NoSQL DB)
-- Slack (슬랙 메시지)
-- Discord (디스코드)
-- Twitter (트위터)
-- Schedule Trigger (스케줄 실행)
+**N8N 사용 가능한 노드 목록** (워크플로우 제안 시 이 정확한 이름만 사용):
 
-**데이터 처리/변환**:
-- Code (JavaScript/Python 코드)
-- Function (간단한 JS 함수)
-- Set (데이터 설정)
-- Edit Fields (필드 편집)
-- Merge (데이터 병합)
-- Split In Batches (배치 분할)
-- Item Lists (리스트 처리)
-- Aggregate (데이터 집계)
+`;
+    // 노드 이름만 추출 (displayName 사용)
+    const nodeNames = docsInfo.nodes
+      .map(node => node.displayName || node.name)
+      .filter(name => name) // 빈 값 제거
+      .sort() // 알파벳순 정렬
+      .slice(0, 150); // 최대 150개로 제한 (토큰 절약)
 
-**조건/분기**:
-- IF (조건 분기)
-- Switch (다중 조건)
-- Filter (필터링)
+    // 카테고리별로 그룹화 (간단하게)
+    const commonNodes = nodeNames.filter(name =>
+      ['Gmail', 'Slack', 'Google Sheets', 'HTTP Request', 'Webhook', 'Code', 'IF', 'Set', 'Function', 'Merge', 'YouTube', 'Discord', 'Twitter', 'Airtable', 'MySQL', 'PostgreSQL', 'MongoDB'].includes(name)
+    );
 
-**출력/전송**:
-- Gmail (이메일 전송)
-- Slack (메시지 전송)
-- Discord (메시지 전송)
-- Google Sheets (시트 저장)
-- HTTP Request (API 전송)
-- MySQL / PostgreSQL (DB 저장)
+    const otherNodes = nodeNames.filter(name => !commonNodes.includes(name));
+
+    if (commonNodes.length > 0) {
+      systemPrompt += `**자주 사용되는 노드**:\n`;
+      systemPrompt += commonNodes.map(name => `- ${name}`).join('\n');
+      systemPrompt += '\n\n';
+    }
+
+    if (otherNodes.length > 0) {
+      systemPrompt += `**기타 사용 가능한 노드** (${otherNodes.length}개):\n`;
+      systemPrompt += otherNodes.slice(0, 100).map(name => `- ${name}`).join('\n');
+      systemPrompt += '\n';
+    }
+
+    systemPrompt += `
 
 **CRITICAL - 노드 이름 사용 규칙**:
 - ❌ 잘못된 예: [YOUTUBE AI NEWS], [YouTube Search], [Google YouTube]
@@ -579,6 +584,27 @@ async function callClaudeAPI(userMessage, context) {
 - 워크플로우 제안 시 위 목록의 정확한 이름만 사용
 - 노드 이름 뒤에 용도 설명 추가 가능: "YouTube (영상 검색)"
 - 존재하지 않는 노드 이름 절대 만들지 말기
+- 위 목록에 없는 노드는 추천하지 말기`;
+  } else {
+    // Fallback: 하드코딩된 기본 노드 목록
+    systemPrompt += `
+
+**N8N 노드 이름 목록** (워크플로우 제안 시 이 정확한 이름만 사용):
+
+**자주 사용되는 노드**:
+- Gmail, Slack, Google Sheets, HTTP Request, Webhook
+- Code, Function, Set, Edit Fields, Merge
+- IF, Switch, Filter
+- YouTube, Discord, Twitter, Airtable
+- MySQL, PostgreSQL, MongoDB
+
+**CRITICAL - 노드 이름 사용 규칙**:
+- ❌ 잘못된 예: [YOUTUBE AI NEWS], [YouTube Search]
+- ✅ 올바른 예: [YouTube], [Gmail], [HTTP Request]
+- 존재하지 않는 노드 이름 절대 만들지 말기`;
+  }
+
+  systemPrompt += `
 
 **주요 N8N 노드 구조** (정확한 필드명 사용):
 
@@ -651,76 +677,37 @@ async function callClaudeAPI(userMessage, context) {
 - 사용자 요청에 맞는 실제 값 제공 (예시값 아님)`;
 
 
-  // Gemini API 직접 호출 (Service Worker 우회)
-  return new Promise(async (resolve, reject) => {
-    try {
-      // API 키 가져오기
-      const result = await chrome.storage.local.get(['claudeApiKey', 'selectedModel', 'aiProvider']);
-      const apiKey = result.claudeApiKey;
-      const selectedModel = result.selectedModel || 'gemini-2.5-flash-lite';
-      const aiProvider = result.aiProvider || 'gemini';
+  // Background script를 통해 AI API 호출
+  return new Promise((resolve, reject) => {
+    console.log('🚀 Calling AI API via background script...');
 
-      if (!apiKey) {
-        reject(new Error('API 키가 설정되지 않았습니다. Extension 아이콘을 클릭하여 API 키를 입력해주세요.'));
+    chrome.runtime.sendMessage({
+      action: 'callClaude',
+      message: userMessage,
+      systemPrompt: systemPrompt,
+      context: context
+    }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('❌ Runtime error:', chrome.runtime.lastError);
+        reject(new Error(chrome.runtime.lastError.message));
         return;
       }
 
-      console.log('📌 Using model:', selectedModel);
-
-      // Gemini API 호출
-      if (aiProvider === 'gemini') {
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
-
-        const fullMessage = systemPrompt ? `${systemPrompt}\n\n${userMessage}` : userMessage;
-
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: fullMessage
-                  }
-                ]
-              }
-            ],
-            generationConfig: {
-              temperature: 0.7,
-              topK: 40,
-              topP: 0.95,
-              maxOutputTokens: 8192
-            }
-          })
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error?.message || `API Error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('✅ Gemini API response received');
-
-        let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!text) {
-          console.error('❌ Failed to extract text from response');
-          reject(new Error('응답을 받을 수 없습니다. 다시 시도해주세요.'));
-          return;
-        }
-
-        resolve(text);
-      } else {
-        reject(new Error(`${aiProvider} provider는 현재 버전에서 지원되지 않습니다.`));
+      if (!response) {
+        console.error('❌ No response from background script');
+        reject(new Error('Background script에서 응답이 없습니다'));
+        return;
       }
-    } catch (error) {
-      console.error('❌ Exception in callClaudeAPI:', error);
-      reject(new Error(`API 호출 실패: ${error.message}`));
-    }
+
+      if (response.error) {
+        console.error('❌ API error:', response.message);
+        reject(new Error(response.message));
+        return;
+      }
+
+      console.log('✅ AI API response received via background script');
+      resolve(response.content);
+    });
   });
 }
 

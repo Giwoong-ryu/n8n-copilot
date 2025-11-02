@@ -285,9 +285,14 @@ async function handleFormSubmit(event) {
   saveButton.textContent = '💾 저장 중...';
 
   try {
-    // API 키 및 설정 직접 저장 (Service worker 우회)
+    // Background script를 통해 API 키 저장
+    await chrome.runtime.sendMessage({
+      action: 'saveApiKey',
+      apiKey: apiKey
+    });
+
+    // 기타 설정 저장
     await chrome.storage.local.set({
-      claudeApiKey: apiKey,
       aiProvider: aiProvider,
       selectedModel: selectedModel,
       n8nUrl: n8nUrl,
@@ -297,7 +302,7 @@ async function handleFormSubmit(event) {
     // 임시 입력값 삭제 (정식 저장되었으므로)
     await chrome.storage.local.remove('tempInputValues');
 
-    console.log('Saved to storage');
+    console.log('Saved to storage via background script');
 
     showStatus('✅ API 키가 저장되었습니다!', 'success');
 
