@@ -292,18 +292,27 @@ async function fetchOperationsFromVersion(versionPath) {
   }
 }
 
-// 노드의 operations 가져오기
-async function fetchNodeOperations(nodes) {
-  const results = [];
+// 노드의 operations 가져오기 (청크 단위 저장 + Resume 지원)
+async function fetchNodeOperations(nodes, existingData = null) {
   const totalNodes = nodes.length;
 
-  console.log(`  📊 Fetching operations for ${totalNodes} nodes...`);
+  // 기존 데이터에서 이미 수집된 노드 확인
+  let results = [];
+  let startIndex = 0;
 
-  for (let i = 0; i < totalNodes; i++) {
+  if (existingData && existingData.detailedNodes) {
+    results = existingData.detailedNodes;
+    startIndex = results.length;
+    console.log(`  🔄 Resuming from node ${startIndex}/${totalNodes} (${Math.round(startIndex / totalNodes * 100)}% complete)`);
+  } else {
+    console.log(`  📊 Fetching operations for ${totalNodes} nodes...`);
+  }
+
+  for (let i = startIndex; i < totalNodes; i++) {
     const node = nodes[i];
     try {
       // 진행 상황 로깅 (10개마다)
-      if ((i + 1) % 10 === 0 || i === 0) {
+      if ((i + 1) % 10 === 0 || i === startIndex) {
         console.log(`  📥 Progress: ${i + 1}/${totalNodes} nodes (${Math.round((i + 1) / totalNodes * 100)}%)`);
       }
 
@@ -316,7 +325,6 @@ async function fetchNodeOperations(nodes) {
       if (!nodeResponse.ok) {
         // Rate limit 에러 체크
         if (nodeResponse.status === 403) {
-          const resetTime = nodeResponse.headers.get('X-RateLimit-Reset');
           console.warn(`  ⚠️ GitHub API rate limit reached at node ${i + 1}/${totalNodes}`);
           console.warn(`  💾 Saving ${results.length} nodes fetched so far...`);
           break; // 현재까지 수집한 것 저장
@@ -351,9 +359,12 @@ async function fetchNodeOperations(nodes) {
         hasOperations: operations.length > 0
       });
 
+      // 10개마다 중간 저장 (Extension 재시작 대비)
+      if ((i + 1) % 10 === 0) {
+        await savePartialResults(nodes, results, i + 1, totalNodes);
+      }
+
       // Rate limiting 방지 (GitHub API: 60 requests/hour without auth)
-      // 각 노드당 평균 3-4회 요청 발생 예상 → 15개 노드당 60회 제한
-      // 안전하게 200ms 대기 (시간당 18회 노드 = 72회 요청)
       await sleep(200);
 
     } catch (error) {
@@ -368,6 +379,30 @@ async function fetchNodeOperations(nodes) {
 
   console.log(`  ✅ Successfully fetched operations for ${results.length}/${totalNodes} nodes`);
   return results;
+}
+
+// 중간 결과 저장 (10개마다)
+async function savePartialResults(allNodes, detailedNodes, currentIndex, totalNodes) {
+  try {
+    const partialData = {
+      allNodes: allNodes,
+      detailedNodes: detailedNodes,
+      fetchProgress: {
+        current: currentIndex,
+        total: totalNodes,
+        percentage: Math.round(currentIndex / totalNodes * 100),
+        inProgress: currentIndex < totalNodes
+      },
+      version: 'fetching...', // 아직 완료 안됨
+      lastUpdated: new Date().toISOString(),
+      expiresAt: null // 완료될 때까지 만료 없음
+    };
+
+    await chrome.storage.local.set({ n8nDocs: partialData });
+    console.log(`    💾 Auto-saved progress: ${currentIndex}/${totalNodes}`);
+  } catch (error) {
+    console.error('    ⚠️ Failed to save progress:', error);
+  }
 }
 
 // 문서 가져오기
