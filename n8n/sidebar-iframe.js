@@ -218,16 +218,31 @@ function addMessage(text, type = 'assistant') {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// 로딩 표시
+// 로딩 표시 (정지 버튼 포함)
 function showLoading() {
   const loadingDiv = document.createElement('div');
   loadingDiv.className = 'loading';
   loadingDiv.id = 'loading-indicator';
   loadingDiv.innerHTML = `
-    <div class="loading-dot"></div>
-    <div class="loading-dot"></div>
-    <div class="loading-dot"></div>
+    <div class="loading-content">
+      <div class="loading-dots">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+      </div>
+      <button class="stop-loading-btn" title="응답 대기 중단">⏹ 정지</button>
+    </div>
   `;
+
+  // 정지 버튼 이벤트 리스너
+  const stopBtn = loadingDiv.querySelector('.stop-loading-btn');
+  stopBtn.addEventListener('click', () => {
+    console.log('🛑 Stop button clicked');
+    hideLoading('loading-indicator');
+    sendButton.disabled = false;
+    addMessage('⏹ 응답 대기를 중단했습니다.', 'assistant');
+  });
+
   messagesContainer.appendChild(loadingDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
   return 'loading-indicator';
