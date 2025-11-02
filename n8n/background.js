@@ -458,6 +458,21 @@ async function fetchN8NDocs() {
       fetch(N8N_DOCS_SOURCES.changelog)
     ]);
 
+    // Rate limit 체크
+    if (!nodesRes.ok) {
+      if (nodesRes.status === 403) {
+        const resetTime = nodesRes.headers.get('X-RateLimit-Reset');
+        const resetDate = resetTime ? new Date(parseInt(resetTime) * 1000) : null;
+        const waitMinutes = resetDate ? Math.ceil((resetDate - new Date()) / 60000) : '알 수 없음';
+
+        console.error(`⚠️ GitHub API rate limit reached`);
+        console.error(`⏰ Rate limit resets in ${waitMinutes} minutes`);
+        console.error(`💡 Extension을 켜두시면 ${waitMinutes}분 후 자동으로 재시도됩니다`);
+        return null;
+      }
+      throw new Error(`GitHub API error: ${nodesRes.status} ${nodesRes.statusText}`);
+    }
+
     const nodes = await nodesRes.json();
     const changelog = await changelogRes.text();
 
