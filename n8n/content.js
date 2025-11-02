@@ -503,6 +503,26 @@ window.addEventListener('message', async (event) => {
       });
     }
   }
+
+  if (event.data.type === 'analyze-page') {
+    console.log('🔍 Page analysis requested');
+
+    try {
+      const pageAnalysis = analyzeN8NPage();
+      console.log('📊 Page analysis complete:', pageAnalysis);
+
+      sendMessageToIframe({
+        type: 'page-analysis-result',
+        data: pageAnalysis
+      });
+    } catch (error) {
+      console.error('❌ Error analyzing page:', error);
+      sendMessageToIframe({
+        type: 'error',
+        message: '페이지 분석 중 오류가 발생했습니다: ' + error.message
+      });
+    }
+  }
 });
 
 // iframe으로 메시지 전송
@@ -952,3 +972,100 @@ window.addEventListener('message', (event) => {
     });
   }
 });
+
+
+// ========================================
+// 8. N8N 페이지 상세 분석
+// ========================================
+function analyzeN8NPage() {
+  console.log('🔍 Analyzing N8N page...');
+
+  // 1. 기본 정보
+  const basicInfo = {
+    url: window.location.href,
+    title: document.title,
+    timestamp: new Date().toISOString()
+  };
+
+  // 2. N8N 주요 요소 감지
+  const n8nElements = {
+    canvas: !!document.querySelector('[class*="canvas"]'),
+    canvasSelector: findElement('[class*="canvas"]'),
+
+    nodeView: !!document.querySelector('[class*="NodeView"]'),
+    nodeViewSelector: findElement('[class*="NodeView"]'),
+
+    workflow: !!document.querySelector('[class*="workflow"]'),
+    workflowSelector: findElement('[class*="workflow"]'),
+
+    settings: !!document.querySelector('[class*="settings"]'),
+    settingsSelector: findElement('[class*="settings"]'),
+
+    node: !!document.querySelector('[class*="node"]'),
+    nodeSelector: findElement('[class*="node"]'),
+
+    selected: !!document.querySelector('[class*="selected"]'),
+    selectedSelector: findElement('[class*="selected"]')
+  };
+
+  // 3. 모든 고유 클래스명 수집 (처음 100개)
+  const allClasses = new Set();
+  document.querySelectorAll('[class]').forEach(el => {
+    el.className.split(' ').forEach(cls => {
+      if (cls.trim()) allClasses.add(cls.trim());
+    });
+  });
+  const classList = Array.from(allClasses).slice(0, 100);
+
+  // 4. data-* 속성 수집
+  const dataAttributes = new Set();
+  document.querySelectorAll('[data-test-id]').forEach(el => {
+    const testId = el.getAttribute('data-test-id');
+    if (testId) dataAttributes.add(`data-test-id="${testId}"`);
+  });
+  const dataAttrList = Array.from(dataAttributes).slice(0, 50);
+
+  // 5. 입력 필드 감지
+  const inputs = document.querySelectorAll('input, textarea, select');
+  const inputInfo = {
+    totalInputs: inputs.length,
+    visibleInputs: Array.from(inputs).filter(el => el.offsetParent !== null).length,
+    inputTypes: [...new Set(Array.from(inputs).map(el => el.type || el.tagName.toLowerCase()))]
+  };
+
+  // 6. 에러 감지
+  const errors = window.n8nReader ? window.n8nReader.detectErrors() : [];
+
+  return {
+    basicInfo,
+    n8nElements,
+    classList,
+    dataAttributes: dataAttrList,
+    inputInfo,
+    errors: {
+      count: errors.length,
+      messages: errors.map(e => e.message).slice(0, 5)
+    },
+    summary: {
+      isN8NPage: n8nElements.canvas || n8nElements.workflow,
+      hasActiveNode: n8nElements.selected,
+      hasOpenSettings: n8nElements.settings,
+      hasErrors: errors.length > 0
+    }
+  };
+}
+
+// 요소를 찾고 선택자 정보 반환
+function findElement(selector) {
+  const el = document.querySelector(selector);
+  if (!el) return null;
+
+  return {
+    tagName: el.tagName.toLowerCase(),
+    className: el.className,
+    id: el.id,
+    dataAttrs: Array.from(el.attributes)
+      .filter(attr => attr.name.startsWith('data-'))
+      .map(attr => `${attr.name}="${attr.value}"`)
+  };
+}
