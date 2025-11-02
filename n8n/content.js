@@ -403,13 +403,15 @@ function initializeAICopilot() {
   }
 
   // 에러 자동 감지 (5초마다)
-  setInterval(() => {
-    const errors = window.n8nReader.detectErrors();
-    if (errors.length > 0 && window.sendMessageToSidebar) {
-      window.sendMessageToSidebar({
-        type: 'error-detected',
-        errors: errors
-      });
+  window.errorCheckInterval = setInterval(() => {
+    if (window.n8nReader) {
+      const errors = window.n8nReader.detectErrors();
+      if (errors.length > 0 && window.sendMessageToSidebar) {
+        window.sendMessageToSidebar({
+          type: 'error-detected',
+          errors: errors
+        });
+      }
     }
   }, 5000);
 
@@ -441,7 +443,7 @@ setTimeout(() => {
 }, 1500);
 
 // 방법 4: MutationObserver로 DOM 변화 감지
-const observer = new MutationObserver((mutations) => {
+window.n8nPageObserver = new MutationObserver((mutations) => {
   // N8N 특유의 요소가 추가되었는지 확인
   const hasN8NElements =
     document.querySelector('[class*="canvas"]') ||
@@ -452,13 +454,13 @@ const observer = new MutationObserver((mutations) => {
   if (hasN8NElements) {
     console.log('🎯 N8N elements detected by MutationObserver!');
     detectN8NPage();
-    observer.disconnect(); // 감지 후 observer 중지
+    window.n8nPageObserver.disconnect(); // 감지 후 observer 중지
   }
 });
 
 // body가 존재하면 observer 시작
 if (document.body) {
-  observer.observe(document.body, {
+  window.n8nPageObserver.observe(document.body, {
     childList: true,
     subtree: true
   });
@@ -474,6 +476,10 @@ if (document.body) {
 
 // iframe으로부터 메시지 수신
 window.addEventListener('message', async (event) => {
+  // 보안: 자기 자신으로부터의 메시지만 허용
+  if (event.source !== window) return;
+  if (!event.data || !event.data.type) return;
+
   console.log('📨 Message received in content.js:', event.data);
 
   if (event.data.type === 'send-message') {
@@ -542,7 +548,7 @@ function collectPageContext() {
   const context = {
     url: window.location.href,
     workflowName: document.title,
-    errors: window.n8nReader.detectErrors(),
+    errors: window.n8nReader ? window.n8nReader.detectErrors() : [],
     selectedNode: null
   };
 
@@ -1066,4 +1072,30 @@ window.addEventListener('message', (event) => {
       ...result
     });
   }
+});
+
+
+// ========================================
+// 11. Cleanup (메모리 누수 방지)
+// ========================================
+
+// 페이지 언로드 시 모든 리소스 정리
+window.addEventListener('beforeunload', () => {
+  console.log('🧹 Cleaning up N8N AI Copilot resources...');
+
+  // MutationObserver 정리
+  if (window.n8nPageObserver) {
+    window.n8nPageObserver.disconnect();
+    window.n8nPageObserver = null;
+    console.log('✅ MutationObserver disconnected');
+  }
+
+  // setInterval 정리
+  if (window.errorCheckInterval) {
+    clearInterval(window.errorCheckInterval);
+    window.errorCheckInterval = null;
+    console.log('✅ Error check interval cleared');
+  }
+
+  console.log('✅ Cleanup complete');
 });
