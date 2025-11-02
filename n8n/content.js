@@ -1305,9 +1305,12 @@ function analyzeN8NPage() {
   // 3. 모든 고유 클래스명 수집 (처음 100개)
   const allClasses = new Set();
   document.querySelectorAll('[class]').forEach(el => {
-    el.className.split(' ').forEach(cls => {
-      if (cls.trim()) allClasses.add(cls.trim());
-    });
+    // classList를 사용하여 SVG 요소 호환성 확보
+    if (el.classList && el.classList.length > 0) {
+      el.classList.forEach(cls => {
+        if (cls.trim()) allClasses.add(cls.trim());
+      });
+    }
   });
   const classList = Array.from(allClasses).slice(0, 100);
 
@@ -1354,9 +1357,17 @@ function findElement(selector) {
   const el = document.querySelector(selector);
   if (!el) return null;
 
+  // className이 SVGAnimatedString일 수 있으므로 안전하게 변환
+  let classNameStr = '';
+  if (el.classList && el.classList.length > 0) {
+    classNameStr = Array.from(el.classList).join(' ');
+  } else if (typeof el.className === 'string') {
+    classNameStr = el.className;
+  }
+
   return {
     tagName: el.tagName.toLowerCase(),
-    className: el.className,
+    className: classNameStr,
     id: el.id,
     dataAttrs: Array.from(el.attributes)
       .filter(attr => attr.name.startsWith('data-'))
