@@ -533,6 +533,53 @@ async function callClaudeAPI(userMessage, context) {
 - 보안: API 키는 환경변수 또는 Credential 사용
 - 인사말 생략, 간결하게
 
+**N8N 노드 이름 목록** (워크플로우 제안 시 이 정확한 이름만 사용):
+
+**데이터 입력/수집**:
+- YouTube (유튜브 영상/채널 데이터)
+- Gmail (이메일)
+- RSS Feed (RSS 피드)
+- HTTP Request (API 호출)
+- Webhook (웹훅 수신)
+- Google Sheets (구글 시트)
+- Airtable (에어테이블)
+- MySQL / PostgreSQL (데이터베이스)
+- MongoDB (NoSQL DB)
+- Slack (슬랙 메시지)
+- Discord (디스코드)
+- Twitter (트위터)
+- Schedule Trigger (스케줄 실행)
+
+**데이터 처리/변환**:
+- Code (JavaScript/Python 코드)
+- Function (간단한 JS 함수)
+- Set (데이터 설정)
+- Edit Fields (필드 편집)
+- Merge (데이터 병합)
+- Split In Batches (배치 분할)
+- Item Lists (리스트 처리)
+- Aggregate (데이터 집계)
+
+**조건/분기**:
+- IF (조건 분기)
+- Switch (다중 조건)
+- Filter (필터링)
+
+**출력/전송**:
+- Gmail (이메일 전송)
+- Slack (메시지 전송)
+- Discord (메시지 전송)
+- Google Sheets (시트 저장)
+- HTTP Request (API 전송)
+- MySQL / PostgreSQL (DB 저장)
+
+**CRITICAL - 노드 이름 사용 규칙**:
+- ❌ 잘못된 예: [YOUTUBE AI NEWS], [YouTube Search], [Google YouTube]
+- ✅ 올바른 예: [YouTube], [Gmail], [HTTP Request]
+- 워크플로우 제안 시 위 목록의 정확한 이름만 사용
+- 노드 이름 뒤에 용도 설명 추가 가능: "YouTube (영상 검색)"
+- 존재하지 않는 노드 이름 절대 만들지 말기
+
 **주요 N8N 노드 구조** (정확한 필드명 사용):
 
 **YouTube 노드** (n8n-nodes-base.youtube):
