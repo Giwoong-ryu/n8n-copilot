@@ -507,14 +507,17 @@ async function callClaudeAPI(userMessage, context) {
    [YouTube] > [Code] > [Code] > [Google Sheets]
 
    각 노드 역할:
-   - YouTube (Video > List): AI 뉴스 관련 영상 검색
+   - YouTube (Video > Get many videos): AI 뉴스 관련 영상 검색
    - Code (텍스트 추출): 영상 제목/설명에서 키워드 추출
    - Code (단어 통계): 키워드 출현 빈도 계산
    - Google Sheets (Sheet > Append): 통계 결과 저장
 
    ⚙️ 각 노드의 "설정하기" 버튼을 클릭하여 설정하세요.
 
-   **중요**: Resources가 있는 노드(YouTube, Gmail, Slack 등)는 반드시 "(Resource > Operation)" 형식으로 명시
+   **중요**: Resources가 있는 노드(YouTube, Gmail, Slack 등)는 반드시 정확한 action 이름 명시:
+   - ✅ "YouTube (Video > Get many videos)" - 영상 여러 개 검색
+   - ✅ "YouTube (Channel > Get many channels)" - 채널 검색
+   - ❌ "YouTube (Video > List)" - 존재하지 않는 action
 
 2. 특정 노드 설정 요청 시 (🎯 표시 확인 또는 "XXX 노드 설정" 요청):
    - 인사말, 설명 없이 즉시 json-autofill 코드 블록만 제공
@@ -619,12 +622,15 @@ async function callClaudeAPI(userMessage, context) {
 - ❌ 잘못된 예: [YOUTUBE AI NEWS], [YouTube Search], [Google YouTube]
 - ✅ 올바른 예: [YouTube], [Gmail], [HTTP Request]
 - 워크플로우 제안 시 위 목록의 정확한 이름만 사용
-- YouTube 같이 Resources가 있는 노드는 워크플로우 설명에서 어떤 resource를 쓸지 명시:
-  ✅ "YouTube (Video > List): AI 뉴스 영상 검색"
+- YouTube 같이 Resources가 있는 노드는 워크플로우 설명에서 정확한 action 명시:
+  ✅ "YouTube (Video > Get many videos): AI 뉴스 영상 검색"
+  ✅ "YouTube (Channel > Get many channels): 채널 검색"
   ✅ "Gmail (Message > Send): 결과 이메일 전송"
-  ❌ "YouTube: AI 뉴스 검색" (resource 없음)
+  ❌ "YouTube (Video > List): 영상 검색" - "List"는 존재하지 않는 action
+  ❌ "YouTube: AI 뉴스 검색" - resource/action 없음
 - 존재하지 않는 노드 이름 절대 만들지 말기
-- 위 목록에 없는 노드는 추천하지 말기`;
+- 위 목록에 없는 노드는 추천하지 말기
+- YouTube action은 반드시 위의 정확한 이름 사용 (get, getAll, delete, upload 등)`;
 
     // Debug: 시스템 프롬프트 일부 출력
     console.log('📝 System prompt node list section (first 500 chars):', systemPrompt.substring(systemPrompt.indexOf('**N8N 사용 가능한 노드 목록**'), systemPrompt.indexOf('**N8N 사용 가능한 노드 목록**') + 500));
@@ -649,18 +655,45 @@ async function callClaudeAPI(userMessage, context) {
 
   systemPrompt += `
 
-**주요 N8N 노드 구조** (정확한 필드명 사용):
+**주요 N8N 노드 구조** (정확한 action 이름 사용):
 
 **YouTube 노드** (n8n-nodes-base.youtube):
-- resource: "video" | "channel" | "playlist" | "playlistItem"
-- video operations: "list" (검색), "get" (조회), "upload", "update", "delete"
-  - list 필드: q (검색어), maxResults (기본 10), order ("date" | "rating" | "relevance" | "title" | "viewCount")
-  - get 필드: videoId
-- channel operations: "get", "list", "update"
-  - list 필드: q (검색어), maxResults
-- playlist operations: "get", "list", "create", "update", "delete"
-- playlistItem operations: "add", "getAll", "delete"
-- 예시: "유튜브에서 AI 뉴스 검색" → {"resource": "video", "operation": "list", "q": "AI news", "maxResults": 10}
+Resource: "video" | "videoCategory" | "channel" | "playlist" | "playlistItem"
+
+**Video Actions**:
+- "delete" - Delete a video (videoId 필요)
+- "get" - Get a video (videoId 필요)
+- "getAll" - Get many videos (q: 검색어, maxResults: 개수, order: 정렬)
+- "rate" - Rate a video (videoId, rating 필요)
+- "update" - Update a video (videoId 필요)
+- "upload" - Upload a video (title, description 필요)
+
+**Video Category Actions**:
+- "getAll" - Get many video categories (regionCode 필요)
+
+**Channel Actions**:
+- "get" - Get a channel (channelId 필요)
+- "getAll" - Get many channels (q: 검색어, maxResults 필요)
+- "update" - Update a channel (channelId 필요)
+- "uploadBanner" - Upload a channel banner (channelId 필요)
+
+**Playlist Actions**:
+- "create" - Create a playlist (title, description 필요)
+- "delete" - Delete a playlist (playlistId 필요)
+- "get" - Get a playlist (playlistId 필요)
+- "getAll" - Get many playlists (channelId 필요)
+- "update" - Update a playlist (playlistId 필요)
+
+**Playlist Item Actions**:
+- "add" - Add a playlist item (playlistId, videoId 필요)
+- "delete" - Delete a playlist item (playlistId, playlistItemId 필요)
+- "get" - Get a playlist item (playlistItemId 필요)
+- "getAll" - Get many playlist items (playlistId 필요)
+
+**예시**:
+- "유튜브에서 AI 뉴스 검색" → {"resource": "video", "operation": "getAll", "q": "AI news", "maxResults": 10}
+- "특정 영상 조회" → {"resource": "video", "operation": "get", "videoId": "abc123"}
+- "채널 검색" → {"resource": "channel", "operation": "getAll", "q": "AI channel", "maxResults": 5}
 
 **Gmail 노드** (n8n-nodes-base.gmail):
 - resource: "message" | "draft" | "label" | "thread"
