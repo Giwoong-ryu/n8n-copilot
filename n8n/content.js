@@ -99,33 +99,125 @@ class N8NReader {
            'unknown';
   }
   
-  // 에러 메시지 감지
+  // 에러 메시지 감지 (개선된 버전)
   detectErrors() {
-    const errors = document.querySelectorAll([
-      '[class*="error"]',
-      '[class*="Error"]',
-      '[class*="issue"]',
-      '.el-message--error'
+    const detectedErrors = [];
+
+    // 1. 노드 실행 에러 패널에서 상세 정보 추출
+    const errorPanels = document.querySelectorAll([
+      '[class*="ExecutionError"]',
+      '[class*="execution-error"]',
+      '[data-test-id*="error"]',
+      '[class*="error-message"]',
+      '[class*="RunData"]'
     ].join(','));
-    
-    if (errors.length === 0) {
-      return [];
+
+    errorPanels.forEach(panel => {
+      const errorInfo = this.extractDetailedError(panel);
+      if (errorInfo) {
+        detectedErrors.push(errorInfo);
+      }
+    });
+
+    // 2. 일반 에러 요소에서 추출 (백업)
+    if (detectedErrors.length === 0) {
+      const generalErrors = document.querySelectorAll([
+        '[class*="error"]',
+        '[class*="Error"]',
+        '[class*="issue"]',
+        '.el-message--error'
+      ].join(','));
+
+      generalErrors.forEach(errorEl => {
+        const text = errorEl.textContent.trim();
+        if (text && text.length > 0 && text.length < 5000) {
+          detectedErrors.push({
+            element: errorEl,
+            message: text,
+            type: this.getErrorType(text),
+            details: null
+          });
+        }
+      });
     }
-    
-    console.log('⚠️ Found errors:', errors);
-    
-    return Array.from(errors).map(errorEl => ({
-      element: errorEl,
-      message: errorEl.textContent.trim(),
-      type: this.getErrorType(errorEl)
-    }));
+
+    console.log('⚠️ Found errors:', detectedErrors);
+    return detectedErrors;
   }
-  
-  getErrorType(errorElement) {
-    const text = errorElement.textContent.toLowerCase();
-    if (text.includes('credential')) return 'credential';
-    if (text.includes('connection')) return 'connection';
-    if (text.includes('required')) return 'validation';
+
+  // 상세 에러 정보 추출
+  extractDetailedError(errorElement) {
+    const text = errorElement.textContent.trim();
+    if (!text || text.length === 0) return null;
+
+    // 에러 타입 추출 (ReferenceError, SyntaxError 등)
+    const errorTypeMatch = text.match(/(ReferenceError|SyntaxError|TypeError|Error):\s*(.+?)(?=\n|$)/);
+    const errorType = errorTypeMatch ? errorTypeMatch[1] : null;
+    const errorMessage = errorTypeMatch ? errorTypeMatch[2] : text;
+
+    // 줄 번호 추출
+    const lineNumberMatch = text.match(/(?:at line|line|:)?\s*(\d+)(?::(\d+))?/);
+    const lineNumber = lineNumberMatch ? lineNumberMatch[1] : null;
+    const columnNumber = lineNumberMatch ? lineNumberMatch[2] : null;
+
+    // 스택 트레이스 추출
+    const stackMatch = text.match(/at\s+.+\(.+:\d+:\d+\)/g);
+    const stackTrace = stackMatch ? stackMatch.slice(0, 3) : null; // 처음 3줄만
+
+    // 노드 이름 추출
+    const nodeNameMatch = text.match(/(?:in node|node)\s+['"]?([^'"]+)['"]?/i);
+    const nodeName = nodeNameMatch ? nodeNameMatch[1] : this.findParentNodeName(errorElement);
+
+    // 전체 에러 메시지 (너무 길면 자르기)
+    const fullMessage = text.length > 1000 ? text.substring(0, 1000) + '...' : text;
+
+    return {
+      element: errorElement,
+      type: errorType || this.getErrorType(text),
+      message: errorMessage || fullMessage,
+      details: {
+        fullMessage: fullMessage,
+        lineNumber: lineNumber,
+        columnNumber: columnNumber,
+        stackTrace: stackTrace,
+        nodeName: nodeName,
+        errorType: errorType
+      }
+    };
+  }
+
+  // 에러 요소의 부모 노드에서 노드 이름 찾기
+  findParentNodeName(element) {
+    let current = element;
+    for (let i = 0; i < 10; i++) {
+      if (!current) break;
+
+      // 노드 이름을 포함할 수 있는 요소 찾기
+      const nodeName = current.querySelector('[class*="node-name"], [class*="NodeName"], [data-test-id*="node-name"]');
+      if (nodeName && nodeName.textContent) {
+        return nodeName.textContent.trim();
+      }
+
+      current = current.parentElement;
+    }
+    return null;
+  }
+
+  getErrorType(text) {
+    const textLower = text.toLowerCase();
+
+    // JavaScript 에러 타입
+    if (text.includes('ReferenceError')) return 'ReferenceError';
+    if (text.includes('SyntaxError')) return 'SyntaxError';
+    if (text.includes('TypeError')) return 'TypeError';
+
+    // N8N 특정 에러
+    if (textLower.includes('credential')) return 'credential';
+    if (textLower.includes('connection')) return 'connection';
+    if (textLower.includes('required')) return 'validation';
+    if (textLower.includes('timeout')) return 'timeout';
+    if (textLower.includes('authentication')) return 'authentication';
+
     return 'general';
   }
   
@@ -633,6 +725,49 @@ ${docsSection}
 - 워크플로우: ${context.workflowName}
 - 에러 개수: ${context.errors.length}개
 ${context.selectedNode ? `- 선택된 노드: ${context.selectedNode.name} (${context.selectedNode.type})` : ''}
+
+${context.errors.length > 0 ? `
+**⚠️ 감지된 에러 상세 정보**:
+${context.errors.map((err, idx) => `
+에러 ${idx + 1}:
+- 타입: ${err.type}
+- 메시지: ${err.message}
+${err.details ? `- 노드 이름: ${err.details.nodeName || '알 수 없음'}
+- 줄 번호: ${err.details.lineNumber || '알 수 없음'}
+${err.details.stackTrace ? `- 스택 트레이스:\n  ${err.details.stackTrace.join('\n  ')}` : ''}` : ''}
+`).join('\n')}
+` : ''}
+
+**에러 분석 전략 (매우 중요!)**:
+🚨 사용자가 에러 분석을 요청하면:
+
+1. **실제 에러 정보를 반드시 보여주기**:
+   ✅ 올바른 예시:
+   \`\`\`
+   **에러 타입**: ReferenceError
+   **에러 메시지**: sortedNews is not defined
+   **발생 위치**: 15번째 줄
+
+   **원인**: sortedNews 변수가 선언되지 않았습니다.
+
+   **해결 방법**:
+   1. 15번째 줄 앞에 \`const sortedNews = ...\`를 추가하세요
+   2. 또는 이전에 선언한 변수 이름을 확인하세요
+   \`\`\`
+
+   ❌ 잘못된 예시 (일반적인 조언만):
+   \`\`\`
+   39개의 에러가 발생했습니다.
+   코드 문법 오류일 수 있습니다.
+   입력 데이터 형식을 확인하세요.
+   \`\`\`
+
+2. **우선순위**:
+   - 1순위: 실제 에러 메시지와 타입 보여주기
+   - 2순위: 구체적인 해결 방법
+   - 3순위: 일반적인 디버깅 팁
+
+3. **에러 정보가 없는 경우에만** 일반적인 조언 제공
 
 **최신 정보 우선 원칙**:
 ⚠️ 당신이 가진 지식(2025년 1월)이 오래되었을 수 있습니다.
