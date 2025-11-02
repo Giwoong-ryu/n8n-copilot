@@ -406,46 +406,59 @@ async function savePartialResults(allNodes, detailedNodes, currentIndex, totalNo
 }
 
 // 문서 가져오기
-async function fetchN8NDocs() {
+async function fetchN8NDocs(existingData = null) {
   console.log('📥 Fetching N8N docs...');
 
   try {
-    const [nodesRes, changelogRes] = await Promise.all([
-      fetch(N8N_DOCS_SOURCES.github_nodes, {
-        headers: { 'Accept': 'application/vnd.github.v3+json' }
-      }),
-      fetch(N8N_DOCS_SOURCES.changelog)
-    ]);
+    // 기존 데이터가 있으면 재사용 (resume)
+    let nodeList, changelog, latestVersion;
 
-    const nodes = await nodesRes.json();
-    const changelog = await changelogRes.text();
+    if (existingData && existingData.allNodes) {
+      // Resume: 기존 데이터 재사용
+      nodeList = existingData.allNodes;
+      changelog = existingData.changelog || '';
+      latestVersion = existingData.version || 'Unknown';
+      console.log('🔄 Using existing node list for resume');
+    } else {
+      // 처음 시작: 새로 fetch
+      const [nodesRes, changelogRes] = await Promise.all([
+        fetch(N8N_DOCS_SOURCES.github_nodes, {
+          headers: { 'Accept': 'application/vnd.github.v3+json' }
+        }),
+        fetch(N8N_DOCS_SOURCES.changelog)
+      ]);
 
-    // 노드 목록 추출
-    const nodeList = nodes
-      .filter(item => item.type === 'dir')
-      .map(item => ({
-        name: item.name,
-        path: item.path,
-        url: item.html_url
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
+      const nodes = await nodesRes.json();
+      changelog = await changelogRes.text();
 
-    console.log(`✅ Found ${nodeList.length} nodes`);
+      // 노드 목록 추출
+      nodeList = nodes
+        .filter(item => item.type === 'dir')
+        .map(item => ({
+          name: item.name,
+          path: item.path,
+          url: item.html_url
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
 
-    // 상세 노드 정보 가져오기 (operations 포함)
-    console.log('📥 Fetching operations for sample nodes...');
-    const detailedNodes = await fetchNodeOperations(nodeList);
+      console.log(`✅ Found ${nodeList.length} nodes`);
 
-    // 최신 버전 추출
-    const latestVersion = changelog.split('\n## ')[1]?.split('\n')[0] || 'Unknown';
+      // 최신 버전 추출
+      latestVersion = changelog.split('\n## ')[1]?.split('\n')[0] || 'Unknown';
+    }
+
+    // 상세 노드 정보 가져오기 (operations 포함) - resume 지원
+    console.log('📥 Fetching operations for nodes...');
+    const detailedNodes = await fetchNodeOperations(nodeList, existingData);
 
     return {
       allNodes: nodeList,
       detailedNodes: detailedNodes,
-      changelog: changelog.split('\n## ').slice(0, 3).join('\n## '),
+      changelog: typeof changelog === 'string' ? changelog.split('\n## ').slice(0, 3).join('\n## ') : changelog,
       version: latestVersion,
       lastUpdated: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      fetchProgress: null // 완료됨
     };
 
   } catch (error) {
@@ -477,12 +490,20 @@ async function loadN8NDocs() {
     }
 
     const docs = result.n8nDocs;
-    const expiresAt = new Date(docs.expiresAt);
 
-    // 만료 체크
-    if (new Date() > expiresAt) {
-      console.log('⚠️ Docs expired, updating...');
-      return await updateN8NDocsNow();
+    // 진행중인 fetch 체크
+    if (docs.fetchProgress && docs.fetchProgress.inProgress) {
+      console.log('🔄 Incomplete fetch detected, resuming...');
+      return await updateN8NDocsNow(docs);
+    }
+
+    // 만료 체크 (expiresAt이 null이면 스킵)
+    if (docs.expiresAt) {
+      const expiresAt = new Date(docs.expiresAt);
+      if (new Date() > expiresAt) {
+        console.log('⚠️ Docs expired, updating...');
+        return await updateN8NDocsNow();
+      }
     }
 
     console.log(`✅ Docs loaded (${docs.allNodes?.length || docs.nodes?.length || 0} nodes)`);
@@ -495,9 +516,9 @@ async function loadN8NDocs() {
 }
 
 // 즉시 업데이트
-async function updateN8NDocsNow() {
+async function updateN8NDocsNow(existingData = null) {
   console.log('🔄 Updating N8N docs now...');
-  const docs = await fetchN8NDocs();
+  const docs = await fetchN8NDocs(existingData);
 
   if (docs) {
     await saveN8NDocs(docs);
