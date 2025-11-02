@@ -877,14 +877,38 @@ async function getRealTimeN8NNodeInfo() {
       const operationProp = node.properties.find(p => p.name === 'operation');
 
       if (resourceProp && resourceProp.options) {
-        nodeInfo.resources = resourceProp.options.map(opt => ({
-          name: opt.value,
-          displayName: opt.name,
-          description: opt.description || ''
-        }));
-      }
+        // 각 resource별로 가능한 operations 매핑
+        const resourcesWithOperations = resourceProp.options.map(resourceOpt => {
+          const resourceValue = resourceOpt.value;
+          const resourceName = resourceOpt.name;
 
-      if (operationProp && operationProp.options) {
+          // 이 resource에서 가능한 operations 찾기
+          const availableOperations = [];
+          if (operationProp && operationProp.options) {
+            operationProp.options.forEach(opOpt => {
+              // displayOptions에서 이 operation이 현재 resource에서 표시되는지 확인
+              const showInResource = opOpt.displayOptions?.show?.resource;
+              if (!showInResource || showInResource.includes(resourceValue)) {
+                availableOperations.push({
+                  name: opOpt.value,
+                  displayName: opOpt.name,
+                  description: opOpt.description || ''
+                });
+              }
+            });
+          }
+
+          return {
+            name: resourceValue,
+            displayName: resourceName,
+            description: resourceOpt.description || '',
+            operations: availableOperations
+          };
+        });
+
+        nodeInfo.resources = resourcesWithOperations;
+      } else if (operationProp && operationProp.options) {
+        // resource가 없고 operation만 있는 경우 (HTTP Request 등)
         nodeInfo.operations = operationProp.options.map(opt => ({
           name: opt.value,
           displayName: opt.name,

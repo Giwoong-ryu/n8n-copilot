@@ -507,17 +507,18 @@ async function callClaudeAPI(userMessage, context) {
    [YouTube] > [Code] > [Code] > [Google Sheets]
 
    각 노드 역할:
-   - YouTube (Video > Get many videos): AI 뉴스 관련 영상 검색
+   - YouTube (Video > Get Many Videos): AI 뉴스 관련 영상 검색
    - Code (텍스트 추출): 영상 제목/설명에서 키워드 추출
    - Code (단어 통계): 키워드 출현 빈도 계산
-   - Google Sheets (Sheet > Append): 통계 결과 저장
+   - Google Sheets (Append): 통계 결과 저장
 
    ⚙️ 각 노드의 "설정하기" 버튼을 클릭하여 설정하세요.
 
-   **중요**: Resources가 있는 노드(YouTube, Gmail, Slack 등)는 반드시 정확한 action 이름 명시:
-   - ✅ "YouTube (Video > Get many videos)" - 영상 여러 개 검색
-   - ✅ "YouTube (Channel > Get many channels)" - 채널 검색
-   - ❌ "YouTube (Video > List)" - 존재하지 않는 action
+   **중요**: Resources가 있는 노드는 반드시 정확한 action 명시 (N8N UI에 나오는 그대로):
+   - ✅ "YouTube (Video > Get Many Videos)"
+   - ✅ "YouTube (Channel > Get Many Channels)"
+   - ✅ "Gmail (Message > Send)"
+   - ❌ "YouTube (Video > List)" - N8N에 없는 action
 
 2. 특정 노드 설정 요청 시 (🎯 표시 확인 또는 "XXX 노드 설정" 요청):
    - 인사말, 설명 없이 즉시 json-autofill 코드 블록만 제공
@@ -574,31 +575,37 @@ async function callClaudeAPI(userMessage, context) {
       systemPrompt += `**자주 사용되는 노드** (resources/operations 포함):\n\n`;
 
       commonNodesDetailed.forEach(node => {
-        systemPrompt += `- **${node.name}**`;
+        systemPrompt += `- **${node.name}**\n`;
 
-        // Debug: YouTube 노드 정보 출력
-        if (node.name === 'YouTube') {
-          console.log('🔍 YouTube node details:', {
+        // Debug: 노드 정보 출력
+        if (node.name === 'YouTube' || node.name === 'Gmail' || node.name === 'Slack') {
+          console.log(`🔍 ${node.name} node details:`, {
             name: node.name,
             hasResources: !!node.resources,
             resourceCount: node.resources?.length || 0,
-            hasOperations: !!node.operations,
-            operationCount: node.operations?.length || 0,
-            resources: node.resources,
-            operations: node.operations
+            resources: node.resources
           });
         }
 
-        // Resources 정보 (YouTube 등)
+        // Resources 정보 (각 resource별로 가능한 operations 표시)
         if (node.resources && node.resources.length > 0) {
-          const resourceNames = node.resources.map(r => r.displayName || r.name).join(', ');
-          systemPrompt += `\n  Resources: ${resourceNames}`;
-        }
+          node.resources.forEach(resource => {
+            systemPrompt += `  **${resource.displayName || resource.name}** Actions:\n`;
 
-        // Operations 정보
-        if (node.operations && node.operations.length > 0) {
-          const operationNames = node.operations.map(o => o.displayName || o.name).join(', ');
-          systemPrompt += `\n  Operations: ${operationNames}`;
+            if (resource.operations && resource.operations.length > 0) {
+              resource.operations.forEach(op => {
+                systemPrompt += `    - ${op.displayName || op.name} (operation: "${op.name}")\n`;
+              });
+            } else {
+              systemPrompt += `    - (no specific operations)\n`;
+            }
+          });
+        } else if (node.operations && node.operations.length > 0) {
+          // resource 없이 operation만 있는 경우
+          systemPrompt += `  Operations:\n`;
+          node.operations.forEach(op => {
+            systemPrompt += `    - ${op.displayName || op.name} (operation: "${op.name}")\n`;
+          });
         }
 
         systemPrompt += '\n';
@@ -618,22 +625,24 @@ async function callClaudeAPI(userMessage, context) {
     }
 
     systemPrompt += `
-**CRITICAL - 노드 이름 사용 규칙**:
-- ❌ 잘못된 예: [YOUTUBE AI NEWS], [YouTube Search], [Google YouTube]
-- ✅ 올바른 예: [YouTube], [Gmail], [HTTP Request]
-- 워크플로우 제안 시 위 목록의 정확한 이름만 사용
-- YouTube 같이 Resources가 있는 노드는 워크플로우 설명에서 정확한 action 명시:
-  ✅ "YouTube (Video > Get many videos): AI 뉴스 영상 검색"
-  ✅ "YouTube (Channel > Get many channels): 채널 검색"
+**CRITICAL - 워크플로우 설명 규칙**:
+- 노드 이름은 위 목록의 정확한 이름만 사용
+  ❌ [YOUTUBE AI NEWS], [YouTube Search]
+  ✅ [YouTube], [Gmail], [HTTP Request]
+
+- Resources가 있는 노드는 워크플로우 설명에서 "(Resource > Action)" 형식으로 정확히 명시:
+  ✅ "YouTube (Video > Get Many Videos): AI 뉴스 영상 검색"
   ✅ "Gmail (Message > Send): 결과 이메일 전송"
-  ❌ "YouTube (Video > List): 영상 검색" - "List"는 존재하지 않는 action
+  ✅ "Slack (Message > Post): 알림 전송"
   ❌ "YouTube: AI 뉴스 검색" - resource/action 없음
-- 존재하지 않는 노드 이름 절대 만들지 말기
-- 위 목록에 없는 노드는 추천하지 말기
-- YouTube action은 반드시 위의 정확한 이름 사용 (get, getAll, delete, upload 등)`;
+  ❌ "YouTube (Video > List)" - 위 목록에 없는 action
+
+- Action 이름은 위에 나온 displayName 그대로 사용 (예: "Get Many Videos", "Send", "Post")
+- 존재하지 않는 action 이름 절대 만들지 말기
+- 위 목록에 표시된 action만 사용`;
 
     // Debug: 시스템 프롬프트 일부 출력
-    console.log('📝 System prompt node list section (first 500 chars):', systemPrompt.substring(systemPrompt.indexOf('**N8N 사용 가능한 노드 목록**'), systemPrompt.indexOf('**N8N 사용 가능한 노드 목록**') + 500));
+    console.log('📝 System prompt generated successfully');
   } else {
     // Fallback: 하드코딩된 기본 노드 목록
     systemPrompt += `
