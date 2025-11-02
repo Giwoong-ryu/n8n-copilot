@@ -743,7 +743,8 @@ loadN8NDocs().then(docs => {
 });
 
 // 강제 업데이트 함수를 전역으로 노출 (디버깅용)
-window.forceUpdateN8NDocs = updateN8NDocsNow;
+// Service worker에서는 window 대신 globalThis 사용
+globalThis.forceUpdateN8NDocs = updateN8NDocsNow;
 
 // ========================================
 // 7. N8N API Client
