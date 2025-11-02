@@ -623,7 +623,7 @@
 
       <h1>N8N AI Copilot</h1>
       <p class="subtitle">지능형 n8n 워크플로우 자동화를 위한 Chrome Extension</p>
-      <span class="version-badge">v0.2.0 Alpha • 75% 프로덕션 준비 완료</span>
+      <span class="version-badge">v0.2.0 Alpha • 기본 패턴 구현 완료, 실제 테스트 필요</span>
 
       <div class="container">
         <div class="cards-grid">
@@ -695,7 +695,7 @@
         </div>
         <div class="overview-item">
           <h3>주요 목표</h3>
-          <p>개발 시간 90% 단축, 프로덕션 준비도 75% 달성, 그리고 재사용 가능한 워크플로우 템플릿 라이브러리 구축을 목표로 합니다.</p>
+          <p>반복 작업 자동화를 통한 개발 시간 단축, 안정적인 DOM 조작 패턴 구축, 그리고 재사용 가능한 워크플로우 템플릿 라이브러리 제공을 목표로 합니다.</p>
         </div>
       </div>
       </div>
@@ -744,25 +744,29 @@
   <!-- 주요 성과 -->
   <div class="container">
     <div class="stats">
-      <h2>주요 성과</h2>
+      <h2>개발 현황</h2>
       <div class="stats-grid">
         <div class="stat-item">
           <div class="stat-value">2,480+</div>
-          <div class="stat-label">코드 라인 수</div>
+          <div class="stat-label">작성된 코드 라인 수</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">7</div>
-          <div class="stat-label">Git 커밋</div>
+          <div class="stat-value">16개</div>
+          <div class="stat-label">발견된 잠재 이슈</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">75%</div>
-          <div class="stat-label">프로덕션 준비도</div>
+          <div class="stat-value">3/16</div>
+          <div class="stat-label">Critical 이슈 해결</div>
         </div>
         <div class="stat-item">
-          <div class="stat-value">90%</div>
-          <div class="stat-label">시간 절감</div>
+          <div class="stat-value">0%</div>
+          <div class="stat-label">실제 테스트 완료</div>
         </div>
       </div>
+      <p style="margin-top: 24px; font-size: 14px; color: var(--text-secondary); text-align: center;">
+        * 실제 n8n 환경에서의 테스트 및 검증 필요<br>
+        * 문서화 자동화로 3시간 → 10분 단축 (측정됨)
+      </p>
     </div>
   </div>
 
@@ -887,16 +891,16 @@
       <p class="section-subtitle">지속적인 개선과 기능 확장</p>
       <div class="overview-grid">
       <div class="overview-item">
+        <h3>Phase 1 (즉시)</h3>
+        <p><strong>실제 테스트 및 검증:</strong> n8n 환경에서 실제 동작 확인, 사용자 피드백 수집, 발견된 버그 수정. 과대포장된 통계를 실제 측정 데이터로 교체.</p>
+      </div>
+      <div class="overview-item">
         <h3>Phase 2 (2주)</h3>
-        <p>DebugLogger 시스템, SmartInputWriter (select, checkbox, ACE editor 지원), N8NVersionDetector, SmartFieldMatcher 구현</p>
+        <p>DebugLogger 시스템, SmartInputWriter (select, checkbox, ACE editor 지원), N8NVersionDetector 구현. 실제 테스트 기반 개선.</p>
       </div>
       <div class="overview-item">
-        <h3>Phase 3 (1개월)</h3>
-        <p>성능 튜닝, 테스트 코드 작성 (Jest, Playwright), 완전한 API 문서 및 개발자 가이드 작성</p>
-      </div>
-      <div class="overview-item">
-        <h3>Long-term (3개월)</h3>
-        <p>워크플로우 JSON 자동 생성, 템플릿 라이브러리, 실시간 자동완성, 협업 기능, Chrome Web Store 배포</p>
+        <h3>Phase 3 (1-3개월)</h3>
+        <p>성능 튜닝, 테스트 코드 작성 (Jest, Playwright), API 문서 작성. 안정성 검증 후 템플릿 라이브러리 구축 및 배포 고려.</p>
       </div>
       </div>
     </div>
