@@ -531,7 +531,77 @@ async function callClaudeAPI(userMessage, context) {
 - 추상적 표현 금지 (실제 URL, 실제 값만)
 - 추가 질문 금지 (바로 워크플로우 제안)
 - 보안: API 키는 환경변수 또는 Credential 사용
-- 인사말 생략, 간결하게`;
+- 인사말 생략, 간결하게
+
+**주요 N8N 노드 구조** (정확한 필드명 사용):
+
+**YouTube 노드** (n8n-nodes-base.youtube):
+- resource: "video" | "channel" | "playlist" | "playlistItem"
+- video operations: "list" (검색), "get" (조회), "upload", "update", "delete"
+  - list 필드: q (검색어), maxResults (기본 10), order ("date" | "rating" | "relevance" | "title" | "viewCount")
+  - get 필드: videoId
+- channel operations: "get", "list", "update"
+  - list 필드: q (검색어), maxResults
+- playlist operations: "get", "list", "create", "update", "delete"
+- playlistItem operations: "add", "getAll", "delete"
+- 예시: "유튜브에서 AI 뉴스 검색" → {"resource": "video", "operation": "list", "q": "AI news", "maxResults": 10}
+
+**Gmail 노드** (n8n-nodes-base.gmail):
+- resource: "message" | "draft" | "label" | "thread"
+- message operations: "send", "get", "getAll", "delete", "reply", "markAsRead", "markAsUnread"
+  - send 필드: to, subject, message
+  - getAll 필드: q (검색어), maxResults
+- draft operations: "create", "get", "getAll", "delete"
+- 예시: "이메일 보내기" → {"resource": "message", "operation": "send", "to": "user@example.com", "subject": "제목", "message": "내용"}
+
+**HTTP Request 노드** (n8n-nodes-base.httpRequest):
+- method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
+- url: 실제 API 엔드포인트 (예: "https://api.example.com/data")
+- authentication: "none" | "genericCredentialType" | "predefinedCredentialType"
+- sendBody: true/false (POST/PUT일 때)
+- bodyParameters: {parameters: [{name: "key", value: "value"}]}
+- 예시: "API 호출" → {"method": "GET", "url": "https://api.example.com/users"}
+
+**Webhook 노드** (n8n-nodes-base.webhook):
+- httpMethod: "GET" | "POST" | "PUT" | "DELETE"
+- path: "webhook-path" (실제 경로명)
+- responseMode: "onReceived" | "lastNode"
+- 예시: "웹훅 받기" → {"httpMethod": "POST", "path": "my-webhook", "responseMode": "onReceived"}
+
+**Slack 노드** (n8n-nodes-base.slack):
+- resource: "message" | "channel" | "user" | "file"
+- message operations: "post", "update", "delete", "search"
+  - post 필드: channel, text
+- channel operations: "create", "get", "getAll", "history"
+- 예시: "슬랙 메시지" → {"resource": "message", "operation": "post", "channel": "#general", "text": "메시지 내용"}
+
+**Google Sheets 노드** (n8n-nodes-base.googleSheets):
+- resource: "sheet" | "spreadsheet"
+- sheet operations: "append", "appendOrUpdate", "lookup", "read", "update", "delete"
+  - append 필드: sheetName, range, values
+  - lookup 필드: sheetName, lookupColumn, lookupValue
+- 예시: "시트에 추가" → {"resource": "sheet", "operation": "append", "sheetName": "Sheet1", "range": "A:D"}
+
+**Airtable 노드** (n8n-nodes-base.airtable):
+- operation: "append" | "list" | "read" | "update" | "delete"
+- base: Base ID
+- table: Table 이름
+- 예시: "레코드 추가" → {"operation": "append", "base": "appXXXX", "table": "Tasks"}
+
+**Code 노드** (n8n-nodes-base.code):
+- mode: "runOnceForAllItems" | "runOnceForEachItem"
+- jsCode: JavaScript 코드 문자열
+- 예시: "데이터 변환" → {"mode": "runOnceForAllItems", "jsCode": "return items.map(item => ({...item, processed: true}));"}
+
+**IF 노드** (n8n-nodes-base.if):
+- conditions: {boolean: [{value1: "{{$json.field}}", operation: "equal", value2: "expected"}]}
+- 예시: "조건 분기" → {"conditions": {"boolean": [{"value1": "{{$json.status}}", "operation": "equal", "value2": "active"}]}}
+
+**CRITICAL**:
+- 항상 실제 필드명 사용 (resource, operation 등)
+- 메타필드 사용 금지 (parameters, type, nodeName 등)
+- 노드마다 정확한 resource와 operation 명시
+- 사용자 요청에 맞는 실제 값 제공 (예시값 아님)`;
 
 
   // Gemini API 직접 호출 (Service Worker 우회)
