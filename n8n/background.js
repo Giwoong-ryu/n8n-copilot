@@ -295,13 +295,17 @@ async function fetchOperationsFromVersion(versionPath) {
 // 노드의 operations 가져오기
 async function fetchNodeOperations(nodes) {
   const results = [];
+  const totalNodes = nodes.length;
 
-  // 처음 10개만 샘플링 (GitHub API rate limit 방지)
-  const sampleNodes = nodes.slice(0, 10);
+  console.log(`  📊 Fetching operations for ${totalNodes} nodes...`);
 
-  for (const node of sampleNodes) {
+  for (let i = 0; i < totalNodes; i++) {
+    const node = nodes[i];
     try {
-      console.log(`  Fetching operations for ${node.name}...`);
+      // 진행 상황 로깅 (10개마다)
+      if ((i + 1) % 10 === 0 || i === 0) {
+        console.log(`  📥 Progress: ${i + 1}/${totalNodes} nodes (${Math.round((i + 1) / totalNodes * 100)}%)`);
+      }
 
       // 노드 폴더 내부 확인
       const nodeContentUrl = `https://api.github.com/repos/n8n-io/n8n/contents/${node.path}`;
@@ -310,6 +314,14 @@ async function fetchNodeOperations(nodes) {
       });
 
       if (!nodeResponse.ok) {
+        // Rate limit 에러 체크
+        if (nodeResponse.status === 403) {
+          const resetTime = nodeResponse.headers.get('X-RateLimit-Reset');
+          console.warn(`  ⚠️ GitHub API rate limit reached at node ${i + 1}/${totalNodes}`);
+          console.warn(`  💾 Saving ${results.length} nodes fetched so far...`);
+          break; // 현재까지 수집한 것 저장
+        }
+
         results.push({
           name: node.name,
           operations: [],
@@ -339,11 +351,13 @@ async function fetchNodeOperations(nodes) {
         hasOperations: operations.length > 0
       });
 
-      // Rate limiting 방지 (GitHub API: 60 requests/hour)
-      await sleep(100);
+      // Rate limiting 방지 (GitHub API: 60 requests/hour without auth)
+      // 각 노드당 평균 3-4회 요청 발생 예상 → 15개 노드당 60회 제한
+      // 안전하게 200ms 대기 (시간당 18회 노드 = 72회 요청)
+      await sleep(200);
 
     } catch (error) {
-      console.error(`  Failed to fetch operations for ${node.name}:`, error.message);
+      console.error(`  ❌ Failed to fetch operations for ${node.name}:`, error.message);
       results.push({
         name: node.name,
         operations: [],
@@ -352,6 +366,7 @@ async function fetchNodeOperations(nodes) {
     }
   }
 
+  console.log(`  ✅ Successfully fetched operations for ${results.length}/${totalNodes} nodes`);
   return results;
 }
 
