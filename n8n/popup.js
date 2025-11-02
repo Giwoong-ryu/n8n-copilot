@@ -285,14 +285,9 @@ async function handleFormSubmit(event) {
   saveButton.textContent = '💾 저장 중...';
 
   try {
-    // Background script를 통해 API 키 저장
-    await chrome.runtime.sendMessage({
-      action: 'saveApiKey',
-      apiKey: apiKey
-    });
-
-    // Provider, 모델, N8N 설정 저장
+    // API 키 및 설정 직접 저장 (Service worker 우회)
     await chrome.storage.local.set({
+      claudeApiKey: apiKey,
       aiProvider: aiProvider,
       selectedModel: selectedModel,
       n8nUrl: n8nUrl,
