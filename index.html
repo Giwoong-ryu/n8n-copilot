@@ -251,6 +251,8 @@
       border-radius: 16px;
       padding: 48px;
       box-shadow: var(--shadow-sm);
+      margin: 0 auto;
+      max-width: 1200px;
     }
 
     .overview-grid {
@@ -258,6 +260,11 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 32px;
       margin-top: 32px;
+      text-align: left;
+    }
+
+    .overview-item {
+      text-align: left;
     }
 
     .overview-item h3 {
@@ -270,6 +277,41 @@
     .overview-item p {
       color: var(--text-secondary);
       line-height: 1.7;
+    }
+
+    /* Collapsible Sections */
+    .section-header {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .section-header:hover {
+      color: var(--accent);
+    }
+
+    .toggle-icon {
+      width: 24px;
+      height: 24px;
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-icon.open {
+      transform: rotate(180deg);
+    }
+
+    .section-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+    }
+
+    .section-content.open {
+      max-height: 5000px;
     }
 
     /* Tech Stack */
@@ -633,9 +675,15 @@
 
   <!-- 프로젝트 개요 -->
   <div class="container section">
-    <h2>프로젝트 개요</h2>
-    <p class="section-subtitle">AI 기반 워크플로우 자동화를 통해 개발자의 생산성을 극대화합니다</p>
-    <div class="project-overview">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>프로젝트 개요</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">AI 기반 워크플로우 자동화를 통해 개발자의 생산성을 극대화합니다</p>
+      <div class="project-overview">
       <div class="overview-grid">
         <div class="overview-item">
           <h3>문제 정의</h3>
@@ -650,14 +698,21 @@
           <p>개발 시간 90% 단축, 프로덕션 준비도 75% 달성, 그리고 재사용 가능한 워크플로우 템플릿 라이브러리 구축을 목표로 합니다.</p>
         </div>
       </div>
+      </div>
     </div>
   </div>
 
   <!-- 기술 스택 -->
   <div class="container section">
-    <h2>기술 스택</h2>
-    <p class="section-subtitle">프로젝트에 사용된 핵심 기술들</p>
-    <div class="tech-stack">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>기술 스택</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">프로젝트에 사용된 핵심 기술들</p>
+      <div class="tech-stack">
       <div class="tech-item">
         <strong>Chrome Extension</strong>
         <span>Manifest V3</span>
@@ -681,6 +736,7 @@
       <div class="tech-item">
         <strong>Git</strong>
         <span>Version Control</span>
+      </div>
       </div>
     </div>
   </div>
@@ -712,9 +768,15 @@
 
   <!-- 개발 과정 -->
   <div class="container section">
-    <h2>개발 과정</h2>
-    <p class="section-subtitle">체계적인 접근과 반복적 개선</p>
-    <div class="timeline">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>개발 과정</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">체계적인 접근과 반복적 개선</p>
+      <div class="timeline">
       <div class="timeline-item">
         <div class="timeline-date">Phase 1</div>
         <div class="timeline-content">
@@ -743,14 +805,21 @@
           <p>code-changelog 자동 생성, HTML 뷰어 제작, GitHub Pages 배포로 포트폴리오화</p>
         </div>
       </div>
+      </div>
     </div>
   </div>
 
   <!-- 핵심 기능 -->
   <div class="container section">
-    <h2>핵심 기능</h2>
-    <p class="section-subtitle">실시간 페이지 분석부터 자동화까지</p>
-    <div class="feature-list">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>핵심 기능</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">실시간 페이지 분석부터 자동화까지</p>
+      <div class="feature-list">
       <div class="feature-item">
         <h3>실시간 페이지 분석</h3>
         <p>n8n 페이지의 DOM 구조, CSS 클래스, data-test-id 속성을 실시간으로 분석하여 올바른 선택자를 자동으로 찾습니다.</p>
@@ -767,14 +836,21 @@
         <h3>자동 재시도 메커니즘</h3>
         <p>네트워크 지연이나 DOM 준비 지연 시 exponential backoff 방식으로 자동 재시도하여 안정성을 보장합니다.</p>
       </div>
+      </div>
     </div>
   </div>
 
   <!-- 기술적 도전과 해결 -->
   <div class="container section">
-    <h2>기술적 도전과 해결</h2>
-    <p class="section-subtitle">실전에서 마주한 문제들과 창의적 솔루션</p>
-    <div class="feature-list">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>기술적 도전과 해결</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">실전에서 마주한 문제들과 창의적 솔루션</p>
+      <div class="feature-list">
       <div class="feature-item">
         <h3>Vue.js 리액티브 미작동</h3>
         <p><strong>문제:</strong> element.value = x 방식이 Vue Proxy를 트리거하지 못함<br>
@@ -795,14 +871,21 @@
         <p><strong>문제:</strong> Message 이벤트에 origin 검증 없어 외부 주입 가능<br>
         <strong>해결:</strong> event.source === window 체크로 Same-origin Policy 적용</p>
       </div>
+      </div>
     </div>
   </div>
 
   <!-- 향후 계획 -->
   <div class="container section">
-    <h2>향후 계획</h2>
-    <p class="section-subtitle">지속적인 개선과 기능 확장</p>
-    <div class="overview-grid">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>향후 계획</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">지속적인 개선과 기능 확장</p>
+      <div class="overview-grid">
       <div class="overview-item">
         <h3>Phase 2 (2주)</h3>
         <p>DebugLogger 시스템, SmartInputWriter (select, checkbox, ACE editor 지원), N8NVersionDetector, SmartFieldMatcher 구현</p>
@@ -814,6 +897,7 @@
       <div class="overview-item">
         <h3>Long-term (3개월)</h3>
         <p>워크플로우 JSON 자동 생성, 템플릿 라이브러리, 실시간 자동완성, 협업 기능, Chrome Web Store 배포</p>
+      </div>
       </div>
     </div>
   </div>
@@ -866,6 +950,15 @@
         }
       });
     });
+
+    // 섹션 토글 기능
+    function toggleSection(header) {
+      const icon = header.querySelector('.toggle-icon');
+      const content = header.nextElementSibling;
+
+      icon.classList.toggle('open');
+      content.classList.toggle('open');
+    }
   </script>
 </body>
 </html>
