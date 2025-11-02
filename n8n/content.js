@@ -545,46 +545,69 @@ async function callClaudeAPI(userMessage, context) {
 
   // N8N 실제 노드 목록 추가 (N8N API에서 가져온 정확한 목록)
   if (docsInfo && docsInfo.nodes && docsInfo.nodes.length > 0) {
+    console.log(`📊 Total N8N nodes from API: ${docsInfo.nodes.length}`);
+
     systemPrompt += `
 
-**N8N 사용 가능한 노드 목록** (워크플로우 제안 시 이 정확한 이름만 사용):
+**N8N 사용 가능한 노드 목록** (총 ${docsInfo.nodes.length}개):
 
 `;
-    // 노드 이름만 추출 (displayName 사용)
-    const nodeNames = docsInfo.nodes
-      .map(node => node.displayName || node.name)
-      .filter(name => name) // 빈 값 제거
-      .sort() // 알파벳순 정렬
-      .slice(0, 150); // 최대 150개로 제한 (토큰 절약)
 
-    // 카테고리별로 그룹화 (간단하게)
-    const commonNodes = nodeNames.filter(name =>
-      ['Gmail', 'Slack', 'Google Sheets', 'HTTP Request', 'Webhook', 'Code', 'IF', 'Set', 'Function', 'Merge', 'YouTube', 'Discord', 'Twitter', 'Airtable', 'MySQL', 'PostgreSQL', 'MongoDB'].includes(name)
+    // 자주 사용되는 노드 (resource/operation 상세 정보 포함)
+    const commonNodeNames = ['Gmail', 'Slack', 'Google Sheets', 'HTTP Request', 'Webhook', 'Code', 'IF', 'Set', 'Function', 'Merge', 'YouTube', 'Discord', 'Twitter', 'Airtable', 'MySQL', 'PostgreSQL', 'MongoDB'];
+
+    const commonNodesDetailed = docsInfo.nodes.filter(node =>
+      commonNodeNames.includes(node.name)
     );
 
-    const otherNodes = nodeNames.filter(name => !commonNodes.includes(name));
+    const otherNodes = docsInfo.nodes.filter(node =>
+      !commonNodeNames.includes(node.name)
+    );
 
-    if (commonNodes.length > 0) {
-      systemPrompt += `**자주 사용되는 노드**:\n`;
-      systemPrompt += commonNodes.map(name => `- ${name}`).join('\n');
-      systemPrompt += '\n\n';
-    }
+    // 자주 사용되는 노드 - 상세 정보 포함
+    if (commonNodesDetailed.length > 0) {
+      systemPrompt += `**자주 사용되는 노드** (resources/operations 포함):\n\n`;
 
-    if (otherNodes.length > 0) {
-      systemPrompt += `**기타 사용 가능한 노드** (${otherNodes.length}개):\n`;
-      systemPrompt += otherNodes.slice(0, 100).map(name => `- ${name}`).join('\n');
+      commonNodesDetailed.forEach(node => {
+        systemPrompt += `- **${node.name}**`;
+
+        // Resources 정보 (YouTube 등)
+        if (node.resources && node.resources.length > 0) {
+          const resourceNames = node.resources.map(r => r.displayName || r.name).join(', ');
+          systemPrompt += `\n  Resources: ${resourceNames}`;
+        }
+
+        // Operations 정보
+        if (node.operations && node.operations.length > 0) {
+          const operationNames = node.operations.map(o => o.displayName || o.name).join(', ');
+          systemPrompt += `\n  Operations: ${operationNames}`;
+        }
+
+        systemPrompt += '\n';
+      });
+
       systemPrompt += '\n';
     }
 
-    systemPrompt += `
+    // 기타 모든 노드 - 이름만 (제한 없이 전부 포함)
+    if (otherNodes.length > 0) {
+      systemPrompt += `**기타 사용 가능한 노드** (${otherNodes.length}개):\n`;
+      const otherNodeNames = otherNodes
+        .map(node => node.name)
+        .sort()
+        .join(', ');
+      systemPrompt += otherNodeNames + '\n\n';
+    }
 
+    systemPrompt += `
 **CRITICAL - 노드 이름 사용 규칙**:
 - ❌ 잘못된 예: [YOUTUBE AI NEWS], [YouTube Search], [Google YouTube]
 - ✅ 올바른 예: [YouTube], [Gmail], [HTTP Request]
 - 워크플로우 제안 시 위 목록의 정확한 이름만 사용
 - 노드 이름 뒤에 용도 설명 추가 가능: "YouTube (영상 검색)"
 - 존재하지 않는 노드 이름 절대 만들지 말기
-- 위 목록에 없는 노드는 추천하지 말기`;
+- 위 목록에 없는 노드는 추천하지 말기
+- YouTube 등 resources가 있는 노드는 반드시 resource와 operation을 json-autofill에 포함`;
   } else {
     // Fallback: 하드코딩된 기본 노드 목록
     systemPrompt += `
