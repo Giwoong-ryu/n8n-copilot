@@ -69,32 +69,94 @@ class N8NReader {
            'unknown';
   }
   
-  // 노드 설정 패널의 입력 필드 읽기
+  // 노드 설정 패널의 입력 필드 읽기 (토글 포함)
   getNodeSettings() {
     const settingsPanel = document.querySelector('[class*="NodeSettings"]') ||
-                          document.querySelector('[class*="node-settings"]');
-    
+                          document.querySelector('[class*="node-settings"]') ||
+                          document.querySelector('[data-test-id*="node-settings"]') ||
+                          document.querySelector('.ndv-panel');
+
     if (!settingsPanel) {
-      return [];
+      return { fields: [], toggles: [], options: [] };
     }
-    
-    const inputs = settingsPanel.querySelectorAll('input, select, textarea');
-    
-    return Array.from(inputs).map(input => ({
+
+    // 일반 입력 필드
+    const inputs = settingsPanel.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="url"], textarea, select');
+    const fields = Array.from(inputs).map(input => ({
       element: input,
       name: this.getInputName(input),
       value: input.value,
       type: input.type || input.tagName.toLowerCase()
     }));
+
+    // 토글/체크박스 (매우 중요!)
+    const checkboxes = settingsPanel.querySelectorAll('input[type="checkbox"]');
+    const toggles = Array.from(checkboxes).map(checkbox => ({
+      element: checkbox,
+      name: this.getInputName(checkbox),
+      checked: checkbox.checked,
+      type: 'toggle'
+    }));
+
+    // N8N 특수 토글 (switch 컴포넌트)
+    const switches = settingsPanel.querySelectorAll('[class*="switch"], [class*="toggle"], [role="switch"]');
+    switches.forEach(switchEl => {
+      const isOn = switchEl.classList.contains('on') ||
+                   switchEl.classList.contains('active') ||
+                   switchEl.getAttribute('aria-checked') === 'true';
+
+      toggles.push({
+        element: switchEl,
+        name: this.getInputName(switchEl),
+        checked: isOn,
+        type: 'switch'
+      });
+    });
+
+    // 드롭다운/옵션
+    const selects = settingsPanel.querySelectorAll('select');
+    const options = Array.from(selects).map(select => ({
+      element: select,
+      name: this.getInputName(select),
+      value: select.value,
+      selectedText: select.options[select.selectedIndex]?.text,
+      type: 'select'
+    }));
+
+    return { fields, toggles, options };
   }
-  
+
   getInputName(inputElement) {
-    const label = inputElement.closest('label') || 
-                  inputElement.previousElementSibling;
-    
-    return label ? 
-           label.textContent.trim() : 
-           inputElement.name || 
+    // 1. 가장 가까운 label
+    const label = inputElement.closest('label');
+    if (label && label.textContent.trim()) {
+      return label.textContent.trim();
+    }
+
+    // 2. 이전 형제 요소의 label
+    const prevLabel = inputElement.previousElementSibling;
+    if (prevLabel && prevLabel.tagName === 'LABEL') {
+      return prevLabel.textContent.trim();
+    }
+
+    // 3. 부모 요소에서 label 찾기
+    const parent = inputElement.parentElement;
+    if (parent) {
+      const parentLabel = parent.querySelector('label');
+      if (parentLabel) {
+        return parentLabel.textContent.trim();
+      }
+
+      // 4. 부모의 텍스트 내용 (label이 없을 때)
+      const parentText = parent.textContent.trim();
+      if (parentText && parentText.length < 100) {
+        return parentText;
+      }
+    }
+
+    // 5. data-test-id나 name attribute
+    return inputElement.getAttribute('data-test-id') ||
+           inputElement.name ||
            inputElement.placeholder ||
            'unknown';
   }
@@ -628,13 +690,18 @@ function sendMessageToIframe(data) {
   }
 }
 
-// 페이지 컨텍스트 수집
+// 페이지 컨텍스트 수집 (설정 포함)
 function collectPageContext() {
+  const errors = window.n8nReader.detectErrors();
+  const settings = window.n8nReader.getNodeSettings();
+
   const context = {
     url: window.location.href,
     workflowName: document.title,
-    errors: window.n8nReader.detectErrors(),
-    selectedNode: null
+    errors: errors,
+    selectedNode: null,
+    nodeSettings: settings,
+    errorPattern: null
   };
 
   // 선택된 노드 정보 수집 (가능한 경우)
@@ -650,7 +717,38 @@ function collectPageContext() {
     console.log('⚠️ Could not collect selected node info:', e);
   }
 
+  // 에러 패턴 분석 (매우 중요!)
+  if (errors.length > 0) {
+    context.errorPattern = analyzeErrorPattern(errors);
+  }
+
   return context;
+}
+
+// 에러 패턴 분석 (설정 문제 감지)
+function analyzeErrorPattern(errors) {
+  const pattern = {
+    totalErrors: errors.length,
+    uniqueErrors: new Set(errors.map(e => e.message)).size,
+    repeatedError: null,
+    likelySettingIssue: false,
+    suggestion: null
+  };
+
+  // 동일한 에러가 여러 번 반복되는지 확인
+  if (pattern.uniqueErrors === 1 && pattern.totalErrors > 1) {
+    pattern.repeatedError = errors[0].message;
+    pattern.likelySettingIssue = true;
+    pattern.suggestion = '동일한 에러가 ' + pattern.totalErrors + '번 반복됩니다. 노드 설정(특히 "Run once for all items" vs "Run once for each item" 토글)을 확인하세요.';
+  }
+
+  // 에러 개수가 특정 패턴과 일치하는지
+  if (pattern.totalErrors > 10 && pattern.uniqueErrors < 5) {
+    pattern.likelySettingIssue = true;
+    pattern.suggestion = '많은 에러가 발생했지만 종류는 적습니다. 설정 문제일 가능성이 높습니다.';
+  }
+
+  return pattern;
 }
 
 // Claude API 호출 (background.js를 통해)
@@ -726,9 +824,29 @@ ${docsSection}
 - 에러 개수: ${context.errors.length}개
 ${context.selectedNode ? `- 선택된 노드: ${context.selectedNode.name} (${context.selectedNode.type})` : ''}
 
+${context.nodeSettings && (context.nodeSettings.toggles.length > 0 || context.nodeSettings.options.length > 0) ? `
+**🎛️ 노드 설정 (현재 상태)**:
+${context.nodeSettings.toggles.length > 0 ? `
+토글/스위치:
+${context.nodeSettings.toggles.map(t => `- ${t.name}: ${t.checked ? 'ON ✅' : 'OFF ❌'}`).join('\n')}
+` : ''}
+${context.nodeSettings.options.length > 0 ? `
+옵션:
+${context.nodeSettings.options.map(o => `- ${o.name}: ${o.selectedText || o.value}`).join('\n')}
+` : ''}
+` : ''}
+
+${context.errorPattern && context.errorPattern.likelySettingIssue ? `
+**🚨 에러 패턴 분석 결과**:
+- 총 에러: ${context.errorPattern.totalErrors}개
+- 고유 에러: ${context.errorPattern.uniqueErrors}개
+- 설정 문제 가능성: 높음 ⚠️
+- 제안: ${context.errorPattern.suggestion}
+` : ''}
+
 ${context.errors.length > 0 ? `
 **⚠️ 감지된 에러 상세 정보**:
-${context.errors.map((err, idx) => `
+${context.errors.slice(0, 3).map((err, idx) => `
 에러 ${idx + 1}:
 - 타입: ${err.type}
 - 메시지: ${err.message}
@@ -736,38 +854,79 @@ ${err.details ? `- 노드 이름: ${err.details.nodeName || '알 수 없음'}
 - 줄 번호: ${err.details.lineNumber || '알 수 없음'}
 ${err.details.stackTrace ? `- 스택 트레이스:\n  ${err.details.stackTrace.join('\n  ')}` : ''}` : ''}
 `).join('\n')}
+${context.errors.length > 3 ? `\n... 외 ${context.errors.length - 3}개 에러` : ''}
 ` : ''}
 
 **에러 분석 전략 (매우 중요!)**:
-🚨 사용자가 에러 분석을 요청하면:
+🚨 에러 진단 우선순위 (반드시 이 순서로!):
 
-1. **실제 에러 정보를 반드시 보여주기**:
-   ✅ 올바른 예시:
-   \`\`\`
-   **에러 타입**: ReferenceError
-   **에러 메시지**: sortedNews is not defined
-   **발생 위치**: 15번째 줄
+**1순위: 노드 설정 확인 (가장 중요!)**
+   ⚠️ 코드를 보기 전에 먼저 설정을 확인하세요!
 
-   **원인**: sortedNews 변수가 선언되지 않았습니다.
+   특히 확인해야 할 것:
+   - **Run once for all items** vs **Run once for each item**
+     * all items: 전체 items 배열을 한 번에 처리 (items.map, items.filter 등 사용)
+     * each item: 각 item을 개별로 처리 (item 하나만 접근)
+     * ⚠️ 동일한 에러가 여러 번 반복되면 이 설정이 잘못되었을 가능성 높음!
 
-   **해결 방법**:
-   1. 15번째 줄 앞에 \`const sortedNews = ...\`를 추가하세요
-   2. 또는 이전에 선언한 변수 이름을 확인하세요
-   \`\`\`
+   - **Always Output Data** (항상 데이터 출력)
+   - **Continue On Fail** (실패 시 계속)
+   - 기타 토글 설정들
 
-   ❌ 잘못된 예시 (일반적인 조언만):
-   \`\`\`
-   39개의 에러가 발생했습니다.
-   코드 문법 오류일 수 있습니다.
-   입력 데이터 형식을 확인하세요.
-   \`\`\`
+**2순위: 에러 패턴 분석**
+   - 에러 개수 = 아이템 개수? → 거의 확실히 설정 문제!
+   - 동일한 에러가 N번 반복? → 설정 또는 입력 데이터 문제
+   - 각기 다른 에러? → 코드 로직 문제일 가능성
 
-2. **우선순위**:
-   - 1순위: 실제 에러 메시지와 타입 보여주기
-   - 2순위: 구체적인 해결 방법
-   - 3순위: 일반적인 디버깅 팁
+**3순위: 코드 검토**
+   - 설정과 패턴을 먼저 확인한 후에만 코드를 분석하세요
 
-3. **에러 정보가 없는 경우에만** 일반적인 조언 제공
+**에러 분석 답변 예시**:
+
+✅ **올바른 예시** (설정 문제):
+\`\`\`
+⚠️ **설정 문제 발견!**
+
+**현재 상태**: 동일한 에러가 39번 반복
+**원인**: "Run once for each item" 모드로 설정되어 있음
+
+**문제**:
+코드가 전체 items 배열을 처리하도록 작성되었지만
+(items.map, items.filter 등 사용)
+노드는 각 item마다 개별 실행 중
+
+**해결 방법**:
+1. 노드 설정 열기
+2. "Run once for all items"로 토글 변경
+3. 저장 후 재실행
+
+또는 코드를 "each item" 모드에 맞게 수정:
+- \`items[0]\` 대신 \`item\` 사용
+- \`items.map()\` 제거하고 단일 item 처리
+\`\`\`
+
+✅ **올바른 예시** (코드 문제):
+\`\`\`
+**에러 타입**: ReferenceError
+**에러 메시지**: sortedNews is not defined
+**발생 위치**: 15번째 줄
+
+**원인**: sortedNews 변수 선언 없음
+
+**해결 방법**:
+15번째 줄 앞에 추가:
+\`\`\`javascript
+const sortedNews = items[0].json.news.sort(...);
+\`\`\`
+\`\`\`
+
+❌ **잘못된 예시** (절대 이렇게 답변하지 마세요):
+\`\`\`
+39개의 에러가 발생했습니다.
+코드 문법 오류일 수 있습니다.
+입력 데이터 형식을 확인하세요.
+console.log()로 디버깅하세요.
+\`\`\`
 
 **최신 정보 우선 원칙**:
 ⚠️ 당신이 가진 지식(2025년 1월)이 오래되었을 수 있습니다.
