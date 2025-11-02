@@ -501,18 +501,20 @@ async function callClaudeAPI(userMessage, context) {
    - 추가 질문 하지 말기
    - json-autofill 블록 제공하지 말기 (사용자가 "설정하기" 버튼 클릭할 때까지 대기)
 
-   예시 - "ai뉴스를 모아서 통계 내고싶어":
+   예시 - "유튜브에서 ai뉴스 검색해서 통계 내고싶어":
 
    추천 워크플로우:
-   [RSS Feed] > [Function] > [Aggregate] > [Spreadsheet]
+   [YouTube] > [Code] > [Code] > [Google Sheets]
 
    각 노드 역할:
-   - RSS Feed: AI 뉴스 피드 수집
-   - Function: 데이터 전처리 및 분류
-   - Aggregate: 통계 계산 (카테고리별 개수 등)
-   - Spreadsheet: 결과 저장 또는 시각화
+   - YouTube (Video > List): AI 뉴스 관련 영상 검색
+   - Code (텍스트 추출): 영상 제목/설명에서 키워드 추출
+   - Code (단어 통계): 키워드 출현 빈도 계산
+   - Google Sheets (Sheet > Append): 통계 결과 저장
 
    ⚙️ 각 노드의 "설정하기" 버튼을 클릭하여 설정하세요.
+
+   **중요**: Resources가 있는 노드(YouTube, Gmail, Slack 등)는 반드시 "(Resource > Operation)" 형식으로 명시
 
 2. 특정 노드 설정 요청 시 (🎯 표시 확인 또는 "XXX 노드 설정" 요청):
    - 인사말, 설명 없이 즉시 json-autofill 코드 블록만 제공
@@ -571,6 +573,19 @@ async function callClaudeAPI(userMessage, context) {
       commonNodesDetailed.forEach(node => {
         systemPrompt += `- **${node.name}**`;
 
+        // Debug: YouTube 노드 정보 출력
+        if (node.name === 'YouTube') {
+          console.log('🔍 YouTube node details:', {
+            name: node.name,
+            hasResources: !!node.resources,
+            resourceCount: node.resources?.length || 0,
+            hasOperations: !!node.operations,
+            operationCount: node.operations?.length || 0,
+            resources: node.resources,
+            operations: node.operations
+          });
+        }
+
         // Resources 정보 (YouTube 등)
         if (node.resources && node.resources.length > 0) {
           const resourceNames = node.resources.map(r => r.displayName || r.name).join(', ');
@@ -604,10 +619,15 @@ async function callClaudeAPI(userMessage, context) {
 - ❌ 잘못된 예: [YOUTUBE AI NEWS], [YouTube Search], [Google YouTube]
 - ✅ 올바른 예: [YouTube], [Gmail], [HTTP Request]
 - 워크플로우 제안 시 위 목록의 정확한 이름만 사용
-- 노드 이름 뒤에 용도 설명 추가 가능: "YouTube (영상 검색)"
+- YouTube 같이 Resources가 있는 노드는 워크플로우 설명에서 어떤 resource를 쓸지 명시:
+  ✅ "YouTube (Video > List): AI 뉴스 영상 검색"
+  ✅ "Gmail (Message > Send): 결과 이메일 전송"
+  ❌ "YouTube: AI 뉴스 검색" (resource 없음)
 - 존재하지 않는 노드 이름 절대 만들지 말기
-- 위 목록에 없는 노드는 추천하지 말기
-- YouTube 등 resources가 있는 노드는 반드시 resource와 operation을 json-autofill에 포함`;
+- 위 목록에 없는 노드는 추천하지 말기`;
+
+    // Debug: 시스템 프롬프트 일부 출력
+    console.log('📝 System prompt node list section (first 500 chars):', systemPrompt.substring(systemPrompt.indexOf('**N8N 사용 가능한 노드 목록**'), systemPrompt.indexOf('**N8N 사용 가능한 노드 목록**') + 500));
   } else {
     // Fallback: 하드코딩된 기본 노드 목록
     systemPrompt += `

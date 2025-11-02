@@ -601,6 +601,15 @@ async function fetchN8NDocs() {
     const topLevelNodes = await topLevelRes.json();
     const changelog = await changelogRes.text();
 
+    // GitHub API rate limit 체크
+    if (!Array.isArray(topLevelNodes)) {
+      console.error('❌ GitHub API response is not an array:', topLevelNodes);
+      if (topLevelNodes.message) {
+        console.error('❌ GitHub API error:', topLevelNodes.message);
+      }
+      throw new Error('GitHub API unavailable (rate limit or error)');
+    }
+
     console.log(`📁 Found ${topLevelNodes.length} top-level directories`);
 
     // 모든 노드 수집 (최상위 + 서브디렉토리)
