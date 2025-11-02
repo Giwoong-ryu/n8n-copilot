@@ -230,6 +230,65 @@ const N8N_DOCS_SOURCES = {
   changelog: 'https://raw.githubusercontent.com/n8n-io/n8n/master/CHANGELOG.md'
 };
 
+// 자주 사용되는 주요 노드 리스트 (상세 operations 수집 대상)
+const PRIORITY_NODES = [
+  // ===== Core workflow nodes (필수) =====
+  'HttpRequest', 'Webhook', 'Code', 'Set', 'IF', 'Switch', 'Merge', 'Split',
+  'Loop Over Items', 'Edit Fields', 'Execute Workflow', 'Wait', 'Schedule Trigger',
+  'Execute Command', 'Function', 'Function Item', 'Item Lists', 'Move Binary Data',
+
+  // ===== AI & ML (전체 AI 관련) =====
+  'OpenAI', 'Anthropic', 'Google Gemini', 'Google PaLM', 'Cohere', 'Hugging Face',
+  'Replicate', 'Stability AI', 'Pinecone', 'Qdrant', 'Weaviate', 'Chroma',
+  'AI Agent', 'AI Chain', 'AI Transform', 'Vector Store', 'Embeddings',
+  'Text Classifier', 'Sentiment Analysis', 'Language Translator',
+  'Mistral Cloud', 'Ollama', 'LangChain', 'LlamaIndex',
+
+  // ===== Google suite =====
+  'Google Sheets', 'Gmail', 'Google Drive', 'Google Calendar', 'Google Docs',
+  'Google Slides', 'Google Tasks', 'Google Contacts', 'Google Cloud',
+
+  // ===== Communication =====
+  'Slack', 'Discord', 'Telegram', 'WhatsApp', 'Microsoft Teams', 'Mattermost',
+  'Email Send', 'Email Trigger', 'Twilio', 'SMS', 'Voice Call',
+
+  // ===== Social media =====
+  'Twitter', 'X', 'Instagram', 'Facebook', 'LinkedIn', 'YouTube', 'TikTok',
+  'Reddit', 'Mastodon', 'Bluesky',
+
+  // ===== Databases =====
+  'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'SQLite', 'Microsoft SQL',
+  'Supabase', 'Firebase', 'Elasticsearch', 'InfluxDB', 'QuestDB',
+
+  // ===== Cloud storage & Productivity =====
+  'Airtable', 'Notion', 'Dropbox', 'OneDrive', 'Box', 'Google Cloud Storage',
+  'Asana', 'ClickUp', 'Monday.com', 'Todoist', 'Evernote',
+
+  // ===== Development & DevOps =====
+  'GitHub', 'GitLab', 'Bitbucket', 'Jira', 'Trello', 'Linear', 'Sentry',
+  'Docker', 'Kubernetes', 'Jenkins', 'CircleCI', 'Vercel', 'Netlify',
+
+  // ===== AWS =====
+  'AWS S3', 'AWS Lambda', 'AWS DynamoDB', 'AWS SES', 'AWS SNS', 'AWS SQS',
+  'AWS Comprehend', 'AWS Textract', 'AWS Rekognition', 'AWS Bedrock',
+
+  // ===== Payment & E-commerce =====
+  'Stripe', 'PayPal', 'Square', 'Shopify', 'WooCommerce', 'Magento',
+
+  // ===== CRM & Marketing =====
+  'HubSpot', 'Salesforce', 'Mailchimp', 'SendGrid', 'Brevo', 'ActiveCampaign',
+  'Pipedrive', 'Zendesk', 'Intercom', 'Freshdesk',
+
+  // ===== Data Processing =====
+  'RSS', 'XML', 'JSON', 'CSV', 'HTML Extract', 'Markdown', 'PDF',
+  'Spreadsheet File', 'Excel', 'Compression', 'Crypto', 'Hash',
+
+  // ===== 최신 노드 (2024-2025) =====
+  'Cloudflare', 'Supabase', 'Cal.com', 'n8n', 'Form Trigger',
+  'Chat Trigger', 'Agent', 'Tools', 'Output Parser', 'Memory',
+  'Document Loader', 'Recursive Character Text Splitter'
+];
+
 // Sleep 유틸리티
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -292,29 +351,36 @@ async function fetchOperationsFromVersion(versionPath) {
   }
 }
 
-// 노드의 operations 가져오기 (청크 단위 저장 + Resume 지원)
-async function fetchNodeOperations(nodes, existingData = null) {
+// 노드의 operations 가져오기 (주요 노드만 상세 수집)
+async function fetchNodeOperations(nodes) {
   const totalNodes = nodes.length;
-
-  // 기존 데이터에서 이미 수집된 노드 확인
   let results = [];
-  let startIndex = 0;
 
-  if (existingData && existingData.detailedNodes) {
-    results = existingData.detailedNodes;
-    startIndex = results.length;
-    console.log(`  🔄 Resuming from node ${startIndex}/${totalNodes} (${Math.round(startIndex / totalNodes * 100)}% complete)`);
-  } else {
-    console.log(`  📊 Fetching operations for ${totalNodes} nodes...`);
+  // 주요 노드 필터링
+  const priorityNodes = nodes.filter(node => PRIORITY_NODES.includes(node.name));
+
+  // 주요가 아닌 노드들 (operations 없이 추가)
+  const nonPriorityNodes = nodes.filter(node => !PRIORITY_NODES.includes(node.name));
+
+  console.log(`  📊 Priority nodes to fetch: ${priorityNodes.length}`);
+  console.log(`  📄 Non-priority nodes (name only): ${nonPriorityNodes.length}`);
+
+  // 주요가 아닌 노드들은 operations 없이 바로 추가
+  for (const node of nonPriorityNodes) {
+    results.push({
+      name: node.name,
+      operations: [],
+      hasOperations: false,
+      isPriority: false
+    });
   }
 
-  for (let i = startIndex; i < totalNodes; i++) {
-    const node = nodes[i];
+  // 주요 노드만 상세 수집
+  let fetchedCount = 0;
+  for (const node of priorityNodes) {
     try {
-      // 진행 상황 로깅 (10개마다)
-      if ((i + 1) % 10 === 0 || i === startIndex) {
-        console.log(`  📥 Progress: ${i + 1}/${totalNodes} nodes (${Math.round((i + 1) / totalNodes * 100)}%)`);
-      }
+      fetchedCount++;
+      console.log(`  📥 Fetching [${fetchedCount}/${priorityNodes.length}]: ${node.name}`);
 
       // 노드 폴더 내부 확인
       const nodeContentUrl = `https://api.github.com/repos/n8n-io/n8n/contents/${node.path}`;
@@ -325,15 +391,16 @@ async function fetchNodeOperations(nodes, existingData = null) {
       if (!nodeResponse.ok) {
         // Rate limit 에러 체크
         if (nodeResponse.status === 403) {
-          console.warn(`  ⚠️ GitHub API rate limit reached at node ${i + 1}/${totalNodes}`);
-          console.warn(`  💾 Saving ${results.length} nodes fetched so far...`);
-          break; // 현재까지 수집한 것 저장
+          console.warn(`  ⚠️ GitHub API rate limit reached at priority node ${fetchedCount}/${priorityNodes.length}`);
+          console.warn(`  💾 Saving progress...`);
+          break;
         }
 
         results.push({
           name: node.name,
           operations: [],
-          hasOperations: false
+          hasOperations: false,
+          isPriority: true
         });
         continue;
       }
@@ -343,7 +410,7 @@ async function fetchNodeOperations(nodes, existingData = null) {
       // v2, v1 같은 버전 폴더 찾기
       const versionFolders = nodeContent
         .filter(item => item.type === 'dir' && /^v\d+$/.test(item.name))
-        .sort((a, b) => b.name.localeCompare(a.name)); // v2, v1 순서
+        .sort((a, b) => b.name.localeCompare(a.name));
 
       let operations = [];
 
@@ -356,15 +423,11 @@ async function fetchNodeOperations(nodes, existingData = null) {
       results.push({
         name: node.name,
         operations: operations,
-        hasOperations: operations.length > 0
+        hasOperations: operations.length > 0,
+        isPriority: true
       });
 
-      // 10개마다 중간 저장 (Extension 재시작 대비)
-      if ((i + 1) % 10 === 0) {
-        await savePartialResults(nodes, results, i + 1, totalNodes);
-      }
-
-      // Rate limiting 방지 (GitHub API: 60 requests/hour without auth)
+      // Rate limiting 방지
       await sleep(200);
 
     } catch (error) {
@@ -372,93 +435,58 @@ async function fetchNodeOperations(nodes, existingData = null) {
       results.push({
         name: node.name,
         operations: [],
-        hasOperations: false
+        hasOperations: false,
+        isPriority: true
       });
     }
   }
 
-  console.log(`  ✅ Successfully fetched operations for ${results.length}/${totalNodes} nodes`);
+  const priorityWithOps = results.filter(n => n.isPriority && n.hasOperations).length;
+  console.log(`  ✅ Complete: ${results.length} total nodes (${priorityWithOps} priority nodes with operations)`);
   return results;
 }
 
-// 중간 결과 저장 (10개마다)
-async function savePartialResults(allNodes, detailedNodes, currentIndex, totalNodes) {
-  try {
-    const partialData = {
-      allNodes: allNodes,
-      detailedNodes: detailedNodes,
-      fetchProgress: {
-        current: currentIndex,
-        total: totalNodes,
-        percentage: Math.round(currentIndex / totalNodes * 100),
-        inProgress: currentIndex < totalNodes
-      },
-      version: 'fetching...', // 아직 완료 안됨
-      lastUpdated: new Date().toISOString(),
-      expiresAt: null // 완료될 때까지 만료 없음
-    };
-
-    await chrome.storage.local.set({ n8nDocs: partialData });
-    console.log(`    💾 Auto-saved progress: ${currentIndex}/${totalNodes}`);
-  } catch (error) {
-    console.error('    ⚠️ Failed to save progress:', error);
-  }
-}
-
 // 문서 가져오기
-async function fetchN8NDocs(existingData = null) {
+async function fetchN8NDocs() {
   console.log('📥 Fetching N8N docs...');
 
   try {
-    // 기존 데이터가 있으면 재사용 (resume)
-    let nodeList, changelog, latestVersion;
+    const [nodesRes, changelogRes] = await Promise.all([
+      fetch(N8N_DOCS_SOURCES.github_nodes, {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      }),
+      fetch(N8N_DOCS_SOURCES.changelog)
+    ]);
 
-    if (existingData && existingData.allNodes) {
-      // Resume: 기존 데이터 재사용
-      nodeList = existingData.allNodes;
-      changelog = existingData.changelog || '';
-      latestVersion = existingData.version || 'Unknown';
-      console.log('🔄 Using existing node list for resume');
-    } else {
-      // 처음 시작: 새로 fetch
-      const [nodesRes, changelogRes] = await Promise.all([
-        fetch(N8N_DOCS_SOURCES.github_nodes, {
-          headers: { 'Accept': 'application/vnd.github.v3+json' }
-        }),
-        fetch(N8N_DOCS_SOURCES.changelog)
-      ]);
+    const nodes = await nodesRes.json();
+    const changelog = await changelogRes.text();
 
-      const nodes = await nodesRes.json();
-      changelog = await changelogRes.text();
+    // 노드 목록 추출
+    const nodeList = nodes
+      .filter(item => item.type === 'dir')
+      .map(item => ({
+        name: item.name,
+        path: item.path,
+        url: item.html_url
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
 
-      // 노드 목록 추출
-      nodeList = nodes
-        .filter(item => item.type === 'dir')
-        .map(item => ({
-          name: item.name,
-          path: item.path,
-          url: item.html_url
-        }))
-        .sort((a, b) => a.name.localeCompare(b.name));
+    console.log(`✅ Found ${nodeList.length} nodes`);
 
-      console.log(`✅ Found ${nodeList.length} nodes`);
+    // 최신 버전 추출
+    const latestVersion = changelog.split('\n## ')[1]?.split('\n')[0] || 'Unknown';
 
-      // 최신 버전 추출
-      latestVersion = changelog.split('\n## ')[1]?.split('\n')[0] || 'Unknown';
-    }
-
-    // 상세 노드 정보 가져오기 (operations 포함) - resume 지원
-    console.log('📥 Fetching operations for nodes...');
-    const detailedNodes = await fetchNodeOperations(nodeList, existingData);
+    // 상세 노드 정보 가져오기 (주요 노드만 operations 수집)
+    console.log('📥 Fetching operations for priority nodes...');
+    const detailedNodes = await fetchNodeOperations(nodeList);
 
     return {
       allNodes: nodeList,
       detailedNodes: detailedNodes,
-      changelog: typeof changelog === 'string' ? changelog.split('\n## ').slice(0, 3).join('\n## ') : changelog,
+      changelog: changelog.split('\n## ').slice(0, 3).join('\n## '),
       version: latestVersion,
       lastUpdated: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      fetchProgress: null // 완료됨
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
     };
 
   } catch (error) {
@@ -491,13 +519,7 @@ async function loadN8NDocs() {
 
     const docs = result.n8nDocs;
 
-    // 진행중인 fetch 체크
-    if (docs.fetchProgress && docs.fetchProgress.inProgress) {
-      console.log('🔄 Incomplete fetch detected, resuming...');
-      return await updateN8NDocsNow(docs);
-    }
-
-    // 만료 체크 (expiresAt이 null이면 스킵)
+    // 만료 체크
     if (docs.expiresAt) {
       const expiresAt = new Date(docs.expiresAt);
       if (new Date() > expiresAt) {
@@ -516,9 +538,9 @@ async function loadN8NDocs() {
 }
 
 // 즉시 업데이트
-async function updateN8NDocsNow(existingData = null) {
+async function updateN8NDocsNow() {
   console.log('🔄 Updating N8N docs now...');
-  const docs = await fetchN8NDocs(existingData);
+  const docs = await fetchN8NDocs();
 
   if (docs) {
     await saveN8NDocs(docs);
