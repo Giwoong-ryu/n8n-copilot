@@ -1,3 +1,7 @@
+---
+description: N8N Copilot 코드 품질 종합 검토 (8단계)
+---
+
 # N8N Copilot 코드 품질 검토
 
 N8N Copilot Chrome Extension의 코드 품질을 종합적으로 검토합니다.
