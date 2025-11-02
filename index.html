@@ -227,6 +227,23 @@
       margin: 80px auto;
     }
 
+    /* Hide dependent sections initially */
+    .dependent-section {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .dependent-section.visible {
+      display: block;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .section h2 {
       font-size: 32px;
       font-weight: 700;
@@ -672,7 +689,7 @@
   </div>
 
   <!-- 프로젝트 개요 -->
-  <div class="container section">
+  <div class="container section" id="overview-section">
     <div class="section-header" onclick="toggleSection(this)">
       <h2>프로젝트 개요</h2>
       <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -701,7 +718,7 @@
   </div>
 
   <!-- 기술 스택 -->
-  <div class="container section">
+  <div class="container section dependent-section">
     <div class="section-header" onclick="toggleSection(this)">
       <h2>기술 스택</h2>
       <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -769,7 +786,7 @@
   </div>
 
   <!-- 개발 과정 -->
-  <div class="container section">
+  <div class="container section dependent-section">
     <div class="section-header" onclick="toggleSection(this)">
       <h2>개발 과정</h2>
       <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -812,7 +829,7 @@
   </div>
 
   <!-- 핵심 기능 -->
-  <div class="container section">
+  <div class="container section dependent-section">
     <div class="section-header" onclick="toggleSection(this)">
       <h2>핵심 기능</h2>
       <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -843,7 +860,7 @@
   </div>
 
   <!-- 기술적 도전과 해결 -->
-  <div class="container section">
+  <div class="container section dependent-section">
     <div class="section-header" onclick="toggleSection(this)">
       <h2>기술적 도전과 해결</h2>
       <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -878,7 +895,7 @@
   </div>
 
   <!-- 향후 계획 -->
-  <div class="container section">
+  <div class="container section dependent-section">
     <div class="section-header" onclick="toggleSection(this)">
       <h2>향후 계획</h2>
       <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -957,9 +974,20 @@
     function toggleSection(header) {
       const icon = header.querySelector('.toggle-icon');
       const content = header.nextElementSibling;
+      const section = header.parentElement;
 
       icon.classList.toggle('open');
       content.classList.toggle('open');
+
+      // 개요 섹션이 열리면 나머지 섹션들 표시
+      if (section.id === 'overview-section' && content.classList.contains('open')) {
+        const dependentSections = document.querySelectorAll('.dependent-section');
+        dependentSections.forEach((depSection, index) => {
+          setTimeout(() => {
+            depSection.classList.add('visible');
+          }, index * 100); // 순차적으로 페이드인
+        });
+      }
     }
   </script>
 </body>
