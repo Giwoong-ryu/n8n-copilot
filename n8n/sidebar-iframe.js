@@ -4,6 +4,62 @@
  */
 
 // ========================================
+// 간단한 마크다운 파서 (marked.js 대체)
+// ========================================
+function parseMarkdown(markdown) {
+  let html = markdown;
+
+  // 코드 블록 (```)
+  html = html.replace(/```([\w-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    const langClass = lang ? `language-${lang}` : '';
+    return `<pre><code class="${langClass}">${escapeHtml(code.trim())}</code></pre>`;
+  });
+
+  // 인라인 코드 (`)
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // 굵은 글씨 (**)
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  // 기울임 (*)
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // 제목 (###, ##, #)
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // 순서 있는 리스트
+  html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>)/s, '<ol>$1</ol>');
+
+  // 순서 없는 리스트
+  html = html.replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>');
+
+  // 링크
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+  // 줄바꿈 (두 개의 개행을 <p>로)
+  html = html.split('\n\n').map(para => {
+    if (!para.trim().match(/^<[^>]+>/)) {
+      return `<p>${para.trim()}</p>`;
+    }
+    return para;
+  }).join('');
+
+  // 단일 줄바꿈을 <br>로
+  html = html.replace(/\n/g, '<br>');
+
+  return html;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ========================================
 // iframe 내부 스크립트
 // ========================================
 console.log('📦 Sidebar iframe script loaded');
@@ -57,13 +113,11 @@ function addMessage(text, type = 'assistant') {
 
   // assistant 메시지는 마크다운을 HTML로 변환
   if (type === 'assistant') {
-    // marked 라이브러리가 로드되어 있는지 확인
-    if (typeof marked !== 'undefined') {
-      // 마크다운을 HTML로 변환
-      messageDiv.innerHTML = marked.parse(text);
+    // 내장 마크다운 파서 사용
+    messageDiv.innerHTML = parseMarkdown(text);
 
-      // 단계 버튼에 이벤트 리스너 추가
-      setTimeout(() => {
+    // 단계 버튼에 이벤트 리스너 추가
+    setTimeout(() => {
         // 1. 기존 HTML 버튼 처리
         const stepButtons = messageDiv.querySelectorAll('.step-button');
         stepButtons.forEach(button => {
@@ -155,10 +209,6 @@ function addMessage(text, type = 'assistant') {
           }
         });
       }, 0);
-    } else {
-      // marked 라이브러리가 없으면 텍스트만 표시
-      messageDiv.textContent = text;
-    }
   } else {
     // user, error 메시지는 일반 텍스트
     messageDiv.textContent = text;

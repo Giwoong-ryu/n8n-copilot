@@ -77,10 +77,9 @@ function attachEventListeners() {
       closeSidebar();
     }
   });
-  
-  // iframe과의 메시지 통신 설정
-  window.addEventListener('message', handleIframeMessage);
-  
+
+  // iframe과의 메시지 통신은 content.js에서 처리합니다
+
   console.log('🔗 Event listeners attached');
 }
 
