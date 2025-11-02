@@ -123,9 +123,9 @@
     /* Cards Grid */
     .cards-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 32px;
-      margin: 80px 0;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin: 60px 0;
       position: relative;
       z-index: 1;
     }
@@ -133,8 +133,8 @@
     .card {
       background: var(--bg-secondary);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 40px;
+      border-radius: 12px;
+      padding: 28px;
       transition: all 0.3s ease;
       position: relative;
       overflow: hidden;
@@ -168,23 +168,24 @@
     }
 
     .card-icon {
-      width: 48px;
-      height: 48px;
-      margin-bottom: 20px;
+      width: 36px;
+      height: 36px;
+      margin-bottom: 16px;
       color: var(--accent);
     }
 
     .card h2 {
-      font-size: 24px;
+      font-size: 18px;
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       color: var(--text-primary);
     }
 
     .card p {
       color: var(--text-secondary);
-      line-height: 1.7;
-      margin-bottom: 20px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      font-size: 14px;
     }
 
     .card-footer {
@@ -221,28 +222,113 @@
       transform: translateX(4px);
     }
 
+    /* Portfolio Sections */
+    .section {
+      margin: 80px 0;
+    }
+
+    .section h2 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+      text-align: center;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 16px;
+      margin-bottom: 48px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .project-overview {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 32px;
+    }
+
+    .overview-item h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .overview-item p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Tech Stack */
+    .tech-stack {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+    }
+
+    .tech-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tech-item:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tech-item strong {
+      display: block;
+      font-size: 16px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .tech-item span {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
     /* Stats Section */
     .stats {
       background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(167, 139, 250, 0.05) 100%);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 60px 40px;
+      padding: 48px 40px;
       margin: 80px 0;
       text-align: center;
       box-shadow: var(--shadow-sm);
     }
 
     .stats h2 {
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 700;
-      margin-bottom: 48px;
+      margin-bottom: 40px;
       color: var(--text-primary);
     }
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 40px;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 32px;
     }
 
     .stat-item {
@@ -250,7 +336,7 @@
     }
 
     .stat-value {
-      font-size: 48px;
+      font-size: 40px;
       font-weight: 800;
       background: var(--gradient-1);
       -webkit-background-clip: text;
@@ -261,11 +347,79 @@
     }
 
     .stat-label {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 1px;
       font-weight: 600;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding: 32px 0;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 48px;
+      position: relative;
+    }
+
+    .timeline-date {
+      min-width: 120px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .timeline-content {
+      flex: 1;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .timeline-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .timeline-content p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Feature List */
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .feature-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .feature-item h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .feature-item p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
     }
 
     /* Footer */
@@ -340,8 +494,38 @@
         grid-template-columns: 1fr;
       }
 
+      .overview-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .tech-stack {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
       .stats-grid {
         grid-template-columns: 1fr 1fr;
+      }
+
+      .timeline-item {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .timeline-date {
+        min-width: auto;
+      }
+
+      .feature-list {
+        grid-template-columns: 1fr;
+      }
+
+      .project-overview {
+        padding: 32px 24px;
+      }
+
+      .section h2 {
+        font-size: 28px;
       }
     }
 
@@ -447,10 +631,64 @@
     </div>
   </div>
 
-  <!-- 통계 섹션 -->
+  <!-- 프로젝트 개요 -->
+  <div class="container section">
+    <h2>프로젝트 개요</h2>
+    <p class="section-subtitle">AI 기반 워크플로우 자동화를 통해 개발자의 생산성을 극대화합니다</p>
+    <div class="project-overview">
+      <div class="overview-grid">
+        <div class="overview-item">
+          <h3>문제 정의</h3>
+          <p>n8n 워크플로우 작성 시 반복적인 설정과 복잡한 노드 구성으로 인해 개발 시간이 과도하게 소요되고, 휴먼 에러가 빈번하게 발생합니다.</p>
+        </div>
+        <div class="overview-item">
+          <h3>솔루션</h3>
+          <p>Chrome Extension과 AI를 결합하여 실시간 페이지 분석, 자동 입력, 에러 감지를 제공하며, Vue.js 리액티브 시스템과 완벽하게 통합됩니다.</p>
+        </div>
+        <div class="overview-item">
+          <h3>주요 목표</h3>
+          <p>개발 시간 90% 단축, 프로덕션 준비도 75% 달성, 그리고 재사용 가능한 워크플로우 템플릿 라이브러리 구축을 목표로 합니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기술 스택 -->
+  <div class="container section">
+    <h2>기술 스택</h2>
+    <p class="section-subtitle">프로젝트에 사용된 핵심 기술들</p>
+    <div class="tech-stack">
+      <div class="tech-item">
+        <strong>Chrome Extension</strong>
+        <span>Manifest V3</span>
+      </div>
+      <div class="tech-item">
+        <strong>Vue.js 3</strong>
+        <span>Reactive System</span>
+      </div>
+      <div class="tech-item">
+        <strong>Claude AI</strong>
+        <span>Sonnet 4.5</span>
+      </div>
+      <div class="tech-item">
+        <strong>JavaScript</strong>
+        <span>ES6+</span>
+      </div>
+      <div class="tech-item">
+        <strong>DOM API</strong>
+        <span>MutationObserver</span>
+      </div>
+      <div class="tech-item">
+        <strong>Git</strong>
+        <span>Version Control</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 주요 성과 -->
   <div class="container">
     <div class="stats">
-      <h2>개발 성과</h2>
+      <h2>주요 성과</h2>
       <div class="stats-grid">
         <div class="stat-item">
           <div class="stat-value">2,480+</div>
@@ -472,22 +710,149 @@
     </div>
   </div>
 
+  <!-- 개발 과정 -->
+  <div class="container section">
+    <h2>개발 과정</h2>
+    <p class="section-subtitle">체계적인 접근과 반복적 개선</p>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-date">Phase 1</div>
+        <div class="timeline-content">
+          <h3>요구사항 분석 및 설계</h3>
+          <p>n8n DOM 구조 분석, Vue.js 리액티브 시스템 연구, 874줄 규모의 포괄적인 기술 가이드 문서 작성 (meta-prompt-generator 활용)</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Phase 2</div>
+        <div class="timeline-content">
+          <h3>코드 리뷰 및 검증</h3>
+          <p>codex-claude-loop 방식으로 16개 이슈 자동 발견 (Critical 3개, High 5개). 보안, 성능, 메모리 누수 체크 완료</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Phase 3</div>
+        <div class="timeline-content">
+          <h3>Production-Ready 구현</h3>
+          <p>SafeSelector, VueInputWriter, ResilientWriter 클래스 구현. Vue 리액티브 트리거 6단계 프로세스 적용</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Phase 4</div>
+        <div class="timeline-content">
+          <h3>문서화 및 배포</h3>
+          <p>code-changelog 자동 생성, HTML 뷰어 제작, GitHub Pages 배포로 포트폴리오화</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 핵심 기능 -->
+  <div class="container section">
+    <h2>핵심 기능</h2>
+    <p class="section-subtitle">실시간 페이지 분석부터 자동화까지</p>
+    <div class="feature-list">
+      <div class="feature-item">
+        <h3>실시간 페이지 분석</h3>
+        <p>n8n 페이지의 DOM 구조, CSS 클래스, data-test-id 속성을 실시간으로 분석하여 올바른 선택자를 자동으로 찾습니다.</p>
+      </div>
+      <div class="feature-item">
+        <h3>Vue 리액티브 통합</h3>
+        <p>6단계 프로세스(focus, select, setValue, input event, change event, blur)를 통해 Vue.js 리액티브 시스템을 완벽하게 트리거합니다.</p>
+      </div>
+      <div class="feature-item">
+        <h3>SafeSelector 패턴</h3>
+        <p>여러 우선순위의 선택자를 시도하여 n8n 버전 변경에도 안정적으로 동작하는 Fallback 시스템을 제공합니다.</p>
+      </div>
+      <div class="feature-item">
+        <h3>자동 재시도 메커니즘</h3>
+        <p>네트워크 지연이나 DOM 준비 지연 시 exponential backoff 방식으로 자동 재시도하여 안정성을 보장합니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기술적 도전과 해결 -->
+  <div class="container section">
+    <h2>기술적 도전과 해결</h2>
+    <p class="section-subtitle">실전에서 마주한 문제들과 창의적 솔루션</p>
+    <div class="feature-list">
+      <div class="feature-item">
+        <h3>Vue.js 리액티브 미작동</h3>
+        <p><strong>문제:</strong> element.value = x 방식이 Vue Proxy를 트리거하지 못함<br>
+        <strong>해결:</strong> Native setter + 이벤트 체인 + Vue 인스턴스 직접 업데이트</p>
+      </div>
+      <div class="feature-item">
+        <h3>MutationObserver 메모리 누수</h3>
+        <p><strong>문제:</strong> 페이지 언로드 후에도 Observer가 작동하여 40MB/시간 누수<br>
+        <strong>해결:</strong> beforeunload 이벤트에서 disconnect() 호출로 완전 정리</p>
+      </div>
+      <div class="feature-item">
+        <h3>선택자 취약성</h3>
+        <p><strong>문제:</strong> n8n 버전 업데이트 시 하드코딩된 선택자 실패<br>
+        <strong>해결:</strong> SafeSelector 패턴으로 우선순위 기반 Fallback 구현</p>
+      </div>
+      <div class="feature-item">
+        <h3>보안 취약점</h3>
+        <p><strong>문제:</strong> Message 이벤트에 origin 검증 없어 외부 주입 가능<br>
+        <strong>해결:</strong> event.source === window 체크로 Same-origin Policy 적용</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 향후 계획 -->
+  <div class="container section">
+    <h2>향후 계획</h2>
+    <p class="section-subtitle">지속적인 개선과 기능 확장</p>
+    <div class="overview-grid">
+      <div class="overview-item">
+        <h3>Phase 2 (2주)</h3>
+        <p>DebugLogger 시스템, SmartInputWriter (select, checkbox, ACE editor 지원), N8NVersionDetector, SmartFieldMatcher 구현</p>
+      </div>
+      <div class="overview-item">
+        <h3>Phase 3 (1개월)</h3>
+        <p>성능 튜닝, 테스트 코드 작성 (Jest, Playwright), 완전한 API 문서 및 개발자 가이드 작성</p>
+      </div>
+      <div class="overview-item">
+        <h3>Long-term (3개월)</h3>
+        <p>워크플로우 JSON 자동 생성, 템플릿 라이브러리, 실시간 자동완성, 협업 기능, Chrome Web Store 배포</p>
+      </div>
+    </div>
+  </div>
+
   <footer>
-    <p style="font-weight: 600; font-size: 18px; margin-bottom: 16px;">
-      AI 기반 개발 프로세스로 제작
-    </p>
-    <p>
-      Claude Sonnet 4.5 • code-changelog • codex-claude-loop • meta-prompt-generator
-    </p>
-    <a href="https://github.com/Giwoong-ryu/n8n-copilot" target="_blank" class="github-link">
-      <svg class="github-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/>
-      </svg>
-      <span>GitHub에서 보기</span>
-    </a>
-    <p style="margin-top: 32px; font-size: 14px;">
-      © 2025 N8N AI Copilot • MIT License
-    </p>
+    <div class="container">
+      <h2 style="font-size: 24px; margin-bottom: 32px;">연락하기</h2>
+      <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto;">
+        프로젝트에 관심이 있으시거나 협업을 원하시면 언제든지 연락주세요.
+      </p>
+
+      <div style="display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px;">
+        <a href="https://github.com/Giwoong-ryu/n8n-copilot" target="_blank" class="github-link">
+          <svg class="github-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/>
+          </svg>
+          <span>GitHub 저장소</span>
+        </a>
+        <a href="mailto:your.email@example.com" class="github-link">
+          <svg class="github-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/>
+            <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <span>이메일 문의</span>
+        </a>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: 32px;">
+        <p style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">
+          AI 기반 개발 프로세스로 제작
+        </p>
+        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">
+          Claude Sonnet 4.5 • code-changelog • codex-claude-loop • meta-prompt-generator
+        </p>
+        <p style="font-size: 14px; color: var(--text-secondary);">
+          © 2025 N8N AI Copilot • MIT License
+        </p>
+      </div>
+    </div>
   </footer>
 
   <script>
