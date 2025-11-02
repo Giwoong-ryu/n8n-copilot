@@ -534,61 +534,75 @@ async function callClaudeAPI(userMessage, context) {
 - 인사말 생략, 간결하게`;
 
 
-  // background.js로 메시지 전송
-  return new Promise((resolve, reject) => {
+  // Gemini API 직접 호출 (Service Worker 우회)
+  return new Promise(async (resolve, reject) => {
     try {
-      chrome.runtime.sendMessage(
-        {
-          action: 'callClaude',
-          message: userMessage,
-          systemPrompt: systemPrompt,
-          context: context
-        },
-        (response) => {
-          if (chrome.runtime.lastError) {
-            console.error('❌ Runtime error:', chrome.runtime.lastError);
+      // API 키 가져오기
+      const result = await chrome.storage.local.get(['claudeApiKey', 'selectedModel', 'aiProvider']);
+      const apiKey = result.claudeApiKey;
+      const selectedModel = result.selectedModel || 'gemini-2.5-flash-lite';
+      const aiProvider = result.aiProvider || 'gemini';
 
-            // Extension context invalidated 에러 처리
-            if (chrome.runtime.lastError.message.includes('Extension context invalidated')) {
-              console.log('🔄 Extension이 업데이트되었습니다. 3초 후 페이지를 자동 새로고침합니다...');
+      if (!apiKey) {
+        reject(new Error('API 키가 설정되지 않았습니다. Extension 아이콘을 클릭하여 API 키를 입력해주세요.'));
+        return;
+      }
 
-              // iframe에 새로고침 알림 먼저 전송
-              sendMessageToIframe({
-                type: 'error',
-                message: '확장 프로그램이 업데이트되었습니다.\n\n🔄 3초 후 페이지가 자동으로 새로고침됩니다...'
-              });
+      console.log('📌 Using model:', selectedModel);
 
-              // 3초 후 자동 새로고침
-              setTimeout(() => {
-                window.location.reload();
-              }, 3000);
+      // Gemini API 호출
+      if (aiProvider === 'gemini') {
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
 
-              reject(new Error('확장 프로그램이 업데이트되었습니다. 페이지를 새로고침합니다.'));
-            } else {
-              reject(new Error(chrome.runtime.lastError.message));
+        const fullMessage = systemPrompt ? `${systemPrompt}\n\n${userMessage}` : userMessage;
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  {
+                    text: fullMessage
+                  }
+                ]
+              }
+            ],
+            generationConfig: {
+              temperature: 0.7,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 8192
             }
-            return;
-          }
+          })
+        });
 
-          if (!response) {
-            console.error('❌ No response from background');
-            reject(new Error('Background script에서 응답이 없습니다. 페이지를 새로고침해주세요.'));
-            return;
-          }
-
-          if (response.error) {
-            console.error('❌ API error:', response.message);
-            reject(new Error(response.message));
-            return;
-          }
-
-          console.log('✅ Claude API response received');
-          resolve(response.content);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error?.message || `API Error: ${response.status}`);
         }
-      );
+
+        const data = await response.json();
+        console.log('✅ Gemini API response received');
+
+        let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!text) {
+          console.error('❌ Failed to extract text from response');
+          reject(new Error('응답을 받을 수 없습니다. 다시 시도해주세요.'));
+          return;
+        }
+
+        resolve(text);
+      } else {
+        reject(new Error(`${aiProvider} provider는 현재 버전에서 지원되지 않습니다.`));
+      }
     } catch (error) {
       console.error('❌ Exception in callClaudeAPI:', error);
-      reject(new Error('확장 프로그램 연결 오류가 발생했습니다. 페이지를 새로고침해주세요.'));
+      reject(new Error(`API 호출 실패: ${error.message}`));
     }
   });
 }

@@ -6,8 +6,7 @@
   
   "permissions": [
     "storage",
-    "activeTab",
-    "alarms"
+    "activeTab"
   ],
   
   "host_permissions": [
@@ -22,11 +21,7 @@
     "https://raw.githubusercontent.com/*",
     "https://docs.n8n.io/*"
   ],
-  
-  "background": {
-    "service_worker": "background.js"
-  },
-  
+
   "content_scripts": [
     {
       "matches": [
