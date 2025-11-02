@@ -33,18 +33,336 @@ function detectN8NPage() {
 
 
 // ========================================
+// 1.5. 유틸리티 클래스 (Production-Ready Helpers)
+// ========================================
+
+/**
+ * SafeSelector - Fallback 선택자 패턴
+ * 여러 선택자를 우선순위대로 시도하여 가장 먼저 찾은 요소 반환
+ */
+class SafeSelector {
+  /**
+   * 여러 선택자를 시도하여 첫 번째로 찾은 요소 반환
+   * @param {string[]} selectors - 우선순위순 선택자 배열
+   * @param {Element} [context=document] - 검색 시작점
+   * @returns {Element|null} 찾은 요소 또는 null
+   */
+  static find(selectors, context = document) {
+    for (const selector of selectors) {
+      try {
+        const element = context.querySelector(selector);
+
+        // 요소가 존재하고 보이는지 확인
+        if (element && this.isVisible(element)) {
+          console.log(`✅ SafeSelector found element with: ${selector}`);
+          return element;
+        }
+      } catch (error) {
+        console.warn(`⚠️ Invalid selector: ${selector}`, error.message);
+      }
+    }
+
+    console.warn('⚠️ SafeSelector: No element found with any selector');
+    return null;
+  }
+
+  /**
+   * 여러 선택자로 모든 요소 찾기
+   * @param {string[]} selectors - 선택자 배열
+   * @param {Element} [context=document] - 검색 시작점
+   * @returns {Element[]} 찾은 모든 요소
+   */
+  static findAll(selectors, context = document) {
+    const elements = [];
+
+    for (const selector of selectors) {
+      try {
+        const found = context.querySelectorAll(selector);
+        elements.push(...Array.from(found).filter(el => this.isVisible(el)));
+      } catch (error) {
+        console.warn(`⚠️ Invalid selector: ${selector}`, error.message);
+      }
+    }
+
+    console.log(`📋 SafeSelector found ${elements.length} elements`);
+    return elements;
+  }
+
+  /**
+   * 요소가 화면에 보이는지 확인
+   * @param {Element} element - 확인할 요소
+   * @returns {boolean} 보이면 true
+   */
+  static isVisible(element) {
+    if (!element) return false;
+
+    // display: none 또는 visibility: hidden 체크
+    if (element.offsetParent === null) return false;
+
+    // opacity: 0 체크
+    const style = window.getComputedStyle(element);
+    if (style.opacity === '0') return false;
+
+    return true;
+  }
+
+  /**
+   * 요소 검증 (존재 + 보임 + 타입)
+   * @param {Element} element - 검증할 요소
+   * @param {string} [expectedTag] - 예상 태그명 (소문자)
+   * @returns {boolean} 유효하면 true
+   */
+  static validate(element, expectedTag = null) {
+    if (!element) return false;
+    if (!this.isVisible(element)) return false;
+
+    if (expectedTag) {
+      const actualTag = element.tagName.toLowerCase();
+      if (actualTag !== expectedTag) {
+        console.warn(`⚠️ Expected <${expectedTag}>, got <${actualTag}>`);
+        return false;
+      }
+    }
+
+    return true;
+  }
+}
+
+
+/**
+ * VueInputWriter - Vue.js 리액티브 시스템 호환 값 입력
+ * 6단계 프로세스로 Vue가 변경사항을 감지하도록 보장
+ */
+class VueInputWriter {
+  /**
+   * Vue 리액티브 시스템을 올바르게 트리거하면서 값 입력
+   * @param {HTMLElement} element - 입력 요소
+   * @param {string|number} value - 입력할 값
+   * @returns {Promise<boolean>} 성공 여부
+   */
+  static async setValue(element, value) {
+    if (!element) {
+      console.error('❌ VueInputWriter: Element not found');
+      return false;
+    }
+
+    const valueString = String(value);
+    console.log(`✍️ VueInputWriter: Writing "${valueString}" to <${element.tagName}>`);
+
+    try {
+      // ===== 1단계: Focus (사용자 상호작용 시작) =====
+      element.focus();
+      await this.wait(10);
+
+      // ===== 2단계: Select (기존 값 선택) =====
+      if (element.select && typeof element.select === 'function') {
+        element.select();
+        await this.wait(10);
+      }
+
+      // ===== 3단계: Native Setter로 값 설정 =====
+      this.setNativeValue(element, valueString);
+      await this.wait(10);
+
+      // ===== 4단계: Input Event (Vue v-model 트리거) =====
+      element.dispatchEvent(new Event('input', {
+        bubbles: true,
+        cancelable: true,
+        composed: true
+      }));
+      await this.wait(10);
+
+      // ===== 5단계: Change Event (변경 확정) =====
+      element.dispatchEvent(new Event('change', {
+        bubbles: true,
+        cancelable: true
+      }));
+      await this.wait(10);
+
+      // ===== 6단계: Blur (상호작용 종료) =====
+      element.blur();
+      element.dispatchEvent(new Event('blur', { bubbles: true }));
+      await this.wait(10);
+
+      // ===== 추가: Vue 인스턴스 직접 업데이트 시도 =====
+      this.updateVueInstance(element, valueString);
+
+      // ===== 검증: 값이 제대로 입력되었는지 확인 =====
+      const finalValue = element.value || element.textContent;
+      const success = finalValue === valueString;
+
+      if (success) {
+        console.log('✅ VueInputWriter: Value written successfully');
+      } else {
+        console.warn(`⚠️ VueInputWriter: Value mismatch. Expected "${valueString}", got "${finalValue}"`);
+      }
+
+      return success;
+
+    } catch (error) {
+      console.error('❌ VueInputWriter error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Native Setter를 사용하여 값 설정
+   * Vue가 감지하지 못하는 직접 할당 문제 해결
+   */
+  static setNativeValue(element, value) {
+    const tagName = element.tagName.toLowerCase();
+
+    try {
+      if (tagName === 'input' || tagName === 'textarea') {
+        // HTMLInputElement/HTMLTextAreaElement의 native setter 사용
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLInputElement.prototype,
+          'value'
+        )?.set;
+
+        const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
+          window.HTMLTextAreaElement.prototype,
+          'value'
+        )?.set;
+
+        const setter = tagName === 'input' ? nativeInputValueSetter : nativeTextAreaValueSetter;
+
+        if (setter) {
+          setter.call(element, value);
+          console.log('🎯 Native setter used');
+        } else {
+          element.value = value;
+        }
+      } else {
+        element.value = value;
+      }
+    } catch (error) {
+      console.warn('⚠️ Native setter failed, using direct assignment:', error.message);
+      element.value = value;
+    }
+  }
+
+  /**
+   * Vue 인스턴스에 직접 접근하여 값 업데이트
+   */
+  static updateVueInstance(element, value) {
+    try {
+      // Vue 3 방식
+      if (element.__vueParentComponent) {
+        const vueComponent = element.__vueParentComponent;
+
+        if (vueComponent.emit) {
+          vueComponent.emit('update:modelValue', value);
+          vueComponent.emit('input', value);
+        }
+
+        if (vueComponent.props && vueComponent.props.modelValue !== undefined) {
+          vueComponent.props.modelValue = value;
+        }
+
+        console.log('🎯 Vue 3 instance updated');
+      }
+
+      // Vue 2 하위 호환
+      if (element.__vue__) {
+        element.__vue__.$emit('input', value);
+        console.log('🎯 Vue 2 instance updated');
+      }
+    } catch (error) {
+      // Vue 인스턴스 접근 실패는 정상 (모든 요소가 Vue 컴포넌트는 아님)
+      console.log('ℹ️ Could not access Vue instance (this is normal)');
+    }
+  }
+
+  /**
+   * 비동기 대기
+   */
+  static wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+}
+
+
+/**
+ * ResilientWriter - 재시도 메커니즘
+ * VueInputWriter를 래핑하여 실패 시 자동 재시도
+ */
+class ResilientWriter {
+  /**
+   * 재시도 메커니즘이 있는 값 쓰기
+   * @param {HTMLElement} element - 입력 요소
+   * @param {string|number} value - 입력할 값
+   * @param {number} [maxRetries=3] - 최대 재시도 횟수
+   * @returns {Promise<Object>} 결과 객체 {success, attempts, error}
+   */
+  static async setValueWithRetry(element, value, maxRetries = 3) {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🔄 Attempt ${attempt}/${maxRetries}`);
+
+        const success = await VueInputWriter.setValue(element, value);
+
+        if (success) {
+          return {
+            success: true,
+            attempts: attempt
+          };
+        }
+
+        // 실패 시 대기 후 재시도
+        if (attempt < maxRetries) {
+          const waitTime = attempt * 100; // 100ms, 200ms, 300ms
+          console.log(`⏳ Waiting ${waitTime}ms before retry...`);
+          await this.wait(waitTime);
+        }
+
+      } catch (error) {
+        console.error(`❌ Attempt ${attempt} failed:`, error);
+
+        if (attempt === maxRetries) {
+          return {
+            success: false,
+            error: error.message,
+            attempts: attempt
+          };
+        }
+
+        await this.wait(attempt * 100);
+      }
+    }
+
+    return {
+      success: false,
+      error: 'Max retries exceeded',
+      attempts: maxRetries
+    };
+  }
+
+  static wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+}
+
+
+// ========================================
 // 2. N8N DOM 읽기 클래스
 // ========================================
 class N8NReader {
   
   // 현재 선택된 노드 정보 읽기
   getSelectedNode() {
-    const selectedNode = document.querySelector('[class*="selected"]');
-    
+    // SafeSelector 사용으로 안정성 향상
+    const selectedNode = SafeSelector.find([
+      '[data-node-selected="true"]',
+      '[class*="selected"]',
+      '.canvas-node.selected',
+      '[data-selected="true"]'
+    ]);
+
     if (!selectedNode) {
       return null;
     }
-    
+
     return {
       element: selectedNode,
       type: this.getNodeType(selectedNode),
@@ -71,15 +389,21 @@ class N8NReader {
   
   // 노드 설정 패널의 입력 필드 읽기
   getNodeSettings() {
-    const settingsPanel = document.querySelector('[class*="NodeSettings"]') ||
-                          document.querySelector('[class*="node-settings"]');
-    
+    // SafeSelector로 설정 패널 찾기 (우선순위순)
+    const settingsPanel = SafeSelector.find([
+      '[data-test-id="node-parameters-panel"]',
+      '[data-test-id="ndv-parameters"]',
+      '.ndv-panel',
+      '[class*="NodeSettings"]',
+      '[class*="node-settings"]'
+    ]);
+
     if (!settingsPanel) {
       return [];
     }
-    
+
     const inputs = settingsPanel.querySelectorAll('input, select, textarea');
-    
+
     return Array.from(inputs).map(input => ({
       element: input,
       name: this.getInputName(input),
@@ -146,88 +470,94 @@ class N8NReader {
 
 
 // ========================================
-// 3. N8N DOM 쓰기 클래스
+// 3. N8N DOM 쓰기 클래스 (Upgraded)
 // ========================================
 class N8NWriter {
-  
-  // 입력 필드에 값 쓰기 (Vue 리액티브 트리거)
-  setFieldValue(fieldElement, value) {
-    console.log('✍️ Writing to field:', fieldElement, value);
-    
+
+  /**
+   * 입력 필드에 값 쓰기 (VueInputWriter 사용)
+   * @param {HTMLElement} fieldElement - 입력 요소
+   * @param {string|number} value - 입력할 값
+   * @param {boolean} [useRetry=true] - 재시도 사용 여부
+   * @returns {Promise<Object>} 결과 객체 {success, attempts}
+   */
+  async setFieldValue(fieldElement, value, useRetry = true) {
     if (!fieldElement) {
       console.error('❌ Field element not found');
-      return false;
+      return { success: false, error: 'Element not found' };
     }
-    
-    // 1. 직접 값 설정
-    fieldElement.value = value;
-    
-    // 2. Vue의 리액티브 시스템을 트리거하기 위한 이벤트 발생
-    const events = ['input', 'change', 'blur'];
-    
-    events.forEach(eventType => {
-      const event = new Event(eventType, { 
-        bubbles: true, 
-        cancelable: true 
-      });
-      fieldElement.dispatchEvent(event);
-    });
-    
-    // 3. Vue 컴포넌트 직접 접근 시도
-    this.triggerVueUpdate(fieldElement, value);
-    
-    console.log('✅ Value written successfully');
-    return true;
-  }
-  
-  // Vue 컴포넌트에 직접 접근
-  triggerVueUpdate(element, value) {
-    try {
-      // Vue 3의 __vueParentComponent 속성 찾기
-      const vueInstance = element.__vueParentComponent || 
-                          element.__vue__;
-      
-      if (vueInstance) {
-        console.log('🎯 Found Vue instance, triggering update...');
-        
-        // Vue의 emit으로 update 이벤트 발생
-        if (vueInstance.emit) {
-          vueInstance.emit('update:modelValue', value);
-          vueInstance.emit('input', value);
-        }
-        
-        // Props 직접 업데이트 시도
-        if (vueInstance.props && vueInstance.props.modelValue !== undefined) {
-          vueInstance.props.modelValue = value;
-        }
-      }
-    } catch (error) {
-      console.log('⚠️ Vue update failed (normal):', error.message);
-      // 실패해도 괜찮음 - 기본 이벤트로 충분할 수 있음
+
+    // ResilientWriter 사용 (재시도 메커니즘)
+    if (useRetry) {
+      return await ResilientWriter.setValueWithRetry(fieldElement, value);
     }
+
+    // 단일 시도
+    const success = await VueInputWriter.setValue(fieldElement, value);
+    return { success, attempts: 1 };
   }
-  
-  // 여러 필드에 자동으로 값 채우기
-  autoFillFields(suggestions) {
+
+  /**
+   * 여러 필드에 자동으로 값 채우기
+   * @param {Object} suggestions - 필드명:값 매핑 객체
+   * @returns {Promise<Object>} 결과 {filledCount, totalFields, results}
+   */
+  async autoFillFields(suggestions) {
     const reader = new N8NReader();
     const fields = reader.getNodeSettings();
-    
+
+    if (fields.length === 0) {
+      console.warn('⚠️ No input fields found');
+      return { filledCount: 0, totalFields: 0, results: [] };
+    }
+
     let filledCount = 0;
-    
+    const results = [];
+
     for (const [fieldName, value] of Object.entries(suggestions)) {
-      // 필드 이름으로 매칭
-      const field = fields.find(f => 
-        f.name.toLowerCase().includes(fieldName.toLowerCase())
+      // 필드 이름으로 매칭 (대소문자 무시)
+      const field = fields.find(f =>
+        f.name.toLowerCase().includes(fieldName.toLowerCase()) ||
+        fieldName.toLowerCase().includes(f.name.toLowerCase())
       );
-      
+
       if (field) {
-        this.setFieldValue(field.element, value);
-        filledCount++;
+        console.log(`🎯 Matching field found: "${field.name}" for "${fieldName}"`);
+
+        const result = await this.setFieldValue(field.element, value);
+
+        if (result.success) {
+          filledCount++;
+          results.push({
+            field: field.name,
+            value: value,
+            status: 'success',
+            attempts: result.attempts
+          });
+        } else {
+          results.push({
+            field: field.name,
+            value: value,
+            status: 'failed',
+            error: result.error
+          });
+        }
+      } else {
+        console.warn(`⚠️ No matching field for: ${fieldName}`);
+        results.push({
+          field: fieldName,
+          value: value,
+          status: 'not_found'
+        });
       }
     }
-    
-    console.log(`✅ Auto-filled ${filledCount} fields`);
-    return filledCount;
+
+    console.log(`✅ Auto-filled ${filledCount}/${fields.length} fields`);
+    return {
+      filledCount,
+      totalFields: fields.length,
+      results
+    };
   }
 }
 
@@ -957,11 +1287,18 @@ function findInputFields(container) {
   return visibleInputs;
 }
 
-// AI로부터 받은 JSON을 필드에 자동 입력
-function autoFillNodeFields(jsonData) {
+// AI로부터 받은 JSON을 필드에 자동 입력 (Upgraded with VueInputWriter)
+async function autoFillNodeFields(jsonData) {
   console.log('🤖 Auto-filling node fields with data:', jsonData);
 
-  const panel = detectNodePanel();
+  // SafeSelector로 패널 찾기
+  const panel = SafeSelector.find([
+    '[data-test-id="node-parameters-panel"]',
+    '[data-test-id="ndv-parameters"]',
+    '.ndv-panel',
+    '[class*="NodeSettings"]'
+  ]);
+
   if (!panel) {
     return { success: false, message: '노드 설정 패널을 찾을 수 없습니다.' };
   }
@@ -975,9 +1312,7 @@ function autoFillNodeFields(jsonData) {
   const results = [];
 
   // JSON 데이터를 각 필드에 매핑
-  Object.keys(jsonData).forEach(key => {
-    const value = jsonData[key];
-
+  for (const [key, value] of Object.entries(jsonData)) {
     // 키와 매칭되는 필드 찾기 (대소문자 무시, 부분 일치)
     const field = fields.find(f => {
       const keyLower = key.toLowerCase().replace(/[_\s-]/g, '');
@@ -994,58 +1329,37 @@ function autoFillNodeFields(jsonData) {
       try {
         const valueStr = typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
 
-        // 값 입력
-        if (field.element.tagName === 'INPUT' || field.element.tagName === 'TEXTAREA') {
-          // 기존 값 저장
-          const oldValue = field.element.value;
+        // ResilientWriter로 값 입력 (재시도 메커니즘 포함)
+        const result = await ResilientWriter.setValueWithRetry(field.element, valueStr);
 
-          // 새 값 설정
-          field.element.value = valueStr;
-
-          // React/Vue의 상태 업데이트를 위한 이벤트 트리거
-          field.element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
-          field.element.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
-          field.element.dispatchEvent(new Event('blur', { bubbles: true }));
-
-          // Vue용 이벤트
-          field.element.__vue__?.emit?.('input', valueStr);
-
+        if (result.success) {
           filledCount++;
-          results.push({ field: field.label || field.name, value: valueStr, status: 'success' });
-          console.log(`✅ Filled: ${field.label || field.name} = ${valueStr}`);
-
-        } else if (field.element.tagName === 'SELECT') {
-          // 드롭다운 선택
-          const option = Array.from(field.element.options).find(opt =>
-            opt.value === value || opt.text === value
-          );
-
-          if (option) {
-            field.element.value = option.value;
-            field.element.dispatchEvent(new Event('change', { bubbles: true }));
-            filledCount++;
-            results.push({ field: field.label || field.name, value: value, status: 'success' });
-            console.log(`✅ Selected: ${field.label || field.name} = ${value}`);
-          }
-
-        } else if (field.element.contentEditable === 'true') {
-          // ContentEditable 요소
-          field.element.textContent = valueStr;
-          field.element.dispatchEvent(new Event('input', { bubbles: true }));
-          filledCount++;
-          results.push({ field: field.label || field.name, value: valueStr, status: 'success' });
-          console.log(`✅ Filled (contentEditable): ${field.label || field.name} = ${valueStr}`);
+          results.push({
+            field: field.label || field.name,
+            value: valueStr,
+            status: 'success',
+            attempts: result.attempts
+          });
+          console.log(`✅ Filled: ${field.label || field.name} = ${valueStr} (${result.attempts} attempts)`);
+        } else {
+          results.push({
+            field: field.label || field.name,
+            value: valueStr,
+            status: 'error',
+            error: result.error
+          });
+          console.error(`❌ Failed to fill ${field.label || field.name}:`, result.error);
         }
 
       } catch (error) {
-        console.error(`❌ Failed to fill ${key}:`, error);
+        console.error(`❌ Exception while filling ${key}:`, error);
         results.push({ field: key, value: value, status: 'error', error: error.message });
       }
     } else {
       console.warn(`⚠️ No matching field found for: ${key}`);
       results.push({ field: key, value: value, status: 'not_found' });
     }
-  });
+  }
 
   const message = `${filledCount}개 필드가 자동으로 입력되었습니다.`;
   console.log(`✅ Auto-fill complete: ${message}`);
@@ -1060,11 +1374,12 @@ function autoFillNodeFields(jsonData) {
 }
 
 // 메시지 리스너: iframe에서 자동 입력 요청 받기
-window.addEventListener('message', (event) => {
+window.addEventListener('message', async (event) => {
   if (event.data.type === 'auto-fill-node') {
     console.log('📥 Auto-fill request received from iframe');
 
-    const result = autoFillNodeFields(event.data.data);
+    // async 함수이므로 await 필요
+    const result = await autoFillNodeFields(event.data.data);
 
     // 결과를 iframe에 전송
     sendMessageToIframe({
