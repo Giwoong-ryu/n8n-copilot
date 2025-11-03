@@ -38,63 +38,81 @@ function detectN8NPage() {
 async function fetchNodesFromCurrentInstance() {
   console.log('📥 Fetching node types from current N8N instance...');
 
-  try {
-    // 방법 1: REST API 시도 (여러 엔드포인트)
-    const apiEndpoints = [
-      '/api/v1/node-types',
-      '/rest/node-types',
-      '/types/nodes.json'
-    ];
+  // 방법 1: REST API 시도 (여러 엔드포인트)
+  const apiEndpoints = [
+    '/api/v1/node-types',
+    '/rest/node-types',
+    '/types/nodes.json'
+  ];
 
-    for (const endpoint of apiEndpoints) {
-      try {
-        const response = await fetch(endpoint, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        });
+  for (const endpoint of apiEndpoints) {
+    try {
+      console.log(`  🔍 Trying ${endpoint}...`);
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
 
-        if (response.ok) {
-          const data = await response.json();
-          const nodeTypes = Array.isArray(data) ? data : Object.values(data);
-          console.log(`✅ Fetched ${nodeTypes.length} node types from ${endpoint}`);
-          return nodeTypes;
-        }
-      } catch (e) {
-        // 다음 엔드포인트 시도
+      if (response.ok) {
+        const data = await response.json();
+        const nodeTypes = Array.isArray(data) ? data : Object.values(data);
+        console.log(`✅ Fetched ${nodeTypes.length} node types from ${endpoint}`);
+        return nodeTypes;
+      } else {
+        console.log(`  ⚠️ ${endpoint} returned ${response.status}`);
       }
+    } catch (e) {
+      console.log(`  ⚠️ ${endpoint} failed: ${e.message}`);
     }
+  }
 
-    // 방법 2: N8N의 전역 Vue store에서 가져오기
-    console.log('🔍 Trying to access Vue store...');
+  // 방법 2: N8N의 전역 Vue store에서 가져오기
+  console.log('🔍 Trying to access Vue store...');
 
+  try {
     if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__ && window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps) {
-      const app = window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps[0];
-      if (app && app._instance && app._instance.proxy) {
-        const proxy = app._instance.proxy;
+      const apps = window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps;
+      console.log(`  Found ${apps.length} Vue apps`);
 
-        // Pinia store 접근
-        if (proxy.$pinia && proxy.$pinia._s) {
-          const stores = proxy.$pinia._s;
+      for (const app of apps) {
+        if (app && app._instance && app._instance.proxy) {
+          const proxy = app._instance.proxy;
 
-          // nodeTypes store 찾기
-          for (const [key, store] of stores) {
-            if (store.allNodeTypes || store.nodeTypes) {
-              const nodeTypes = Object.values(store.allNodeTypes || store.nodeTypes);
-              console.log(`✅ Fetched ${nodeTypes.length} node types from Pinia store (${key})`);
-              return nodeTypes;
+          // Pinia store 접근
+          if (proxy.$pinia && proxy.$pinia._s) {
+            const stores = proxy.$pinia._s;
+            console.log(`  Found ${stores.size} Pinia stores`);
+
+            // nodeTypes store 찾기
+            for (const [key, store] of stores) {
+              console.log(`  Checking store: ${key}`);
+
+              if (store.allNodeTypes) {
+                const nodeTypes = Object.values(store.allNodeTypes);
+                console.log(`✅ Fetched ${nodeTypes.length} node types from Pinia store.allNodeTypes (${key})`);
+                return nodeTypes;
+              }
+
+              if (store.nodeTypes) {
+                const nodeTypes = Object.values(store.nodeTypes);
+                console.log(`✅ Fetched ${nodeTypes.length} node types from Pinia store.nodeTypes (${key})`);
+                return nodeTypes;
+              }
             }
           }
         }
       }
+    } else {
+      console.log('  ⚠️ Vue devtools hook not found');
     }
-
-    throw new Error('Could not find node types - please report the N8N version');
-
   } catch (error) {
-    console.error('❌ Failed to fetch node types:', error);
-    console.error('💡 Tip: Check browser Network tab for node-types requests');
-    return null;
+    console.error('  ❌ Vue store access failed:', error);
   }
+
+  console.error('❌ Could not find node types using any method');
+  console.error('💡 Please check console and report which method works:');
+  console.error('   window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps[0]._instance.proxy.$pinia._s');
+  return null;
 }
 
 // Background에 노드 정보 전달
