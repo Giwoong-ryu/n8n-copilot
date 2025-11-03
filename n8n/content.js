@@ -329,7 +329,9 @@ class N8NReader {
       });
     }
 
-    console.log('⚠️ Found errors:', detectedErrors);
+    if (detectedErrors.length > 0) {
+      console.log(`⚠️ Found ${detectedErrors.length} error(s)`);
+    }
     return detectedErrors;
   }
 
@@ -1346,17 +1348,24 @@ async function callClaudeAPI(userMessage, context) {
   }
 
   const systemPrompt = `${context.errorAnalysis ? `
-🚨 반드시 2줄로만 답변! 🚨
+🚨 에러 진단 형식 🚨
 
-형식:
-에러: [한 줄]
-해결: [한 줄]
+**에러**: [원인을 1-2줄로 간단 명료하게]
 
-예:
-에러: .all() 사용 불가
-해결: "Run Once for All Items"로 변경
+**해결**:
+1. [구체적인 수정 단계 1]
+2. [구체적인 수정 단계 2]
+3. [필요시 추가 단계]
 
-절대 3줄 이상 쓰지 마세요!
+예시:
+**에러**: Bearer Auth 값이 비어있어 인증 실패
+
+**해결**:
+1. 카카오톡 노드 → Generic Auth → Bearer Auth 항목 클릭
+2. "Bearer [액세스토큰]" 형식으로 입력 (예: Bearer xxxxxx)
+3. 또는 OAuth2로 되돌리고 Client ID/Secret 입력
+
+원인은 간단히, 해결은 구체적으로!
 ` : `당신은 N8N 워크플로우 자동화 전문가입니다.`}
 
 ${context.errorAnalysis ? '' : `
@@ -1442,10 +1451,12 @@ ${context.workflowAnalysis.nodesData.map(node => `  * ${node.nodeName} (${node.n
 ` : ''}
 
 ${context.errorAnalysis ? `
-**에러**: ${context.errorAnalysis.errors.map((err) => `${err.message}`).join(', ')}
+**에러 메시지**: ${context.errorAnalysis.errors.map((err) => `${err.message}`).join(', ')}
 ${context.errorAnalysis.errors.some(e => e.autoFix) ? `
 **자동 진단**: ${context.errorAnalysis.errors.find(e => e.autoFix).autoFix}
-이 해결책을 2줄로 간단히 전달!` : '2줄로만 답변!'}
+→ 이 진단을 바탕으로 구체적인 수정 단계를 제시해주세요.` : ''}
+
+위 형식(에러 + 해결 단계)으로 답변해주세요!
 ` : context.errors.length > 0 ? `
 **⚠️ 감지된 에러 상세 정보**:
 ${context.errors.slice(0, 3).map((err, idx) => `
