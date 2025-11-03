@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스킬셋 - Claude Code 11개 스킬</title>
+  <meta name="description" content="Claude Code를 위한 11개 AI 자동화 스킬셋">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #FAF9F6;
+      --bg-secondary: #FFFFFF;
+      --bg-tertiary: #F5F5F3;
+      --text-primary: #1A1A1A;
+      --text-secondary: #6B6B6B;
+      --border: #E5E5E0;
+      --accent: #7C3AED;
+      --accent-hover: #6D28D9;
+      --success: #059669;
+      --warning: #D97706;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --gradient-1: linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', 'Malgun Gothic', Helvetica, Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .hero {
+      min-height: 40vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 60px 20px 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%);
+      animation: pulse 15s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(180deg); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 48px;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      font-size: 20px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      font-weight: 400;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-bottom: 32px;
+    }
+
+    .back-link:hover {
+      border-color: var(--accent);
+      background: rgba(124, 58, 237, 0.05);
+      transform: translateX(-4px);
+    }
+
+    .content-section {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 40px;
+      margin: 40px auto;
+      max-width: 1200px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .content-section h2 {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .content-section h3 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 40px 0 20px;
+    }
+
+    .content-section p {
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 20px;
+    }
+
+    .skill-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      background: var(--bg-primary);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .skill-table th,
+    .skill-table td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .skill-table th {
+      background: var(--bg-tertiary);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .skill-table td {
+      color: var(--text-secondary);
+    }
+
+    .skill-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .skill-table code {
+      background: var(--bg-tertiary);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Courier New', monospace;
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    .code-block {
+      background: #1A1A1A;
+      color: #F5F5F3;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 24px 0;
+      overflow-x: auto;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .code-block .comment {
+      color: #6B6B6B;
+    }
+
+    .download-section {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(167, 139, 250, 0.05) 100%);
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      padding: 32px;
+      margin: 40px 0;
+    }
+
+    .download-section h3 {
+      color: var(--accent);
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    .download-steps {
+      margin: 24px 0;
+    }
+
+    .download-step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      align-items: flex-start;
+    }
+
+    .step-number {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-content h4 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .step-content p {
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px;
+      background: var(--accent);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-md);
+      margin-top: 24px;
+    }
+
+    .github-link:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .github-link svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .info-box {
+      background: rgba(5, 150, 105, 0.1);
+      border-left: 4px solid var(--success);
+      padding: 20px;
+      margin: 24px 0;
+      border-radius: 8px;
+    }
+
+    .info-box p {
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .scenario-box {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+
+    .scenario-box h4 {
+      color: var(--accent);
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 60px 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 80px;
+    }
+
+    footer p {
+      color: var(--text-secondary);
+      margin: 8px 0;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 36px;
+      }
+
+      .subtitle {
+        font-size: 16px;
+      }
+
+      .content-section {
+        padding: 24px;
+      }
+
+      .download-section {
+        padding: 24px;
+      }
+
+      .skill-table {
+        font-size: 14px;
+      }
+
+      .skill-table th,
+      .skill-table td {
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-content">
+      <a href="클로드_팁.html" class="back-link">
+        ← 클로드_팁으로 돌아가기
+      </a>
+
+      <h1>🎯 Claude Code 스킬셋</h1>
+      <p class="subtitle">11개의 강력한 AI 자동화 도구</p>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- 스킬셋 개요 -->
+    <div class="content-section">
+      <h2>📦 설치된 스킬 (총 11개)</h2>
+      <p>Claude Code를 더욱 강력하게 만들어주는 AI 자동화 스킬셋 모음입니다. 개발 자동화부터 프로젝트 초기화, 콘텐츠 생성까지 다양한 작업을 자동화할 수 있습니다.</p>
+
+      <h3>개발 자동화 스킬 (5개)</h3>
+      <table class="skill-table">
+        <thead>
+          <tr>
+            <th>스킬명</th>
+            <th>기능</th>
+            <th>사용 명령어</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>code-changelog</strong></td>
+            <td>AI 코드 변경사항 자동 문서화 + HTML 뷰어</td>
+            <td><code>code-changelog</code></td>
+          </tr>
+          <tr>
+            <td><strong>meta-prompt-generator</strong></td>
+            <td>커스텀 슬래시 커맨드 자동 생성</td>
+            <td><code>meta-prompt-generator</code></td>
+          </tr>
+          <tr>
+            <td><strong>prompt-enhancer</strong></td>
+            <td>간단한 요청 → 상세 요구사항 변환</td>
+            <td><code>prompt-enhancer</code></td>
+          </tr>
+          <tr>
+            <td><strong>codex-claude-loop</strong></td>
+            <td>Claude + Codex 이중 AI 검증 루프</td>
+            <td><code>codex-claude-loop</code></td>
+          </tr>
+          <tr>
+            <td><strong>codex</strong></td>
+            <td>OpenAI Codex CLI 코드 분석/리팩토링</td>
+            <td><code>codex</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>프로젝트 초기화 스킬 (2개)</h3>
+      <table class="skill-table">
+        <thead>
+          <tr>
+            <th>스킬명</th>
+            <th>기능</th>
+            <th>사용 명령어</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>flutter-init</strong></td>
+            <td>Flutter Clean Architecture 프로젝트 생성</td>
+            <td><code>flutter-init</code></td>
+          </tr>
+          <tr>
+            <td><strong>nextjs15-init</strong></td>
+            <td>Next.js 15 App Router 프로젝트 생성</td>
+            <td><code>nextjs15-init</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>콘텐츠 생성 스킬 (4개)</h3>
+      <table class="skill-table">
+        <thead>
+          <tr>
+            <th>스킬명</th>
+            <th>기능</th>
+            <th>사용 명령어</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>landing-page-guide</strong></td>
+            <td>고전환율 랜딩페이지 제작 가이드</td>
+            <td><code>landing-page-guide</code></td>
+          </tr>
+          <tr>
+            <td><strong>card-news-generator</strong></td>
+            <td>인스타그램 카드 뉴스 자동 생성</td>
+            <td><code>card-news-generator</code></td>
+          </tr>
+          <tr>
+            <td><strong>card-news-generator-v2</strong></td>
+            <td>카드 뉴스 V2 (배경 이미지 지원)</td>
+            <td><code>card-news-generator-v2</code></td>
+          </tr>
+          <tr>
+            <td><strong>midjourney-cardnews-bg</strong></td>
+            <td>Midjourney 배경 프롬프트 생성</td>
+            <td><code>midjourney-cardnews-bg</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 설치 위치 및 사용법 -->
+    <div class="content-section">
+      <h2>⚙️ 설치 위치</h2>
+      <p>모든 스킬은 다음 경로에 설치됩니다:</p>
+      <div class="code-block">~/.claude/skills/
+├── code-changelog/
+│   └── SKILL.md
+├── meta-prompt-generator/
+│   └── SKILL.md
+├── prompt-enhancer/
+│   └── SKILL.md
+├── codex-claude-loop/
+│   └── SKILL.md
+├── codex/
+│   └── SKILL.md
+├── flutter-init/
+│   └── SKILL.md
+├── nextjs15-init/
+│   └── SKILL.md
+├── landing-page-guide/
+│   └── SKILL.md
+├── card-news-generator/
+│   └── SKILL.md
+├── card-news-generator-v2/
+│   └── SKILL.md
+└── midjourney-cardnews-bg/
+    └── SKILL.md</div>
+
+      <h3>🚀 빠른 시작</h3>
+      <div class="code-block"><span class="comment"># 코드 변경사항 문서화</span>
+code-changelog
+
+<span class="comment"># 프롬프트 개선</span>
+prompt-enhancer
+
+<span class="comment"># Next.js 프로젝트 생성</span>
+nextjs15-init
+
+<span class="comment"># 설치된 스킬 목록 확인</span>
+/skills</div>
+    </div>
+
+    <!-- 활용 시나리오 -->
+    <div class="content-section">
+      <h2>💡 주요 활용 시나리오</h2>
+
+      <div class="scenario-box">
+        <h4>시나리오 1: 완벽한 프로젝트 시작</h4>
+        <div class="code-block">1. prompt-enhancer      <span class="comment"># 요구사항 구체화</span>
+2. nextjs15-init       <span class="comment"># 프로젝트 생성</span>
+3. (개발 진행)
+4. codex-claude-loop   <span class="comment"># 코드 검증</span>
+5. code-changelog      <span class="comment"># 문서화</span></div>
+      </div>
+
+      <div class="scenario-box">
+        <h4>시나리오 2: 마케팅 캠페인 준비</h4>
+        <div class="code-block">1. landing-page-guide          <span class="comment"># 랜딩페이지 기획</span>
+2. midjourney-cardnews-bg      <span class="comment"># 배경 이미지 프롬프트</span>
+3. card-news-generator-v2      <span class="comment"># SNS 콘텐츠 제작</span></div>
+      </div>
+
+      <div class="scenario-box">
+        <h4>시나리오 3: 레거시 코드 개선</h4>
+        <div class="code-block">1. codex                <span class="comment"># 코드 분석</span>
+2. (리팩토링 진행)
+3. codex-claude-loop    <span class="comment"># 이중 검증</span>
+4. code-changelog       <span class="comment"># 변경사항 문서화</span></div>
+      </div>
+    </div>
+
+    <!-- GitHub 다운로드 안내 -->
+    <div class="download-section">
+      <h3>📥 GitHub에서 스킬 다운로드하기</h3>
+      <p>모든 스킬의 전체 코드와 상세 문서를 GitHub에서 확인하고 다운로드할 수 있습니다.</p>
+
+      <div class="download-steps">
+        <div class="download-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h4>GitHub 저장소 방문</h4>
+            <p>아래 버튼을 클릭하여 GitHub 저장소로 이동합니다.</p>
+          </div>
+        </div>
+
+        <div class="download-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h4>파일 탐색 및 복사</h4>
+            <p>각 스킬의 SKILL.md 파일을 클릭하여 내용을 확인하고, 우측 상단의 복사 버튼을 이용해 코드를 복사할 수 있습니다.</p>
+          </div>
+        </div>
+
+        <div class="download-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h4>로컬에 설치</h4>
+            <p>복사한 내용을 <code>~/.claude/skills/[스킬명]/SKILL.md</code> 경로에 저장하면 Claude Code에서 바로 사용할 수 있습니다.</p>
+          </div>
+        </div>
+
+        <div class="download-step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h4>저장소 전체 다운로드 (선택사항)</h4>
+            <p>GitHub 저장소 페이지에서 <strong>Code</strong> 버튼 → <strong>Download ZIP</strong>을 클릭하여 모든 스킬을 한 번에 다운로드할 수 있습니다.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <p><strong>💡 팁:</strong> GitHub에서는 마크다운 파일이 자동으로 렌더링되어 보기 좋게 표시되며, 코드 블록에서 직접 복사하기 쉽습니다!</p>
+      </div>
+
+      <a href="https://github.com/Giwoong-ryu/n8n-copilot/tree/main/클로드_팁/스킬셋" class="github-link" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        GitHub에서 스킬셋 다운로드
+      </a>
+    </div>
+
+    <!-- 필수 설정 -->
+    <div class="content-section">
+      <h2>🔧 필수 설정</h2>
+
+      <h3>OpenAI API 키 (선택 사항)</h3>
+      <p><code>codex</code>, <code>codex-claude-loop</code> 스킬 사용 시 필요합니다:</p>
+      <div class="code-block">export OPENAI_API_KEY="your-api-key-here"</div>
+
+      <div class="info-box" style="margin-top: 20px;">
+        <p><strong>참고:</strong> OpenAI API 키가 없어도 대부분의 스킬(9개)은 정상적으로 사용할 수 있습니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p style="font-size: 16px; margin-bottom: 16px;">
+        <a href="클로드_팁.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">← 클로드_팁으로 돌아가기</a>
+      </p>
+      <p style="color: var(--text-secondary); font-size: 14px;">
+        Claude Code 스킬셋 11개
+      </p>
+      <p style="font-size: 14px; color: var(--text-secondary); margin-top: 16px;">
+        © 2025 N8N Copilot • Made with ❤️ for Claude Code Users
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
