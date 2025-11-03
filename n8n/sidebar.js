@@ -45,11 +45,17 @@ function createSidebarElements() {
   const sidebar = document.createElement('div');
   sidebar.id = 'n8n-ai-copilot-sidebar';
 
-  // 리사이즈 핸들 생성
+  // 리사이즈 핸들 생성 (좌우)
   const resizeHandle = document.createElement('div');
   resizeHandle.id = 'n8n-ai-copilot-resize-handle';
-  resizeHandle.title = '드래그하여 크기 조절';
+  resizeHandle.title = '드래그하여 가로 크기 조절';
   sidebar.appendChild(resizeHandle);
+
+  // 리사이즈 핸들 생성 (상하)
+  const resizeHandleVertical = document.createElement('div');
+  resizeHandleVertical.id = 'n8n-ai-copilot-resize-handle-vertical';
+  resizeHandleVertical.title = '드래그하여 세로 크기 조절';
+  sidebar.appendChild(resizeHandleVertical);
 
   // iframe 생성
   const iframe = document.createElement('iframe');
@@ -71,6 +77,7 @@ function attachEventListeners() {
   const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
   const overlay = document.getElementById('n8n-ai-copilot-overlay');
   const resizeHandle = document.getElementById('n8n-ai-copilot-resize-handle');
+  const resizeHandleVertical = document.getElementById('n8n-ai-copilot-resize-handle-vertical');
 
   // 토글 버튼 클릭
   toggleButton.addEventListener('click', toggleSidebar);
@@ -85,9 +92,14 @@ function attachEventListeners() {
     }
   });
 
-  // 리사이즈 핸들 드래그
+  // 리사이즈 핸들 드래그 (좌우)
   if (resizeHandle) {
     resizeHandle.addEventListener('mousedown', startResize);
+  }
+
+  // 리사이즈 핸들 드래그 (상하)
+  if (resizeHandleVertical) {
+    resizeHandleVertical.addEventListener('mousedown', startResizeVertical);
   }
 
   // iframe과의 메시지 통신은 content.js에서 처리합니다
@@ -172,31 +184,35 @@ window.addEventListener('message', (event) => {
 // 8. 사이드바 크기 조절
 // ========================================
 let isResizing = false;
+let isResizingVertical = false;
 let startX = 0;
+let startY = 0;
 let startWidth = 0;
+let startHeight = 0;
 const MIN_WIDTH = 300;
-const MAX_WIDTH = 800;
+const MAX_WIDTH = 1000;
+const MIN_HEIGHT = 200;
+const MAX_HEIGHT = window.innerHeight - 50;
 
+// 좌우 크기 조절
 function startResize(e) {
+  e.preventDefault();
   isResizing = true;
   startX = e.clientX;
 
   const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
   startWidth = sidebar.offsetWidth;
 
-  // 드래그 중 이벤트
-  document.addEventListener('mousemove', doResize);
-  document.addEventListener('mouseup', stopResize);
-
   // 드래그 중 선택 방지
   document.body.style.userSelect = 'none';
   document.body.style.cursor = 'ew-resize';
 
-  console.log('📏 Resize started');
+  console.log('📏 Horizontal resize started');
 }
 
 function doResize(e) {
   if (!isResizing) return;
+  e.preventDefault();
 
   const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
   const toggleButton = document.getElementById('n8n-ai-copilot-toggle');
@@ -222,16 +238,76 @@ function stopResize() {
 
   isResizing = false;
 
-  // 이벤트 리스너 제거
-  document.removeEventListener('mousemove', doResize);
-  document.removeEventListener('mouseup', stopResize);
+  // 스타일 복원
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+
+  console.log('📏 Horizontal resize stopped');
+}
+
+// 상하 크기 조절
+function startResizeVertical(e) {
+  e.preventDefault();
+  isResizingVertical = true;
+  startY = e.clientY;
+
+  const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
+  startHeight = sidebar.offsetHeight;
+
+  // 드래그 중 선택 방지
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = 'ns-resize';
+
+  console.log('📏 Vertical resize started');
+}
+
+function doResizeVertical(e) {
+  if (!isResizingVertical) return;
+  e.preventDefault();
+
+  const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
+
+  // 마우스 이동 거리 계산 (위로 드래그하면 사이드바가 높아짐)
+  const deltaY = startY - e.clientY;
+  let newHeight = startHeight + deltaY;
+
+  // 최소/최대 크기 제한
+  newHeight = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, newHeight));
+
+  // 사이드바 높이 적용
+  sidebar.style.height = newHeight + 'px';
+}
+
+function stopResizeVertical() {
+  if (!isResizingVertical) return;
+
+  isResizingVertical = false;
 
   // 스타일 복원
   document.body.style.userSelect = '';
   document.body.style.cursor = '';
 
-  console.log('📏 Resize stopped');
+  console.log('📏 Vertical resize stopped');
 }
+
+// 전역 mousemove/mouseup 이벤트 (마우스가 handle을 벗어나도 동작)
+document.addEventListener('mousemove', (e) => {
+  if (isResizing) {
+    doResize(e);
+  }
+  if (isResizingVertical) {
+    doResizeVertical(e);
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  if (isResizing) {
+    stopResize();
+  }
+  if (isResizingVertical) {
+    stopResizeVertical();
+  }
+});
 
 
 console.log('📦 Sidebar.js loaded');
