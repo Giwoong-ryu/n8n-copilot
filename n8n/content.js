@@ -33,6 +33,50 @@ function detectN8NPage() {
 
 
 // ========================================
+// 1.5 N8N 인스턴스에서 노드 정보 가져오기
+// ========================================
+async function fetchNodesFromCurrentInstance() {
+  console.log('📥 Fetching node types from current N8N instance...');
+
+  try {
+    const response = await fetch('/rest/node-types', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`N8N API error: ${response.status}`);
+    }
+
+    const nodeTypes = await response.json();
+    console.log(`✅ Fetched ${nodeTypes.length} node types`);
+
+    return nodeTypes;
+  } catch (error) {
+    console.error('❌ Failed to fetch node types:', error);
+    return null;
+  }
+}
+
+// Background에 노드 정보 전달
+async function updateNodesInBackground() {
+  const nodeTypes = await fetchNodesFromCurrentInstance();
+
+  if (nodeTypes) {
+    chrome.runtime.sendMessage({
+      action: 'updateNodeTypes',
+      nodeTypes: nodeTypes
+    }, response => {
+      if (response && response.success) {
+        console.log('✅ Node types updated in background');
+      }
+    });
+  }
+}
+
+// ========================================
 // 2. N8N DOM 읽기 클래스
 // ========================================
 class N8NReader {
@@ -545,6 +589,9 @@ function initializeAICopilot() {
   window.n8nReader = new N8NReader();
   window.n8nWriter = new N8NWriter();
   console.log('✅ Reader and Writer initialized');
+
+  // N8N 인스턴스에서 노드 정보 가져오기
+  updateNodesInBackground();
 
   // 사이드바 초기화 (sidebar.js에서 처리)
   console.log('🔍 Checking if initializeSidebar exists:', typeof initializeSidebar);
