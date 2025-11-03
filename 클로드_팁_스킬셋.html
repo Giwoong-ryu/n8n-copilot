@@ -373,36 +373,36 @@
       <table class="skill-table">
         <thead>
           <tr>
-            <th>스킬명</th>
-            <th>기능</th>
-            <th>사용 명령어</th>
+            <th style="width: 20%;">스킬명</th>
+            <th style="width: 45%;">어떻게 사용하나요?</th>
+            <th style="width: 35%;">사용 방법</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><strong>code-changelog</strong></td>
-            <td>AI 코드 변경사항 자동 문서화 + HTML 뷰어</td>
-            <td><code>code-changelog</code></td>
+            <td>Claude가 작성한 코드를 localhost:4000에서 예쁜 HTML 문서로 확인하세요</td>
+            <td><code>code-changelog</code> 입력 → 브라우저 자동 오픈</td>
           </tr>
           <tr>
             <td><strong>meta-prompt-generator</strong></td>
-            <td>커스텀 슬래시 커맨드 자동 생성</td>
-            <td><code>meta-prompt-generator</code></td>
+            <td>반복 작업을 <code>/명령어</code> 하나로 만들어서 시간을 절약하세요</td>
+            <td>"결제 시스템 구현" 설명 → <code>/payment-system</code> 명령어 자동 생성</td>
           </tr>
           <tr>
             <td><strong>prompt-enhancer</strong></td>
-            <td>간단한 요청 → 상세 요구사항 변환</td>
-            <td><code>prompt-enhancer</code></td>
+            <td>"로그인 만들어줘" 한 마디로 전체 설계서와 구현 계획이 완성됩니다</td>
+            <td><code>prompt-enhancer "로그인 만들어줘"</code> → Clean Architecture 설계서 출력</td>
           </tr>
           <tr>
             <td><strong>codex-claude-loop</strong></td>
-            <td>Claude + Codex 이중 AI 검증 루프</td>
-            <td><code>codex-claude-loop</code></td>
+            <td>Claude와 Codex가 서로 코드를 검증해서 품질을 2배로 높여줍니다</td>
+            <td><code>codex-claude-loop</code> 입력 → 두 AI가 합의할 때까지 자동 개선</td>
           </tr>
           <tr>
             <td><strong>codex</strong></td>
-            <td>OpenAI Codex CLI 코드 분석/리팩토링</td>
-            <td><code>codex</code></td>
+            <td>3년 전 레거시 코드를 최신 기술로 자동 업그레이드합니다</td>
+            <td><code>codex "이 코드를 React 18로 리팩토링"</code> → 최신 코드 제안</td>
           </tr>
         </tbody>
       </table>
@@ -411,21 +411,21 @@
       <table class="skill-table">
         <thead>
           <tr>
-            <th>스킬명</th>
-            <th>기능</th>
-            <th>사용 명령어</th>
+            <th style="width: 20%;">스킬명</th>
+            <th style="width: 45%;">어떻게 사용하나요?</th>
+            <th style="width: 35%;">사용 방법</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><strong>flutter-init</strong></td>
-            <td>Flutter Clean Architecture 프로젝트 생성</td>
-            <td><code>flutter-init</code></td>
+            <td>명령어 한 줄로 Clean Architecture 기반 Flutter 프로젝트가 완성됩니다 (폴더 구조 + 패키지 설치 완료)</td>
+            <td><code>flutter-init my_app</code> → Riverpod, Dio, GoRouter 등 설정 완료</td>
           </tr>
           <tr>
             <td><strong>nextjs15-init</strong></td>
-            <td>Next.js 15 App Router 프로젝트 생성</td>
-            <td><code>nextjs15-init</code></td>
+            <td>Next.js 15 + TypeScript + TailwindCSS 프로젝트를 3초 만에 시작하세요</td>
+            <td><code>nextjs15-init my-app</code> → App Router + Zustand 설정 완료</td>
           </tr>
         </tbody>
       </table>
@@ -434,31 +434,31 @@
       <table class="skill-table">
         <thead>
           <tr>
-            <th>스킬명</th>
-            <th>기능</th>
-            <th>사용 명령어</th>
+            <th style="width: 20%;">스킬명</th>
+            <th style="width: 45%;">어떻게 사용하나요?</th>
+            <th style="width: 35%;">사용 방법</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><strong>landing-page-guide</strong></td>
-            <td>고전환율 랜딩페이지 제작 가이드</td>
-            <td><code>landing-page-guide</code></td>
+            <td>제품명만 입력하면 전환율 높은 랜딩페이지 기획서가 완성됩니다 (헤드라인, CTA, FAQ 포함)</td>
+            <td><code>landing-page-guide "제품명"</code> → Hero/Features/FAQ 자동 생성</td>
           </tr>
           <tr>
             <td><strong>card-news-generator</strong></td>
-            <td>인스타그램 카드 뉴스 자동 생성</td>
-            <td><code>card-news-generator</code></td>
+            <td>긴 글을 10장짜리 인스타그램 카드뉴스로 자동 변환합니다</td>
+            <td><code>card-news-generator "글 제목"</code> → 10개 슬라이드 + 이모지 자동 삽입</td>
           </tr>
           <tr>
             <td><strong>card-news-generator-v2</strong></td>
-            <td>카드 뉴스 V2 (배경 이미지 지원)</td>
-            <td><code>card-news-generator-v2</code></td>
+            <td>커스텀 배경 이미지를 넣은 고급 카드뉴스를 만듭니다 (마케팅용)</td>
+            <td><code>card-news-generator-v2 --bg-folder ./images/</code> → 배경+텍스트 합성</td>
           </tr>
           <tr>
             <td><strong>midjourney-cardnews-bg</strong></td>
-            <td>Midjourney 배경 프롬프트 생성</td>
-            <td><code>midjourney-cardnews-bg</code></td>
+            <td>카드뉴스 주제에 맞는 Midjourney 프롬프트 10개를 자동으로 만들어줍니다</td>
+            <td><code>midjourney-cardnews-bg "주제"</code> → 10개 프롬프트 생성 → Discord에 붙여넣기</td>
           </tr>
         </tbody>
       </table>
