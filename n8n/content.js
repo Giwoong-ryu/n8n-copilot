@@ -1027,7 +1027,26 @@ async function callClaudeAPI(userMessage, context) {
     console.log(`📚 Workflow nodes with operations: ${workflowNodeOps.length}/${context.workflowNodes.types.length}`);
   }
 
-  const systemPrompt = `당신은 N8N 워크플로우 자동화 전문가입니다 (2025년 10월 기준 최신 버전).
+  const systemPrompt = `${context.errorAnalysis ? `
+🚨 **에러 분석 전용 모드 - 매우 중요!**
+
+**절대 규칙 (반드시 지켜야 함)**:
+1. 답변은 최대 3-4줄만 작성
+2. 형식: 에러 → 원인 → 해결
+3. 장황한 설명 절대 금지
+4. "~일 수 있습니다", "~가능성" 같은 추측 금지
+5. 코드를 봤으면 정확한 줄 번호와 수정 방법만
+
+**답변 예시**:
+\`\`\`
+에러: general - ${context.errorAnalysis.errors[0]?.nodeName}
+원인: "Run once for each item" 설정되어 있으나 코드는 items 배열 전체 처리
+해결: 노드 설정에서 "Run once for all items"로 변경
+\`\`\`
+
+위 형식으로만 답변하세요. 절대 길게 쓰지 마세요.
+
+` : ''}당신은 N8N 워크플로우 자동화 전문가입니다 (2025년 10월 기준 최신 버전).
 사용자의 워크플로우 작성, 에러 해결, JSON 데이터 생성 등을 도와주세요.
 
 **N8N 최신 정보 (2025년 10월)**:
@@ -1118,45 +1137,11 @@ ${err.details.stackTrace ? `- 스택 트레이스:\n  ${err.details.stackTrace.j
 ${context.errors.length > 3 ? `\n... 외 ${context.errors.length - 3}개 에러` : ''}
 ` : ''}
 
-**에러 분석 전략 (매우 중요!)**:
-${context.errorAnalysis ? `
-⚠️ **에러 분석 모드 - 짧고 명확하게 답변하세요**
-
-답변 형식 (최대 3-4줄):
-1. 에러 타입과 메시지 (1줄)
-2. 원인 분석 (1줄)
-3. 해결 방법 (1-2줄)
-
-예시:
-\`\`\`
-에러: ReferenceError - sortedNews is not defined
-원인: sortedNews 변수 선언 없이 사용
-해결: 15번째 줄 앞에 const sortedNews = items[0].json.news.sort(...) 추가
-\`\`\`
-
-❌ 금지: 장황한 설명, 여러 가능성 나열, 일반론
-✅ 필수: 코드를 봤으면 정확한 줄 번호와 수정 방법 제시
-` : `
-🚨 에러 진단 우선순위:
-
-**1순위: 노드 설정 확인**
-   - **Run once for all items** vs **Run once for each item**
-     * all items: 전체 items 배열 처리 (items.map, items.filter)
-     * each item: 단일 item 처리
-   - **Continue On Fail**, **Always Output Data**
-
-**2순위: 에러 패턴 분석**
-   - 에러 개수 = 아이템 개수? → 설정 문제!
-   - 동일 에러 반복? → 설정 문제
-
-**3순위: 코드 검토**
-
-답변 예시:
-\`\`\`
-설정 문제:
-- "Run once for each item" → "Run once for all items"로 변경
-- 코드가 items 배열 전체를 처리하므로
-\`\`\`
+${context.errorAnalysis ? '' : `
+**에러 진단 우선순위**:
+1. 노드 설정 ("Run once for all items" vs "each item")
+2. 에러 패턴 (반복되면 설정 문제)
+3. 코드 검토
 `}
 
 **최신 정보 우선 원칙**:
