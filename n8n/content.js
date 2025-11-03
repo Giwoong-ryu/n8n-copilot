@@ -1914,11 +1914,62 @@ async function analyzeErrorsWithCode() {
 
     // 1. 에러 메시지에서 직접적인 힌트 찾기
     const msgLower = error.message.toLowerCase();
+    const nodeNameLower = errorDetail.nodeName.toLowerCase();
+
+    // Run Once for All Items 패턴
     if (msgLower.includes('run once for all items') ||
         msgLower.includes('.all()') ||
         msgLower.includes("can't use .all") ||
         msgLower.includes('only available in')) {
       errorDetail.autoFix = '"Run Once for All Items" 모드로 변경';
+    }
+
+    // 인증 관련 에러 패턴 + API별 올바른 인증 방식 제안
+    if (msgLower.includes('authentication') ||
+        msgLower.includes('credentials') ||
+        msgLower.includes('unauthorized') ||
+        msgLower.includes('401') ||
+        msgLower.includes('자격 증명')) {
+
+      // 카카오톡 API - OAuth2 사용
+      if (nodeNameLower.includes('카카오') || nodeNameLower.includes('kakao')) {
+        errorDetail.autoFix = 'OAuth2 인증 설정 (카카오톡은 OAuth2 사용)\n' +
+          '1. Authentication 토글 ON\n' +
+          '2. Auth Type: OAuth2\n' +
+          '3. Client ID: 카카오 REST API 키 입력\n' +
+          '4. Authorization URL: https://kauth.kakao.com/oauth/authorize\n' +
+          '5. Access Token URL: https://kauth.kakao.com/oauth/token';
+      }
+      // 네이버 API - OAuth2 사용
+      else if (nodeNameLower.includes('네이버') || nodeNameLower.includes('naver')) {
+        errorDetail.autoFix = 'OAuth2 인증 설정 (네이버는 OAuth2 사용)\n' +
+          '1. Authentication 토글 ON\n' +
+          '2. Auth Type: OAuth2\n' +
+          '3. Client ID: 네이버 Application Client ID\n' +
+          '4. Client Secret: 네이버 Application Client Secret';
+      }
+      // Google API - OAuth2 사용
+      else if (nodeNameLower.includes('구글') || nodeNameLower.includes('google')) {
+        errorDetail.autoFix = 'OAuth2 인증 설정 (구글은 OAuth2 사용)\n' +
+          '1. Authentication 토글 ON\n' +
+          '2. Auth Type: OAuth2\n' +
+          '3. Google Cloud Console에서 OAuth2 Client ID/Secret 발급\n' +
+          '4. N8N에서 Google OAuth2 Credential 생성';
+      }
+      // 일반 HTTP Request - 인증 활성화 필요
+      else if (nodeNameLower.includes('http') || nodeNameLower.includes('request')) {
+        errorDetail.autoFix = '인증 설정 활성화 필요\n' +
+          '1. Authentication 토글 ON\n' +
+          '2. Auth Type 선택 (API 문서 확인)\n' +
+          '3. OAuth2 (권장) 또는 Bearer Auth 또는 Basic Auth';
+      }
+      // 기타
+      else {
+        errorDetail.autoFix = '인증 설정 확인 필요\n' +
+          '1. Authentication 토글이 ON인지 확인\n' +
+          '2. API 공식 문서에서 올바른 인증 방식 확인\n' +
+          '3. 자격 증명(Credential) 올바르게 입력했는지 확인';
+      }
     }
 
     // 2. Code 노드인 경우 코드 읽기 시도
