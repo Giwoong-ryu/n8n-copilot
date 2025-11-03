@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>클로드_팁 - Claude Code 가이드</title>
+  <meta name="description" content="Claude Code 스킬셋, MCP, Agent 활용법 등 모든 기술 문서">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #FAF9F6;
+      --bg-secondary: #FFFFFF;
+      --bg-tertiary: #F5F5F3;
+      --text-primary: #1A1A1A;
+      --text-secondary: #6B6B6B;
+      --border: #E5E5E0;
+      --accent: #7C3AED;
+      --accent-hover: #6D28D9;
+      --success: #059669;
+      --warning: #D97706;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --gradient-1: linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', 'Malgun Gothic', Helvetica, Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .hero {
+      min-height: 60vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 60px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%);
+      animation: pulse 15s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(180deg); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    h1 {
+      font-size: 56px;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      font-size: 24px;
+      color: var(--text-secondary);
+      margin-bottom: 48px;
+      font-weight: 400;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-bottom: 32px;
+    }
+
+    .back-link:hover {
+      border-color: var(--accent);
+      background: rgba(124, 58, 237, 0.05);
+      transform: translateX(-4px);
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin: 60px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-1);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 16px;
+      color: var(--accent);
+    }
+
+    .card h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .card p {
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+
+    .card-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .card-badge.new {
+      background: rgba(5, 150, 105, 0.1);
+      color: var(--success);
+    }
+
+    .section {
+      margin: 80px auto;
+    }
+
+    .section h2 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+      text-align: center;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 16px;
+      margin-bottom: 48px;
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+    }
+
+    .skill-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .skill-item:hover {
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-4px);
+    }
+
+    .skill-item h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .skill-item p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .skill-number {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-weight: 700;
+      margin-right: 10px;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 60px 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 80px;
+    }
+
+    footer p {
+      color: var(--text-secondary);
+      margin: 8px 0;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 40px;
+      }
+
+      .subtitle {
+        font-size: 18px;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .skills-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .section h2 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-content">
+      <a href="index.html" class="back-link">
+        ← 포트폴리오로 돌아가기
+      </a>
+
+      <h1>💡 클로드_팁</h1>
+      <p class="subtitle">Claude Code를 더 효율적으로 사용하기 위한 가이드</p>
+
+      <div class="container">
+        <div class="cards-grid">
+          <!-- 스킬셋 카드 -->
+          <a href="./클로드_팁/스킬셋/README.md" class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2>스킬셋</h2>
+            <p>Claude Code를 위한 11개의 강력한 AI 자동화 스킬. 개발 자동화, 프로젝트 초기화, 콘텐츠 생성까지!</p>
+            <span class="card-badge new">11개 스킬</span>
+          </a>
+
+          <!-- MCP 카드 -->
+          <a href="./클로드_팁/MCP/README.md" class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2>MCP</h2>
+            <p>Model Context Protocol - Claude의 외부 시스템 연동 프로토콜 가이드</p>
+            <span class="card-badge">준비 중</span>
+          </a>
+
+          <!-- Agent 카드 -->
+          <a href="./클로드_팁/Agent/README.md" class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2a3 3 0 0 0-3 3v4a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" stroke="currentColor" stroke-width="2"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h2>Agent</h2>
+            <p>Claude Agent 활용법 - 복잡한 작업을 자동화하는 자율 AI 시스템</p>
+            <span class="card-badge">준비 중</span>
+          </a>
+
+          <!-- 기타 팁 카드 -->
+          <a href="./클로드_팁/기타_팁/README.md" class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h2>기타 팁</h2>
+            <p>유용한 팁과 트릭, 문제 해결 가이드, 생산성 향상 방법</p>
+            <span class="card-badge">준비 중</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 스킬셋 상세 -->
+  <div class="container section">
+    <h2>🎯 11개 Claude Code 스킬셋</h2>
+    <p class="section-subtitle">개발 자동화부터 콘텐츠 생성까지</p>
+
+    <h3 style="font-size: 24px; margin: 40px 0 24px 0; color: var(--accent);">개발 자동화 (5개)</h3>
+    <div class="skills-grid">
+      <div class="skill-item">
+        <h3><span class="skill-number">1</span>code-changelog</h3>
+        <p>AI 코드 변경사항 자동 문서화 + HTML 뷰어. Git 커밋 히스토리를 분석하여 변경사항을 구조화된 문서로 변환합니다.</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">2</span>meta-prompt-generator</h3>
+        <p>커스텀 슬래시 커맨드 자동 생성. 반복적인 작업을 슬래시 커맨드로 만들어 생산성을 향상시킵니다.</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">3</span>prompt-enhancer</h3>
+        <p>간단한 요청을 상세 요구사항으로 변환. 모호한 요청을 구체적인 요구사항으로 확장합니다.</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">4</span>codex-claude-loop</h3>
+        <p>Claude + Codex 이중 AI 검증 루프. 두 AI가 서로 코드를 검증하여 품질을 향상시킵니다.</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">5</span>codex</h3>
+        <p>OpenAI Codex CLI 코드 분석/리팩토링. 기존 코드를 분석하고 최적화 제안을 제공합니다.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size: 24px; margin: 60px 0 24px 0; color: var(--accent);">프로젝트 초기화 (2개)</h3>
+    <div class="skills-grid">
+      <div class="skill-item">
+        <h3><span class="skill-number">6</span>flutter-init</h3>
+        <p>Flutter Clean Architecture 프로젝트 생성. 클린 아키텍처 기반 Flutter 프로젝트를 즉시 시작합니다.</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">7</span>nextjs15-init</h3>
+        <p>Next.js 15 App Router 프로젝트 생성. 최신 Next.js 15 프로젝트를 베스트 프랙티스로 시작합니다.</p>
+      </div>
+    </div>
+
+    <h3 style="font-size: 24px; margin: 60px 0 24px 0; color: var(--accent);">콘텐츠 생성 (4개)</h3>
+    <div class="skills-grid">
+      <div class="skill-item">
+        <h3><span class="skill-number">8</span>landing-page-guide</h3>
+        <p>고전환율 랜딩페이지 제작 가이드. 마케팅 효과적인 랜딩페이지 구조와 카피를 생성합니다.</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">9</span>card-news-generator</h3>
+        <p>인스타그램 카드 뉴스 자동 생성. 콘텐츠를 입력하면 카드 뉴스 형태로 변환합니다.</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">10</span>card-news-generator-v2</h3>
+        <p>카드 뉴스 V2 (배경 이미지 지원). 커스텀 배경 이미지를 포함한 카드 뉴스를 생성합니다.</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">11</span>midjourney-cardnews-bg</h3>
+        <p>Midjourney 배경 프롬프트 생성. 카드 뉴스용 Midjourney 프롬프트를 자동 생성합니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <p style="font-size: 16px; margin-bottom: 16px;">
+        <a href="index.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">← 포트폴리오로 돌아가기</a>
+      </p>
+      <p style="color: var(--text-secondary); font-size: 14px;">
+        Claude Code 스킬셋 • MCP • Agent • 기타 팁
+      </p>
+      <p style="font-size: 14px; color: var(--text-secondary); margin-top: 16px;">
+        © 2025 N8N Copilot • Made with ❤️ for Claude Code Users
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
