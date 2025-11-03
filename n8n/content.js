@@ -849,60 +849,54 @@ function analyzeErrorPattern(errors) {
   return pattern;
 }
 
+// 사용자 메시지에서 언급된 노드 찾기
+function findMentionedNodes(userMessage, docsInfo) {
+  if (!docsInfo || !docsInfo.detailedNodes) {
+    return [];
+  }
+
+  const mentionedNodes = [];
+  const message = userMessage.toLowerCase();
+
+  for (const node of docsInfo.detailedNodes) {
+    const nodeName = (node.displayName || node.name || '').toLowerCase();
+
+    // 노드 이름이 메시지에 포함되어 있는지 확인
+    if (nodeName && message.includes(nodeName)) {
+      mentionedNodes.push(node);
+    }
+  }
+
+  return mentionedNodes;
+}
+
 // Claude API 호출 (background.js를 통해)
 async function callClaudeAPI(userMessage, context) {
   console.log('🚀 Calling Claude API via background...');
 
-  // N8N 최신 문서 불러오기
+  // N8N 문서 불러오기
   const n8nDocs = await chrome.storage.local.get('n8nDocs');
   const docsInfo = n8nDocs.n8nDocs;
 
-  let docsSection = '';
+  // 사용자 메시지에서 언급된 노드 찾기
+  const mentionedNodes = findMentionedNodes(userMessage, docsInfo);
 
-  // 이전 버전 호환성 (nodes) + 새 버전 (allNodes, detailedNodes)
-  const nodeList = docsInfo?.allNodes || docsInfo?.nodes || [];
-  const detailedList = docsInfo?.detailedNodes || [];
-
-  if (nodeList.length > 0) {
-    const updateDate = new Date(docsInfo.lastUpdated).toLocaleDateString('ko-KR');
-
-    // 상세 노드 정보 (operations 포함)
-    let detailedSection = '';
-    if (detailedList.length > 0) {
-      detailedSection = '\n\n**상세 노드 정보 (operations 포함)**:\n';
-      detailedList.forEach(node => {
-        if (node.hasOperations && node.operations.length > 0) {
-          detailedSection += `- **${node.name}**: ${node.operations.join(', ')}\n`;
-        } else {
-          detailedSection += `- **${node.name}**: (operations 정보 없음)\n`;
-        }
-      });
-    }
-
-    // 노드 이름 추출 (이전 버전: string, 새 버전: object)
-    const nodeNames = nodeList.map(n => typeof n === 'string' ? n : n.name);
-
-    docsSection = `
-**N8N 실시간 노드 목록** (자동 업데이트):
-📅 마지막 업데이트: ${updateDate}
-📦 사용 가능한 노드: ${nodeNames.length}개
-
-주요 노드 (A-Z):
-${nodeNames.slice(0, 30).map(node => `- \`${node}\``).join('\n')}
-
-... 외 ${nodeNames.length - 30}개 노드
-${detailedSection}
-최신 버전: ${docsInfo.version}
-`;
-  } else {
-    docsSection = `
-⚠️ N8N 문서를 아직 로드하지 못했습니다.
-공식 문서를 참고하세요: https://docs.n8n.io
-`;
+  let nodeContext = '';
+  if (mentionedNodes.length > 0) {
+    nodeContext = '\n\n**🔍 관련 노드 정보**:\n';
+    mentionedNodes.forEach(node => {
+      nodeContext += `\n**${node.displayName || node.name}**:\n`;
+      if (node.description) {
+        nodeContext += `- 설명: ${node.description}\n`;
+      }
+      if (node.operations && node.operations.length > 0) {
+        nodeContext += `- 사용 가능한 Operations: ${node.operations.join(', ')}\n`;
+      }
+    });
+    console.log(`📚 Found ${mentionedNodes.length} mentioned nodes:`, mentionedNodes.map(n => n.name));
   }
 
   const systemPrompt = `당신은 N8N 워크플로우 자동화 전문가입니다 (2025년 10월 기준 최신 버전).
-${docsSection}
 사용자의 워크플로우 작성, 에러 해결, JSON 데이터 생성 등을 도와주세요.
 
 **N8N 최신 정보 (2025년 10월)**:
@@ -937,7 +931,7 @@ ${docsSection}
   * 토스페이먼츠 (Toss Payments API)
 
 - **OAuth2 지원**: Google, Facebook, Kakao, Naver, GitHub, Microsoft
-
+${nodeContext}
 **현재 페이지 컨텍스트**:
 - URL: ${context.url}
 - 워크플로우: ${context.workflowName}
