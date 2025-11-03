@@ -282,11 +282,14 @@ document.querySelectorAll('.quick-action-btn').forEach(btn => {
       return;
     }
 
+    // 에러 분석은 별도 처리
+    if (action === 'analyze-error') {
+      analyzeError();
+      return;
+    }
+
     let message = '';
     switch(action) {
-      case 'analyze-error':
-        message = '현재 워크플로우의 에러를 분석해주세요';
-        break;
       case 'generate-json':
         message = 'JSON 샘플 데이터를 생성해주세요';
         break;
@@ -315,6 +318,19 @@ function analyzePage() {
   }, '*');
 }
 
+// 에러 분석 요청
+function analyzeError() {
+  console.log('⚠️ Requesting error analysis...');
+
+  // 로딩 표시
+  const loadingId = showLoading();
+
+  // parent window(content.js)로 에러 분석 요청
+  window.parent.postMessage({
+    type: 'analyze-error'
+  }, '*');
+}
+
 // parent window로부터 메시지 수신
 window.addEventListener('message', (event) => {
   console.log('📨 Message received from parent:', event.data);
@@ -328,6 +344,25 @@ window.addEventListener('message', (event) => {
     // 페이지 분석 결과 처리
     hideLoading('loading-indicator');
     displayPageAnalysis(event.data.data);
+
+  } else if (event.data.type === 'error-analysis-result') {
+    // 에러 분석 결과 처리 - AI에게 직접 전송
+    hideLoading('loading-indicator');
+    const errorData = event.data.data;
+
+    // 에러 정보를 메시지로 전송
+    const errorMessage = `에러 분석: ${errorData.errorCount}개 발견`;
+    addMessage(errorMessage, 'user');
+
+    // 로딩 표시
+    const loadingId = showLoading();
+
+    // AI에게 전송
+    window.parent.postMessage({
+      type: 'send-message',
+      message: errorMessage,
+      errorContext: errorData
+    }, '*');
 
   } else if (event.data.type === 'auto-fill-result') {
     // 자동 입력 결과 처리

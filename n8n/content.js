@@ -408,11 +408,73 @@ class N8NReader {
 
     return 'general';
   }
-  
+
+  // Code 노드에서 JavaScript 코드 읽기
+  getCodeFromNode(nodeName) {
+    console.log('🔍 Trying to read code from node:', nodeName);
+
+    // 설정 패널이 열려있는지 확인
+    const settingsPanel = document.querySelector('[class*="NodeSettings"]') ||
+                          document.querySelector('[class*="node-settings"]') ||
+                          document.querySelector('.ndv-panel');
+
+    if (!settingsPanel) {
+      console.warn('⚠️ Settings panel not found');
+      return null;
+    }
+
+    // Monaco Editor (N8N이 주로 사용)
+    const monacoEditors = settingsPanel.querySelectorAll('.monaco-editor, [class*="monaco"]');
+    for (const editor of monacoEditors) {
+      // Monaco의 실제 텍스트 영역 찾기
+      const textArea = editor.querySelector('textarea');
+      if (textArea && textArea.value) {
+        console.log('✅ Code found in Monaco Editor (textarea)');
+        return textArea.value;
+      }
+
+      // Monaco의 view-lines에서 코드 읽기
+      const viewLines = editor.querySelector('.view-lines');
+      if (viewLines) {
+        const code = Array.from(viewLines.querySelectorAll('.view-line'))
+          .map(line => line.textContent)
+          .join('\n');
+        if (code.trim()) {
+          console.log('✅ Code found in Monaco Editor (view-lines)');
+          return code;
+        }
+      }
+    }
+
+    // CodeMirror (대체 에디터)
+    const codeMirrors = settingsPanel.querySelectorAll('.CodeMirror, [class*="CodeMirror"]');
+    for (const cm of codeMirrors) {
+      const cmInstance = cm.CodeMirror;
+      if (cmInstance && cmInstance.getValue) {
+        const code = cmInstance.getValue();
+        console.log('✅ Code found in CodeMirror');
+        return code;
+      }
+    }
+
+    // 일반 textarea (백업)
+    const textareas = settingsPanel.querySelectorAll('textarea');
+    for (const textarea of textareas) {
+      // 긴 텍스트가 있는 textarea = 코드일 가능성
+      if (textarea.value && textarea.value.length > 20) {
+        console.log('✅ Code found in textarea');
+        return textarea.value;
+      }
+    }
+
+    console.warn('⚠️ Could not find code in node');
+    return null;
+  }
+
   // 전체 워크플로우 구조 읽기
   getWorkflowStructure() {
     const nodes = document.querySelectorAll('[class*="CanvasNode"], [data-node-type]');
-    
+
     return {
       nodeCount: nodes.length,
       nodes: Array.from(nodes).map(node => ({
@@ -761,11 +823,19 @@ window.addEventListener('message', async (event) => {
 
   if (event.data.type === 'send-message') {
     const userMessage = event.data.message;
+    const errorContext = event.data.errorContext; // 에러 분석 컨텍스트
     console.log('💬 User message:', userMessage);
 
     try {
       // N8N 페이지 컨텍스트 수집
       const context = collectPageContext();
+
+      // 에러 분석 컨텍스트가 있으면 추가
+      if (errorContext) {
+        context.errorAnalysis = errorContext;
+        console.log('📄 Error context included:', errorContext);
+      }
+
       console.log('📄 Page context collected:', context);
 
       // Claude API 호출 (background.js를 통해)
@@ -803,6 +873,26 @@ window.addEventListener('message', async (event) => {
       sendMessageToIframe({
         type: 'error',
         message: '페이지 분석 중 오류가 발생했습니다: ' + error.message
+      });
+    }
+  }
+
+  if (event.data.type === 'analyze-error') {
+    console.log('⚠️ Error analysis requested');
+
+    try {
+      const errorAnalysis = analyzeErrorsWithCode();
+      console.log('📊 Error analysis complete:', errorAnalysis);
+
+      sendMessageToIframe({
+        type: 'error-analysis-result',
+        data: errorAnalysis
+      });
+    } catch (error) {
+      console.error('❌ Error analyzing errors:', error);
+      sendMessageToIframe({
+        type: 'error',
+        message: '에러 분석 중 오류가 발생했습니다: ' + error.message
       });
     }
   }
@@ -999,7 +1089,23 @@ ${context.errorPattern && context.errorPattern.likelySettingIssue ? `
 - 제안: ${context.errorPattern.suggestion}
 ` : ''}
 
-${context.errors.length > 0 ? `
+${context.errorAnalysis ? `
+**⚠️ 에러 분석 (코드 포함)**:
+총 ${context.errorAnalysis.errorCount}개 에러 감지
+${context.errorAnalysis.errors.map((err) => `
+**에러 ${err.index}**:
+- 타입: ${err.type}
+- 메시지: ${err.message}
+- 노드: ${err.nodeName}
+${err.lineNumber ? `- 줄 번호: ${err.lineNumber}` : ''}
+${err.code ? `
+**Code 노드 전체 코드**:
+\`\`\`javascript
+${err.code}
+\`\`\`
+` : ''}
+`).join('\n')}
+` : context.errors.length > 0 ? `
 **⚠️ 감지된 에러 상세 정보**:
 ${context.errors.slice(0, 3).map((err, idx) => `
 에러 ${idx + 1}:
@@ -1424,7 +1530,65 @@ window.addEventListener('message', (event) => {
 
 
 // ========================================
-// 8. N8N 페이지 상세 분석
+// 8. 에러 분석 with 코드 읽기
+// ========================================
+function analyzeErrorsWithCode() {
+  console.log('⚠️ Analyzing errors with code...');
+
+  const errors = window.n8nReader.detectErrors();
+
+  if (errors.length === 0) {
+    return {
+      errorCount: 0,
+      errors: [],
+      hasCode: false,
+      message: '현재 감지된 에러가 없습니다.'
+    };
+  }
+
+  const errorDetails = [];
+  let codeFound = false;
+
+  errors.forEach((error, index) => {
+    const errorDetail = {
+      index: index + 1,
+      type: error.type,
+      message: error.message,
+      nodeName: error.details?.nodeName || 'Unknown',
+      lineNumber: error.details?.lineNumber || null,
+      code: null
+    };
+
+    // Code 노드 또는 JavaScript 관련 에러인 경우 코드 읽기 시도
+    const isCodeError = error.type === 'ReferenceError' ||
+                        error.type === 'SyntaxError' ||
+                        error.type === 'TypeError' ||
+                        error.message.toLowerCase().includes('code') ||
+                        error.message.toLowerCase().includes('javascript');
+
+    if (isCodeError) {
+      console.log(`🔍 Attempting to read code for error ${index + 1}`);
+      const code = window.n8nReader.getCodeFromNode(errorDetail.nodeName);
+      if (code) {
+        errorDetail.code = code;
+        codeFound = true;
+        console.log(`✅ Code found for error ${index + 1}`, code.substring(0, 100));
+      }
+    }
+
+    errorDetails.push(errorDetail);
+  });
+
+  return {
+    errorCount: errors.length,
+    errors: errorDetails,
+    hasCode: codeFound,
+    message: `${errors.length}개의 에러 발견${codeFound ? ' (코드 포함)' : ''}`
+  };
+}
+
+// ========================================
+// 9. N8N 페이지 상세 분석
 // ========================================
 function analyzeN8NPage() {
   console.log('🔍 Analyzing N8N page...');
