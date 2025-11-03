@@ -47,7 +47,6 @@ async function fetchNodesFromCurrentInstance() {
 
   for (const endpoint of apiEndpoints) {
     try {
-      console.log(`  🔍 Trying ${endpoint}...`);
       const response = await fetch(endpoint, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
@@ -58,21 +57,16 @@ async function fetchNodesFromCurrentInstance() {
         const nodeTypes = Array.isArray(data) ? data : Object.values(data);
         console.log(`✅ Fetched ${nodeTypes.length} node types from ${endpoint}`);
         return nodeTypes;
-      } else {
-        console.log(`  ⚠️ ${endpoint} returned ${response.status}`);
       }
     } catch (e) {
-      console.log(`  ⚠️ ${endpoint} failed: ${e.message}`);
+      // 조용히 다음 방법 시도
     }
   }
 
   // 방법 2: N8N의 전역 Vue store에서 가져오기
-  console.log('🔍 Trying to access Vue store...');
-
   try {
     if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__ && window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps) {
       const apps = window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps;
-      console.log(`  Found ${apps.length} Vue apps`);
 
       for (const app of apps) {
         if (app && app._instance && app._instance.proxy) {
@@ -81,37 +75,30 @@ async function fetchNodesFromCurrentInstance() {
           // Pinia store 접근
           if (proxy.$pinia && proxy.$pinia._s) {
             const stores = proxy.$pinia._s;
-            console.log(`  Found ${stores.size} Pinia stores`);
 
             // nodeTypes store 찾기
             for (const [key, store] of stores) {
-              console.log(`  Checking store: ${key}`);
-
               if (store.allNodeTypes) {
                 const nodeTypes = Object.values(store.allNodeTypes);
-                console.log(`✅ Fetched ${nodeTypes.length} node types from Pinia store.allNodeTypes (${key})`);
+                console.log(`✅ Fetched ${nodeTypes.length} node types from Pinia store (${key})`);
                 return nodeTypes;
               }
 
               if (store.nodeTypes) {
                 const nodeTypes = Object.values(store.nodeTypes);
-                console.log(`✅ Fetched ${nodeTypes.length} node types from Pinia store.nodeTypes (${key})`);
+                console.log(`✅ Fetched ${nodeTypes.length} node types from Pinia store (${key})`);
                 return nodeTypes;
               }
             }
           }
         }
       }
-    } else {
-      console.log('  ⚠️ Vue devtools hook not found');
     }
   } catch (error) {
-    console.error('  ❌ Vue store access failed:', error);
+    // 조용히 실패
   }
 
-  console.error('❌ Could not find node types using any method');
-  console.error('💡 Please check console and report which method works:');
-  console.error('   window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps[0]._instance.proxy.$pinia._s');
+  console.warn('⚠️ Could not fetch node types - N8N version may not be supported');
   return null;
 }
 
