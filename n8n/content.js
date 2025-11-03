@@ -1074,6 +1074,7 @@ ${context.errorAnalysis ? '' : `
   * 토스페이먼츠 (Toss Payments API)
 
 - **OAuth2 지원**: Google, Facebook, Kakao, Naver, GitHub, Microsoft
+`}
 ${nodeContext}
 **현재 페이지 컨텍스트**:
 - URL: ${context.url}
