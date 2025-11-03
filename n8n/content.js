@@ -510,8 +510,8 @@ class N8NReader {
                           document.querySelector('.ndv-panel');
 
     if (!settingsPanel) {
-      console.warn('⚠️ Settings panel not found');
-      return null;
+      console.warn('⚠️ Settings panel not found - node may not be clicked');
+      return null; // 에러 대신 null 반환
     }
 
     // Monaco Editor (N8N이 주로 사용)
@@ -1139,13 +1139,16 @@ window.addEventListener('message', async (event) => {
     console.log('⚠️ Error analysis requested');
 
     try {
-      const errorAnalysis = analyzeErrorsWithCode();
-      console.log('📊 Error analysis complete:', errorAnalysis);
+      // async 함수이므로 await 사용
+      (async () => {
+        const errorAnalysis = await analyzeErrorsWithCode();
+        console.log('📊 Error analysis complete:', errorAnalysis);
 
-      sendMessageToIframe({
-        type: 'error-analysis-result',
-        data: errorAnalysis
-      });
+        sendMessageToIframe({
+          type: 'error-analysis-result',
+          data: errorAnalysis
+        });
+      })();
     } catch (error) {
       console.error('❌ Error analyzing errors:', error);
       sendMessageToIframe({
@@ -1809,7 +1812,66 @@ window.addEventListener('message', (event) => {
 // ========================================
 // 8. 에러 분석 with 코드 읽기
 // ========================================
-function analyzeErrorsWithCode() {
+
+// 노드 이름으로 DOM 요소 찾기
+function findNodeElementByName(nodeName) {
+  console.log('🔍 Finding node element:', nodeName);
+
+  // N8N 캔버스의 노드 요소 찾기 (여러 selector 시도)
+  const selectors = [
+    `[data-name="${nodeName}"]`,
+    `[title="${nodeName}"]`,
+    `[class*="CanvasNode"]`,
+    `[data-test-id*="canvas-node"]`
+  ];
+
+  for (const selector of selectors) {
+    const nodes = document.querySelectorAll(selector);
+    for (const node of nodes) {
+      const nodeText = node.textContent || node.getAttribute('data-name') || node.getAttribute('title');
+      if (nodeText && nodeText.includes(nodeName)) {
+        console.log('✅ Found node element:', selector);
+        return node;
+      }
+    }
+  }
+
+  // 텍스트로 직접 찾기
+  const allNodes = document.querySelectorAll('[class*="CanvasNode"], [data-node-type]');
+  for (const node of allNodes) {
+    if (node.textContent.includes(nodeName)) {
+      console.log('✅ Found node by text content');
+      return node;
+    }
+  }
+
+  console.warn('⚠️ Node element not found:', nodeName);
+  return null;
+}
+
+// 패널이 열릴 때까지 대기
+async function waitForPanel(maxWaitMs = 2000) {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < maxWaitMs) {
+    const panel = document.querySelector('[class*="NodeSettings"]') ||
+                  document.querySelector('[class*="node-settings"]') ||
+                  document.querySelector('.ndv-panel');
+
+    if (panel) {
+      console.log('✅ Panel opened');
+      return panel;
+    }
+
+    // 100ms 대기
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  console.warn('⚠️ Panel wait timeout');
+  return null;
+}
+
+async function analyzeErrorsWithCode() {
   console.log('⚠️ Analyzing errors with code...');
 
   const errors = window.n8nReader.detectErrors();
@@ -1826,7 +1888,9 @@ function analyzeErrorsWithCode() {
   const errorDetails = [];
   let codeFound = false;
 
-  errors.forEach((error, index) => {
+  // 에러를 순회하며 분석
+  for (let index = 0; index < errors.length; index++) {
+    const error = errors[index];
     const errorDetail = {
       index: index + 1,
       type: error.type,
@@ -1853,27 +1917,53 @@ function analyzeErrorsWithCode() {
                         error.message.toLowerCase().includes('code') ||
                         error.message.toLowerCase().includes('javascript');
 
-    if (isCodeError) {
-      console.log(`🔍 Attempting to read code for error ${index + 1}`);
-      const code = window.n8nReader.getCodeFromNode(errorDetail.nodeName);
-      if (code) {
-        errorDetail.code = code;
-        codeFound = true;
-        console.log(`✅ Code found for error ${index + 1}`, code.substring(0, 100));
+    if (isCodeError && errorDetail.nodeName !== 'Unknown') {
+      console.log(`🔍 Attempting to read code for error ${index + 1} (${errorDetail.nodeName})`);
 
-        // 3. 코드 패턴 분석 (자동 진단이 없을 때만)
-        if (!errorDetail.autoFix) {
-          if (code.includes('items.map') || code.includes('items.filter') ||
-              code.includes('items.forEach') || code.includes('.all()') ||
-              code.includes('$input.all()')) {
-            errorDetail.autoFix = '"Run Once for All Items" 모드로 변경 (코드가 items 배열 전체 처리)';
+      // 노드 찾기
+      const nodeElement = findNodeElementByName(errorDetail.nodeName);
+
+      if (nodeElement) {
+        try {
+          // 노드 클릭
+          console.log('🖱️ Clicking node:', errorDetail.nodeName);
+          nodeElement.click();
+
+          // 패널이 열릴 때까지 대기
+          await waitForPanel(2000);
+
+          // 코드 읽기 시도
+          const code = window.n8nReader.getCodeFromNode(errorDetail.nodeName);
+
+          if (code) {
+            errorDetail.code = code;
+            codeFound = true;
+            console.log(`✅ Code found for error ${index + 1}`, code.substring(0, 100));
+
+            // 3. 코드 패턴 분석 (자동 진단이 없을 때만)
+            if (!errorDetail.autoFix) {
+              if (code.includes('items.map') || code.includes('items.filter') ||
+                  code.includes('items.forEach') || code.includes('.all()') ||
+                  code.includes('$input.all()')) {
+                errorDetail.autoFix = '"Run Once for All Items" 모드로 변경 (코드가 items 배열 전체 처리)';
+              }
+            }
           }
+
+          // 패널 닫기 (ESC)
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+          await new Promise(resolve => setTimeout(resolve, 200));
+
+        } catch (err) {
+          console.error(`❌ Error processing node ${errorDetail.nodeName}:`, err);
         }
+      } else {
+        console.warn(`⚠️ Could not find node element for: ${errorDetail.nodeName}`);
       }
     }
 
     errorDetails.push(errorDetail);
-  });
+  }
 
   return {
     errorCount: errors.length,
