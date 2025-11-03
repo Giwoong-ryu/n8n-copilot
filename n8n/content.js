@@ -131,15 +131,46 @@ async function updateNodesInBackground() {
 // 2. N8N DOM 읽기 클래스
 // ========================================
 class N8NReader {
-  
+
+  // 워크플로우의 모든 노드 읽기
+  getAllNodes() {
+    const nodes = [];
+
+    // N8N 캔버스에서 모든 노드 찾기
+    const nodeElements = document.querySelectorAll('[data-name], [class*="node_"], .node');
+
+    nodeElements.forEach(nodeEl => {
+      const nodeType = this.getNodeType(nodeEl);
+      const nodeName = this.getNodeName(nodeEl);
+
+      // 유효한 노드만 추가
+      if (nodeType && nodeType !== 'unknown' && nodeType.trim() !== '') {
+        nodes.push({
+          type: nodeType,
+          name: nodeName,
+          element: nodeEl
+        });
+      }
+    });
+
+    // 중복 제거 (같은 타입의 노드가 여러 개일 수 있음)
+    const uniqueTypes = [...new Set(nodes.map(n => n.type))];
+
+    return {
+      all: nodes,
+      types: uniqueTypes,
+      count: nodes.length
+    };
+  }
+
   // 현재 선택된 노드 정보 읽기
   getSelectedNode() {
     const selectedNode = document.querySelector('[class*="selected"]');
-    
+
     if (!selectedNode) {
       return null;
     }
-    
+
     return {
       element: selectedNode,
       type: this.getNodeType(selectedNode),
@@ -792,6 +823,7 @@ function sendMessageToIframe(data) {
 function collectPageContext() {
   const errors = window.n8nReader.detectErrors();
   const settings = window.n8nReader.getNodeSettings();
+  const workflowNodes = window.n8nReader.getAllNodes();
 
   const context = {
     url: window.location.href,
@@ -799,7 +831,8 @@ function collectPageContext() {
     errors: errors,
     selectedNode: null,
     nodeSettings: settings,
-    errorPattern: null
+    errorPattern: null,
+    workflowNodes: workflowNodes // 워크플로우의 모든 노드
   };
 
   // 선택된 노드 정보 수집 (가능한 경우)
@@ -849,25 +882,33 @@ function analyzeErrorPattern(errors) {
   return pattern;
 }
 
-// 사용자 메시지에서 언급된 노드 찾기
-function findMentionedNodes(userMessage, docsInfo) {
-  if (!docsInfo || !docsInfo.detailedNodes) {
+// 워크플로우의 노드들에 대한 operations 정보 찾기
+function getWorkflowNodeOperations(workflowNodes, docsInfo) {
+  if (!workflowNodes || !workflowNodes.types || !docsInfo || !docsInfo.detailedNodes) {
     return [];
   }
 
-  const mentionedNodes = [];
-  const message = userMessage.toLowerCase();
+  const nodeOperations = [];
 
-  for (const node of docsInfo.detailedNodes) {
-    const nodeName = (node.displayName || node.name || '').toLowerCase();
+  // 워크플로우에 있는 각 노드 타입에 대해
+  for (const nodeType of workflowNodes.types) {
+    // docs에서 매칭되는 노드 찾기
+    const matchedNode = docsInfo.detailedNodes.find(docNode => {
+      const docName = (docNode.displayName || docNode.name || '').toLowerCase();
+      const workflowType = nodeType.toLowerCase();
 
-    // 노드 이름이 메시지에 포함되어 있는지 확인
-    if (nodeName && message.includes(nodeName)) {
-      mentionedNodes.push(node);
+      // 정확히 일치하거나 포함하는 경우
+      return docName === workflowType ||
+             docName.includes(workflowType) ||
+             workflowType.includes(docName);
+    });
+
+    if (matchedNode) {
+      nodeOperations.push(matchedNode);
     }
   }
 
-  return mentionedNodes;
+  return nodeOperations;
 }
 
 // Claude API 호출 (background.js를 통해)
@@ -878,13 +919,13 @@ async function callClaudeAPI(userMessage, context) {
   const n8nDocs = await chrome.storage.local.get('n8nDocs');
   const docsInfo = n8nDocs.n8nDocs;
 
-  // 사용자 메시지에서 언급된 노드 찾기
-  const mentionedNodes = findMentionedNodes(userMessage, docsInfo);
+  // 워크플로우의 실제 노드들에 대한 operations 찾기
+  const workflowNodeOps = getWorkflowNodeOperations(context.workflowNodes, docsInfo);
 
   let nodeContext = '';
-  if (mentionedNodes.length > 0) {
-    nodeContext = '\n\n**🔍 관련 노드 정보**:\n';
-    mentionedNodes.forEach(node => {
+  if (workflowNodeOps.length > 0) {
+    nodeContext = '\n\n**🔍 현재 워크플로우의 노드 정보**:\n';
+    workflowNodeOps.forEach(node => {
       nodeContext += `\n**${node.displayName || node.name}**:\n`;
       if (node.description) {
         nodeContext += `- 설명: ${node.description}\n`;
@@ -893,7 +934,7 @@ async function callClaudeAPI(userMessage, context) {
         nodeContext += `- 사용 가능한 Operations: ${node.operations.join(', ')}\n`;
       }
     });
-    console.log(`📚 Found ${mentionedNodes.length} mentioned nodes:`, mentionedNodes.map(n => n.name));
+    console.log(`📚 Workflow nodes with operations: ${workflowNodeOps.length}/${context.workflowNodes.types.length}`);
   }
 
   const systemPrompt = `당신은 N8N 워크플로우 자동화 전문가입니다 (2025년 10월 기준 최신 버전).
