@@ -159,7 +159,7 @@ function formatMessageWithContext(message, context) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('📨 Message received:', request);
-  
+
   if (request.action === 'callClaude') {
     // Gemini API 호출 (callClaude 액션 이름 유지하되 Gemini 사용)
     callGeminiAPI(request.message, request.systemPrompt, request.context)
@@ -176,7 +176,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // 비동기 응답을 위해 true 반환
     return true;
   }
-  
+
   if (request.action === 'saveApiKey') {
     saveApiKey(request.apiKey)
       .then(() => {
@@ -185,10 +185,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch(error => {
         sendResponse({ error: true, message: error.message });
       });
-    
+
     return true;
   }
-  
+
   if (request.action === 'getApiKey') {
     getApiKey()
       .then(apiKey => {
@@ -197,7 +197,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch(error => {
         sendResponse({ error: true, message: error.message });
       });
-    
+
+    return true;
+  }
+
+  if (request.action === 'updateNodeTypes') {
+    // Content script에서 받은 노드 타입 처리 및 저장
+    const nodeTypes = request.nodeTypes;
+    console.log(`📥 Received ${nodeTypes.length} node types from content script`);
+
+    const processedNodes = processNodeTypes(nodeTypes);
+    const nodeNames = processedNodes.map(n => n.displayName || n.name).sort();
+
+    const docs = {
+      allNodes: processedNodes,
+      detailedNodes: processedNodes,
+      nodeNames: nodeNames,
+      version: 'Instance API',
+      lastUpdated: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      source: 'n8n-instance-api'
+    };
+
+    saveN8NDocs(docs)
+      .then(() => {
+        sendResponse({ success: true, nodeCount: processedNodes.length });
+      })
+      .catch(error => {
+        sendResponse({ error: true, message: error.message });
+      });
+
     return true;
   }
 });
@@ -224,55 +253,75 @@ console.log('🚀 N8N AI Copilot Background Service Worker loaded');
 // 6. N8N 문서 자동 업데이트 시스템
 // ========================================
 
-// N8N 문서 소스
-const N8N_DOCS_SOURCES = {
-  github_nodes: 'https://api.github.com/repos/n8n-io/n8n/contents/packages/nodes-base/nodes',
-  changelog: 'https://raw.githubusercontent.com/n8n-io/n8n/master/CHANGELOG.md'
-};
+// N8N 문서 소스 - 사용자 인스턴스의 REST API 사용
+const N8N_INSTANCE_URL = 'https://n8nryugw10.site';
 
-// 문서 가져오기
-async function fetchN8NDocs() {
-  console.log('📥 Fetching N8N docs...');
+// Sleep 유틸리티
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-  try {
-    const [nodesRes, changelogRes] = await Promise.all([
-      fetch(N8N_DOCS_SOURCES.github_nodes, {
-        headers: { 'Accept': 'application/vnd.github.v3+json' }
-      }),
-      fetch(N8N_DOCS_SOURCES.changelog)
-    ]);
 
-    const nodes = await nodesRes.json();
-    const changelog = await changelogRes.text();
+// 노드 타입 데이터를 우리 형식으로 변환
+function processNodeTypes(nodeTypes) {
+  const processed = nodeTypes.map(nodeType => {
+    // N8N 노드 타입 구조:
+    // {
+    //   name: "n8n-nodes-base.airtable",
+    //   displayName: "Airtable",
+    //   description: "...",
+    //   properties: [...],
+    //   ...
+    // }
 
-    // 노드 목록 추출
-    const nodeList = nodes
-      .filter(item => item.type === 'dir')
-      .map(item => item.name)
-      .sort();
+    const name = nodeType.displayName || nodeType.name;
+    const operations = [];
 
-    // 최신 버전 추출
-    const latestVersion = changelog.split('\n## ')[1]?.split('\n')[0] || 'Unknown';
+    // properties에서 operation/resource 추출
+    if (nodeType.properties) {
+      const resourceProp = nodeType.properties.find(p => p.name === 'resource');
+      const operationProp = nodeType.properties.find(p => p.name === 'operation');
+
+      if (resourceProp && resourceProp.options) {
+        // 리소스별로 operations 정리
+        resourceProp.options.forEach(resource => {
+          const resourceName = resource.value;
+
+          if (operationProp && operationProp.options) {
+            operationProp.options
+              .filter(op => !op.displayOptions || op.displayOptions.show?.resource?.includes(resourceName))
+              .forEach(op => {
+                operations.push(`${resourceName}:${op.name}`);
+              });
+          }
+        });
+      } else if (operationProp && operationProp.options) {
+        // 리소스 없이 operation만 있는 경우
+        operationProp.options.forEach(op => {
+          operations.push(op.name);
+        });
+      }
+    }
 
     return {
-      nodes: nodeList,
-      changelog: changelog.split('\n## ').slice(0, 3).join('\n## '),
-      version: latestVersion,
-      lastUpdated: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      name: name,
+      displayName: nodeType.displayName,
+      description: nodeType.description,
+      operations: operations,
+      hasOperations: operations.length > 0
     };
+  });
 
-  } catch (error) {
-    console.error('❌ Failed to fetch N8N docs:', error);
-    return null;
-  }
+  console.log(`✅ Processed ${processed.length} nodes (${processed.filter(n => n.hasOperations).length} with operations)`);
+  return processed;
 }
+
 
 // 문서 저장
 async function saveN8NDocs(docs) {
   try {
     await chrome.storage.local.set({ n8nDocs: docs });
-    console.log(`✅ N8N docs saved (${docs.nodes.length} nodes)`);
+    console.log(`✅ N8N docs saved (${docs.allNodes.length} nodes total, ${docs.detailedNodes.length} with operations)`);
     return true;
   } catch (error) {
     console.error('❌ Failed to save docs:', error);
@@ -286,20 +335,12 @@ async function loadN8NDocs() {
     const result = await chrome.storage.local.get('n8nDocs');
 
     if (!result.n8nDocs) {
-      console.log('⚠️ No docs found, fetching...');
-      return await updateN8NDocsNow();
+      console.log('⚠️ No docs found yet - will be fetched when user visits N8N page');
+      return null;
     }
 
     const docs = result.n8nDocs;
-    const expiresAt = new Date(docs.expiresAt);
-
-    // 만료 체크
-    if (new Date() > expiresAt) {
-      console.log('⚠️ Docs expired, updating...');
-      return await updateN8NDocsNow();
-    }
-
-    console.log(`✅ Docs loaded (${docs.nodes.length} nodes)`);
+    console.log(`✅ Docs loaded (${docs.allNodes?.length || 0} nodes)`);
     return docs;
 
   } catch (error) {
@@ -308,46 +349,24 @@ async function loadN8NDocs() {
   }
 }
 
-// 즉시 업데이트
-async function updateN8NDocsNow() {
-  console.log('🔄 Updating N8N docs now...');
-  const docs = await fetchN8NDocs();
-
-  if (docs) {
-    await saveN8NDocs(docs);
-  }
-
-  return docs;
-}
-
-// 1주일마다 자동 업데이트 (Chrome Alarms API)
-chrome.alarms.create('updateN8NDocs', {
-  periodInMinutes: 10080 // 7일 = 10080분
-});
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === 'updateN8NDocs') {
-    console.log('⏰ Weekly N8N docs update triggered');
-    updateN8NDocsNow();
-  }
-});
-
-// 확장 프로그램 설치 시 즉시 문서 가져오기
+// 확장 프로그램 설치/업데이트 이벤트
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === 'install') {
-    console.log('🎉 N8N AI Copilot installed! Fetching docs...');
-    await updateN8NDocsNow();
+    console.log('🎉 N8N AI Copilot installed!');
+    console.log('💡 Node information will be fetched when you visit your N8N page');
   } else if (details.reason === 'update') {
     console.log('🔄 N8N AI Copilot updated!');
   }
 });
 
-// 백그라운드 스크립트 로드 시 즉시 문서 가져오기 (오늘 날짜로)
-console.log('📥 Initializing N8N docs on startup...');
+// 백그라운드 스크립트 로드 시 캐시된 문서 확인
+console.log('📥 Checking for cached N8N docs...');
 loadN8NDocs().then(docs => {
   if (docs) {
-    console.log(`✅ N8N docs ready: ${docs.nodes.length} nodes, version ${docs.version}`);
+    const nodeCount = docs.allNodes?.length || 0;
+    const withOps = docs.detailedNodes?.filter(n => n.hasOperations).length || 0;
+    console.log(`✅ N8N docs cached: ${nodeCount} nodes (${withOps} with operations)`);
   } else {
-    console.log('⚠️ Failed to load docs on startup');
+    console.log('💡 No cached docs - will fetch when user visits N8N page');
   }
 });

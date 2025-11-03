@@ -33,316 +33,48 @@ function detectN8NPage() {
 
 
 // ========================================
-// 1.5. 유틸리티 클래스 (Production-Ready Helpers)
+// 1.5 N8N 인스턴스에서 노드 정보 가져오기
 // ========================================
+async function fetchNodesFromCurrentInstance() {
+  console.log('📥 Fetching node types from current N8N instance...');
 
-/**
- * SafeSelector - Fallback 선택자 패턴
- * 여러 선택자를 우선순위대로 시도하여 가장 먼저 찾은 요소 반환
- */
-class SafeSelector {
-  /**
-   * 여러 선택자를 시도하여 첫 번째로 찾은 요소 반환
-   * @param {string[]} selectors - 우선순위순 선택자 배열
-   * @param {Element} [context=document] - 검색 시작점
-   * @returns {Element|null} 찾은 요소 또는 null
-   */
-  static find(selectors, context = document) {
-    for (const selector of selectors) {
-      try {
-        const element = context.querySelector(selector);
-
-        // 요소가 존재하고 보이는지 확인
-        if (element && this.isVisible(element)) {
-          console.log(`✅ SafeSelector found element with: ${selector}`);
-          return element;
-        }
-      } catch (error) {
-        console.warn(`⚠️ Invalid selector: ${selector}`, error.message);
+  try {
+    const response = await fetch('/rest/node-types', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
       }
+    });
+
+    if (!response.ok) {
+      throw new Error(`N8N API error: ${response.status}`);
     }
 
-    console.warn('⚠️ SafeSelector: No element found with any selector');
+    const nodeTypes = await response.json();
+    console.log(`✅ Fetched ${nodeTypes.length} node types`);
+
+    return nodeTypes;
+  } catch (error) {
+    console.error('❌ Failed to fetch node types:', error);
     return null;
   }
-
-  /**
-   * 여러 선택자로 모든 요소 찾기
-   * @param {string[]} selectors - 선택자 배열
-   * @param {Element} [context=document] - 검색 시작점
-   * @returns {Element[]} 찾은 모든 요소
-   */
-  static findAll(selectors, context = document) {
-    const elements = [];
-
-    for (const selector of selectors) {
-      try {
-        const found = context.querySelectorAll(selector);
-        elements.push(...Array.from(found).filter(el => this.isVisible(el)));
-      } catch (error) {
-        console.warn(`⚠️ Invalid selector: ${selector}`, error.message);
-      }
-    }
-
-    console.log(`📋 SafeSelector found ${elements.length} elements`);
-    return elements;
-  }
-
-  /**
-   * 요소가 화면에 보이는지 확인
-   * @param {Element} element - 확인할 요소
-   * @returns {boolean} 보이면 true
-   */
-  static isVisible(element) {
-    if (!element) return false;
-
-    // display: none 또는 visibility: hidden 체크
-    if (element.offsetParent === null) return false;
-
-    // opacity: 0 체크
-    const style = window.getComputedStyle(element);
-    if (style.opacity === '0') return false;
-
-    return true;
-  }
-
-  /**
-   * 요소 검증 (존재 + 보임 + 타입)
-   * @param {Element} element - 검증할 요소
-   * @param {string} [expectedTag] - 예상 태그명 (소문자)
-   * @returns {boolean} 유효하면 true
-   */
-  static validate(element, expectedTag = null) {
-    if (!element) return false;
-    if (!this.isVisible(element)) return false;
-
-    if (expectedTag) {
-      const actualTag = element.tagName.toLowerCase();
-      if (actualTag !== expectedTag) {
-        console.warn(`⚠️ Expected <${expectedTag}>, got <${actualTag}>`);
-        return false;
-      }
-    }
-
-    return true;
-  }
 }
 
+// Background에 노드 정보 전달
+async function updateNodesInBackground() {
+  const nodeTypes = await fetchNodesFromCurrentInstance();
 
-/**
- * VueInputWriter - Vue.js 리액티브 시스템 호환 값 입력
- * 6단계 프로세스로 Vue가 변경사항을 감지하도록 보장
- */
-class VueInputWriter {
-  /**
-   * Vue 리액티브 시스템을 올바르게 트리거하면서 값 입력
-   * @param {HTMLElement} element - 입력 요소
-   * @param {string|number} value - 입력할 값
-   * @returns {Promise<boolean>} 성공 여부
-   */
-  static async setValue(element, value) {
-    if (!element) {
-      console.error('❌ VueInputWriter: Element not found');
-      return false;
-    }
-
-    const valueString = String(value);
-    console.log(`✍️ VueInputWriter: Writing "${valueString}" to <${element.tagName}>`);
-
-    try {
-      // ===== 1단계: Focus (사용자 상호작용 시작) =====
-      element.focus();
-      await this.wait(10);
-
-      // ===== 2단계: Select (기존 값 선택) =====
-      if (element.select && typeof element.select === 'function') {
-        element.select();
-        await this.wait(10);
+  if (nodeTypes) {
+    chrome.runtime.sendMessage({
+      action: 'updateNodeTypes',
+      nodeTypes: nodeTypes
+    }, response => {
+      if (response && response.success) {
+        console.log('✅ Node types updated in background');
       }
-
-      // ===== 3단계: Native Setter로 값 설정 =====
-      this.setNativeValue(element, valueString);
-      await this.wait(10);
-
-      // ===== 4단계: Input Event (Vue v-model 트리거) =====
-      element.dispatchEvent(new Event('input', {
-        bubbles: true,
-        cancelable: true,
-        composed: true
-      }));
-      await this.wait(10);
-
-      // ===== 5단계: Change Event (변경 확정) =====
-      element.dispatchEvent(new Event('change', {
-        bubbles: true,
-        cancelable: true
-      }));
-      await this.wait(10);
-
-      // ===== 6단계: Blur (상호작용 종료) =====
-      element.blur();
-      element.dispatchEvent(new Event('blur', { bubbles: true }));
-      await this.wait(10);
-
-      // ===== 추가: Vue 인스턴스 직접 업데이트 시도 =====
-      this.updateVueInstance(element, valueString);
-
-      // ===== 검증: 값이 제대로 입력되었는지 확인 =====
-      const finalValue = element.value || element.textContent;
-      const success = finalValue === valueString;
-
-      if (success) {
-        console.log('✅ VueInputWriter: Value written successfully');
-      } else {
-        console.warn(`⚠️ VueInputWriter: Value mismatch. Expected "${valueString}", got "${finalValue}"`);
-      }
-
-      return success;
-
-    } catch (error) {
-      console.error('❌ VueInputWriter error:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Native Setter를 사용하여 값 설정
-   * Vue가 감지하지 못하는 직접 할당 문제 해결
-   */
-  static setNativeValue(element, value) {
-    const tagName = element.tagName.toLowerCase();
-
-    try {
-      if (tagName === 'input' || tagName === 'textarea') {
-        // HTMLInputElement/HTMLTextAreaElement의 native setter 사용
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-          window.HTMLInputElement.prototype,
-          'value'
-        )?.set;
-
-        const nativeTextAreaValueSetter = Object.getOwnPropertyDescriptor(
-          window.HTMLTextAreaElement.prototype,
-          'value'
-        )?.set;
-
-        const setter = tagName === 'input' ? nativeInputValueSetter : nativeTextAreaValueSetter;
-
-        if (setter) {
-          setter.call(element, value);
-          console.log('🎯 Native setter used');
-        } else {
-          element.value = value;
-        }
-      } else {
-        element.value = value;
-      }
-    } catch (error) {
-      console.warn('⚠️ Native setter failed, using direct assignment:', error.message);
-      element.value = value;
-    }
-  }
-
-  /**
-   * Vue 인스턴스에 직접 접근하여 값 업데이트
-   */
-  static updateVueInstance(element, value) {
-    try {
-      // Vue 3 방식
-      if (element.__vueParentComponent) {
-        const vueComponent = element.__vueParentComponent;
-
-        if (vueComponent.emit) {
-          vueComponent.emit('update:modelValue', value);
-          vueComponent.emit('input', value);
-        }
-
-        if (vueComponent.props && vueComponent.props.modelValue !== undefined) {
-          vueComponent.props.modelValue = value;
-        }
-
-        console.log('🎯 Vue 3 instance updated');
-      }
-
-      // Vue 2 하위 호환
-      if (element.__vue__) {
-        element.__vue__.$emit('input', value);
-        console.log('🎯 Vue 2 instance updated');
-      }
-    } catch (error) {
-      // Vue 인스턴스 접근 실패는 정상 (모든 요소가 Vue 컴포넌트는 아님)
-      console.log('ℹ️ Could not access Vue instance (this is normal)');
-    }
-  }
-
-  /**
-   * 비동기 대기
-   */
-  static wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    });
   }
 }
-
-
-/**
- * ResilientWriter - 재시도 메커니즘
- * VueInputWriter를 래핑하여 실패 시 자동 재시도
- */
-class ResilientWriter {
-  /**
-   * 재시도 메커니즘이 있는 값 쓰기
-   * @param {HTMLElement} element - 입력 요소
-   * @param {string|number} value - 입력할 값
-   * @param {number} [maxRetries=3] - 최대 재시도 횟수
-   * @returns {Promise<Object>} 결과 객체 {success, attempts, error}
-   */
-  static async setValueWithRetry(element, value, maxRetries = 3) {
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`🔄 Attempt ${attempt}/${maxRetries}`);
-
-        const success = await VueInputWriter.setValue(element, value);
-
-        if (success) {
-          return {
-            success: true,
-            attempts: attempt
-          };
-        }
-
-        // 실패 시 대기 후 재시도
-        if (attempt < maxRetries) {
-          const waitTime = attempt * 100; // 100ms, 200ms, 300ms
-          console.log(`⏳ Waiting ${waitTime}ms before retry...`);
-          await this.wait(waitTime);
-        }
-
-      } catch (error) {
-        console.error(`❌ Attempt ${attempt} failed:`, error);
-
-        if (attempt === maxRetries) {
-          return {
-            success: false,
-            error: error.message,
-            attempts: attempt
-          };
-        }
-
-        await this.wait(attempt * 100);
-      }
-    }
-
-    return {
-      success: false,
-      error: 'Max retries exceeded',
-      attempts: maxRetries
-    };
-  }
-
-  static wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-}
-
 
 // ========================================
 // 2. N8N DOM 읽기 클래스
@@ -351,18 +83,12 @@ class N8NReader {
   
   // 현재 선택된 노드 정보 읽기
   getSelectedNode() {
-    // SafeSelector 사용으로 안정성 향상
-    const selectedNode = SafeSelector.find([
-      '[data-node-selected="true"]',
-      '[class*="selected"]',
-      '.canvas-node.selected',
-      '[data-selected="true"]'
-    ]);
-
+    const selectedNode = document.querySelector('[class*="selected"]');
+    
     if (!selectedNode) {
       return null;
     }
-
+    
     return {
       element: selectedNode,
       type: this.getNodeType(selectedNode),
@@ -387,69 +113,217 @@ class N8NReader {
            'unknown';
   }
   
-  // 노드 설정 패널의 입력 필드 읽기
+  // 노드 설정 패널의 입력 필드 읽기 (토글 포함)
   getNodeSettings() {
-    // SafeSelector로 설정 패널 찾기 (우선순위순)
-    const settingsPanel = SafeSelector.find([
-      '[data-test-id="node-parameters-panel"]',
-      '[data-test-id="ndv-parameters"]',
-      '.ndv-panel',
-      '[class*="NodeSettings"]',
-      '[class*="node-settings"]'
-    ]);
+    const settingsPanel = document.querySelector('[class*="NodeSettings"]') ||
+                          document.querySelector('[class*="node-settings"]') ||
+                          document.querySelector('[data-test-id*="node-settings"]') ||
+                          document.querySelector('.ndv-panel');
 
     if (!settingsPanel) {
-      return [];
+      return { fields: [], toggles: [], options: [] };
     }
 
-    const inputs = settingsPanel.querySelectorAll('input, select, textarea');
-
-    return Array.from(inputs).map(input => ({
+    // 일반 입력 필드
+    const inputs = settingsPanel.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="url"], textarea, select');
+    const fields = Array.from(inputs).map(input => ({
       element: input,
       name: this.getInputName(input),
       value: input.value,
       type: input.type || input.tagName.toLowerCase()
     }));
+
+    // 토글/체크박스 (매우 중요!)
+    const checkboxes = settingsPanel.querySelectorAll('input[type="checkbox"]');
+    const toggles = Array.from(checkboxes).map(checkbox => ({
+      element: checkbox,
+      name: this.getInputName(checkbox),
+      checked: checkbox.checked,
+      type: 'toggle'
+    }));
+
+    // N8N 특수 토글 (switch 컴포넌트)
+    const switches = settingsPanel.querySelectorAll('[class*="switch"], [class*="toggle"], [role="switch"]');
+    switches.forEach(switchEl => {
+      const isOn = switchEl.classList.contains('on') ||
+                   switchEl.classList.contains('active') ||
+                   switchEl.getAttribute('aria-checked') === 'true';
+
+      toggles.push({
+        element: switchEl,
+        name: this.getInputName(switchEl),
+        checked: isOn,
+        type: 'switch'
+      });
+    });
+
+    // 드롭다운/옵션
+    const selects = settingsPanel.querySelectorAll('select');
+    const options = Array.from(selects).map(select => ({
+      element: select,
+      name: this.getInputName(select),
+      value: select.value,
+      selectedText: select.options[select.selectedIndex]?.text,
+      type: 'select'
+    }));
+
+    return { fields, toggles, options };
   }
-  
+
   getInputName(inputElement) {
-    const label = inputElement.closest('label') || 
-                  inputElement.previousElementSibling;
-    
-    return label ? 
-           label.textContent.trim() : 
-           inputElement.name || 
+    // 1. 가장 가까운 label
+    const label = inputElement.closest('label');
+    if (label && label.textContent.trim()) {
+      return label.textContent.trim();
+    }
+
+    // 2. 이전 형제 요소의 label
+    const prevLabel = inputElement.previousElementSibling;
+    if (prevLabel && prevLabel.tagName === 'LABEL') {
+      return prevLabel.textContent.trim();
+    }
+
+    // 3. 부모 요소에서 label 찾기
+    const parent = inputElement.parentElement;
+    if (parent) {
+      const parentLabel = parent.querySelector('label');
+      if (parentLabel) {
+        return parentLabel.textContent.trim();
+      }
+
+      // 4. 부모의 텍스트 내용 (label이 없을 때)
+      const parentText = parent.textContent.trim();
+      if (parentText && parentText.length < 100) {
+        return parentText;
+      }
+    }
+
+    // 5. data-test-id나 name attribute
+    return inputElement.getAttribute('data-test-id') ||
+           inputElement.name ||
            inputElement.placeholder ||
            'unknown';
   }
   
-  // 에러 메시지 감지
+  // 에러 메시지 감지 (개선된 버전)
   detectErrors() {
-    const errors = document.querySelectorAll([
-      '[class*="error"]',
-      '[class*="Error"]',
-      '[class*="issue"]',
-      '.el-message--error'
+    const detectedErrors = [];
+
+    // 1. 노드 실행 에러 패널에서 상세 정보 추출
+    const errorPanels = document.querySelectorAll([
+      '[class*="ExecutionError"]',
+      '[class*="execution-error"]',
+      '[data-test-id*="error"]',
+      '[class*="error-message"]',
+      '[class*="RunData"]'
     ].join(','));
-    
-    if (errors.length === 0) {
-      return [];
+
+    errorPanels.forEach(panel => {
+      const errorInfo = this.extractDetailedError(panel);
+      if (errorInfo) {
+        detectedErrors.push(errorInfo);
+      }
+    });
+
+    // 2. 일반 에러 요소에서 추출 (백업)
+    if (detectedErrors.length === 0) {
+      const generalErrors = document.querySelectorAll([
+        '[class*="error"]',
+        '[class*="Error"]',
+        '[class*="issue"]',
+        '.el-message--error'
+      ].join(','));
+
+      generalErrors.forEach(errorEl => {
+        const text = errorEl.textContent.trim();
+        if (text && text.length > 0 && text.length < 5000) {
+          detectedErrors.push({
+            element: errorEl,
+            message: text,
+            type: this.getErrorType(text),
+            details: null
+          });
+        }
+      });
     }
-    
-    console.log('⚠️ Found errors:', errors);
-    
-    return Array.from(errors).map(errorEl => ({
-      element: errorEl,
-      message: errorEl.textContent.trim(),
-      type: this.getErrorType(errorEl)
-    }));
+
+    console.log('⚠️ Found errors:', detectedErrors);
+    return detectedErrors;
   }
-  
-  getErrorType(errorElement) {
-    const text = errorElement.textContent.toLowerCase();
-    if (text.includes('credential')) return 'credential';
-    if (text.includes('connection')) return 'connection';
-    if (text.includes('required')) return 'validation';
+
+  // 상세 에러 정보 추출
+  extractDetailedError(errorElement) {
+    const text = errorElement.textContent.trim();
+    if (!text || text.length === 0) return null;
+
+    // 에러 타입 추출 (ReferenceError, SyntaxError 등)
+    const errorTypeMatch = text.match(/(ReferenceError|SyntaxError|TypeError|Error):\s*(.+?)(?=\n|$)/);
+    const errorType = errorTypeMatch ? errorTypeMatch[1] : null;
+    const errorMessage = errorTypeMatch ? errorTypeMatch[2] : text;
+
+    // 줄 번호 추출
+    const lineNumberMatch = text.match(/(?:at line|line|:)?\s*(\d+)(?::(\d+))?/);
+    const lineNumber = lineNumberMatch ? lineNumberMatch[1] : null;
+    const columnNumber = lineNumberMatch ? lineNumberMatch[2] : null;
+
+    // 스택 트레이스 추출
+    const stackMatch = text.match(/at\s+.+\(.+:\d+:\d+\)/g);
+    const stackTrace = stackMatch ? stackMatch.slice(0, 3) : null; // 처음 3줄만
+
+    // 노드 이름 추출
+    const nodeNameMatch = text.match(/(?:in node|node)\s+['"]?([^'"]+)['"]?/i);
+    const nodeName = nodeNameMatch ? nodeNameMatch[1] : this.findParentNodeName(errorElement);
+
+    // 전체 에러 메시지 (너무 길면 자르기)
+    const fullMessage = text.length > 1000 ? text.substring(0, 1000) + '...' : text;
+
+    return {
+      element: errorElement,
+      type: errorType || this.getErrorType(text),
+      message: errorMessage || fullMessage,
+      details: {
+        fullMessage: fullMessage,
+        lineNumber: lineNumber,
+        columnNumber: columnNumber,
+        stackTrace: stackTrace,
+        nodeName: nodeName,
+        errorType: errorType
+      }
+    };
+  }
+
+  // 에러 요소의 부모 노드에서 노드 이름 찾기
+  findParentNodeName(element) {
+    let current = element;
+    for (let i = 0; i < 10; i++) {
+      if (!current) break;
+
+      // 노드 이름을 포함할 수 있는 요소 찾기
+      const nodeName = current.querySelector('[class*="node-name"], [class*="NodeName"], [data-test-id*="node-name"]');
+      if (nodeName && nodeName.textContent) {
+        return nodeName.textContent.trim();
+      }
+
+      current = current.parentElement;
+    }
+    return null;
+  }
+
+  getErrorType(text) {
+    const textLower = text.toLowerCase();
+
+    // JavaScript 에러 타입
+    if (text.includes('ReferenceError')) return 'ReferenceError';
+    if (text.includes('SyntaxError')) return 'SyntaxError';
+    if (text.includes('TypeError')) return 'TypeError';
+
+    // N8N 특정 에러
+    if (textLower.includes('credential')) return 'credential';
+    if (textLower.includes('connection')) return 'connection';
+    if (textLower.includes('required')) return 'validation';
+    if (textLower.includes('timeout')) return 'timeout';
+    if (textLower.includes('authentication')) return 'authentication';
+
     return 'general';
   }
   
@@ -470,94 +344,88 @@ class N8NReader {
 
 
 // ========================================
-// 3. N8N DOM 쓰기 클래스 (Upgraded)
+// 3. N8N DOM 쓰기 클래스
 // ========================================
 class N8NWriter {
-
-  /**
-   * 입력 필드에 값 쓰기 (VueInputWriter 사용)
-   * @param {HTMLElement} fieldElement - 입력 요소
-   * @param {string|number} value - 입력할 값
-   * @param {boolean} [useRetry=true] - 재시도 사용 여부
-   * @returns {Promise<Object>} 결과 객체 {success, attempts}
-   */
-  async setFieldValue(fieldElement, value, useRetry = true) {
+  
+  // 입력 필드에 값 쓰기 (Vue 리액티브 트리거)
+  setFieldValue(fieldElement, value) {
+    console.log('✍️ Writing to field:', fieldElement, value);
+    
     if (!fieldElement) {
       console.error('❌ Field element not found');
-      return { success: false, error: 'Element not found' };
+      return false;
     }
-
-    // ResilientWriter 사용 (재시도 메커니즘)
-    if (useRetry) {
-      return await ResilientWriter.setValueWithRetry(fieldElement, value);
-    }
-
-    // 단일 시도
-    const success = await VueInputWriter.setValue(fieldElement, value);
-    return { success, attempts: 1 };
+    
+    // 1. 직접 값 설정
+    fieldElement.value = value;
+    
+    // 2. Vue의 리액티브 시스템을 트리거하기 위한 이벤트 발생
+    const events = ['input', 'change', 'blur'];
+    
+    events.forEach(eventType => {
+      const event = new Event(eventType, { 
+        bubbles: true, 
+        cancelable: true 
+      });
+      fieldElement.dispatchEvent(event);
+    });
+    
+    // 3. Vue 컴포넌트 직접 접근 시도
+    this.triggerVueUpdate(fieldElement, value);
+    
+    console.log('✅ Value written successfully');
+    return true;
   }
-
-  /**
-   * 여러 필드에 자동으로 값 채우기
-   * @param {Object} suggestions - 필드명:값 매핑 객체
-   * @returns {Promise<Object>} 결과 {filledCount, totalFields, results}
-   */
-  async autoFillFields(suggestions) {
+  
+  // Vue 컴포넌트에 직접 접근
+  triggerVueUpdate(element, value) {
+    try {
+      // Vue 3의 __vueParentComponent 속성 찾기
+      const vueInstance = element.__vueParentComponent || 
+                          element.__vue__;
+      
+      if (vueInstance) {
+        console.log('🎯 Found Vue instance, triggering update...');
+        
+        // Vue의 emit으로 update 이벤트 발생
+        if (vueInstance.emit) {
+          vueInstance.emit('update:modelValue', value);
+          vueInstance.emit('input', value);
+        }
+        
+        // Props 직접 업데이트 시도
+        if (vueInstance.props && vueInstance.props.modelValue !== undefined) {
+          vueInstance.props.modelValue = value;
+        }
+      }
+    } catch (error) {
+      console.log('⚠️ Vue update failed (normal):', error.message);
+      // 실패해도 괜찮음 - 기본 이벤트로 충분할 수 있음
+    }
+  }
+  
+  // 여러 필드에 자동으로 값 채우기
+  autoFillFields(suggestions) {
     const reader = new N8NReader();
     const fields = reader.getNodeSettings();
-
-    if (fields.length === 0) {
-      console.warn('⚠️ No input fields found');
-      return { filledCount: 0, totalFields: 0, results: [] };
-    }
-
+    
     let filledCount = 0;
-    const results = [];
-
+    
     for (const [fieldName, value] of Object.entries(suggestions)) {
-      // 필드 이름으로 매칭 (대소문자 무시)
-      const field = fields.find(f =>
-        f.name.toLowerCase().includes(fieldName.toLowerCase()) ||
-        fieldName.toLowerCase().includes(f.name.toLowerCase())
+      // 필드 이름으로 매칭
+      const field = fields.find(f => 
+        f.name.toLowerCase().includes(fieldName.toLowerCase())
       );
-
+      
       if (field) {
-        console.log(`🎯 Matching field found: "${field.name}" for "${fieldName}"`);
-
-        const result = await this.setFieldValue(field.element, value);
-
-        if (result.success) {
-          filledCount++;
-          results.push({
-            field: field.name,
-            value: value,
-            status: 'success',
-            attempts: result.attempts
-          });
-        } else {
-          results.push({
-            field: field.name,
-            value: value,
-            status: 'failed',
-            error: result.error
-          });
-        }
-      } else {
-        console.warn(`⚠️ No matching field for: ${fieldName}`);
-        results.push({
-          field: fieldName,
-          value: value,
-          status: 'not_found'
-        });
+        this.setFieldValue(field.element, value);
+        filledCount++;
       }
     }
-
-    console.log(`✅ Auto-filled ${filledCount}/${fields.length} fields`);
-    return {
-      filledCount,
-      totalFields: fields.length,
-      results
-    };
+    
+    console.log(`✅ Auto-filled ${filledCount} fields`);
+    return filledCount;
   }
 }
 
@@ -722,6 +590,9 @@ function initializeAICopilot() {
   window.n8nWriter = new N8NWriter();
   console.log('✅ Reader and Writer initialized');
 
+  // N8N 인스턴스에서 노드 정보 가져오기
+  updateNodesInBackground();
+
   // 사이드바 초기화 (sidebar.js에서 처리)
   console.log('🔍 Checking if initializeSidebar exists:', typeof initializeSidebar);
 
@@ -733,15 +604,13 @@ function initializeAICopilot() {
   }
 
   // 에러 자동 감지 (5초마다)
-  window.errorCheckInterval = setInterval(() => {
-    if (window.n8nReader) {
-      const errors = window.n8nReader.detectErrors();
-      if (errors.length > 0 && window.sendMessageToSidebar) {
-        window.sendMessageToSidebar({
-          type: 'error-detected',
-          errors: errors
-        });
-      }
+  setInterval(() => {
+    const errors = window.n8nReader.detectErrors();
+    if (errors.length > 0 && window.sendMessageToSidebar) {
+      window.sendMessageToSidebar({
+        type: 'error-detected',
+        errors: errors
+      });
     }
   }, 5000);
 
@@ -773,7 +642,7 @@ setTimeout(() => {
 }, 1500);
 
 // 방법 4: MutationObserver로 DOM 변화 감지
-window.n8nPageObserver = new MutationObserver((mutations) => {
+const observer = new MutationObserver((mutations) => {
   // N8N 특유의 요소가 추가되었는지 확인
   const hasN8NElements =
     document.querySelector('[class*="canvas"]') ||
@@ -784,13 +653,13 @@ window.n8nPageObserver = new MutationObserver((mutations) => {
   if (hasN8NElements) {
     console.log('🎯 N8N elements detected by MutationObserver!');
     detectN8NPage();
-    window.n8nPageObserver.disconnect(); // 감지 후 observer 중지
+    observer.disconnect(); // 감지 후 observer 중지
   }
 });
 
 // body가 존재하면 observer 시작
 if (document.body) {
-  window.n8nPageObserver.observe(document.body, {
+  observer.observe(document.body, {
     childList: true,
     subtree: true
   });
@@ -806,10 +675,6 @@ if (document.body) {
 
 // iframe으로부터 메시지 수신
 window.addEventListener('message', async (event) => {
-  // 보안: 자기 자신으로부터의 메시지만 허용
-  if (event.source !== window) return;
-  if (!event.data || !event.data.type) return;
-
   console.log('📨 Message received in content.js:', event.data);
 
   if (event.data.type === 'send-message') {
@@ -840,7 +705,6 @@ window.addEventListener('message', async (event) => {
     }
   }
 
-  // 페이지 분석 요청 처리
   if (event.data.type === 'analyze-page') {
     console.log('🔍 Page analysis requested');
 
@@ -873,13 +737,18 @@ function sendMessageToIframe(data) {
   }
 }
 
-// 페이지 컨텍스트 수집
+// 페이지 컨텍스트 수집 (설정 포함)
 function collectPageContext() {
+  const errors = window.n8nReader.detectErrors();
+  const settings = window.n8nReader.getNodeSettings();
+
   const context = {
     url: window.location.href,
     workflowName: document.title,
-    errors: window.n8nReader ? window.n8nReader.detectErrors() : [],
-    selectedNode: null
+    errors: errors,
+    selectedNode: null,
+    nodeSettings: settings,
+    errorPattern: null
   };
 
   // 선택된 노드 정보 수집 (가능한 경우)
@@ -895,101 +764,38 @@ function collectPageContext() {
     console.log('⚠️ Could not collect selected node info:', e);
   }
 
+  // 에러 패턴 분석 (매우 중요!)
+  if (errors.length > 0) {
+    context.errorPattern = analyzeErrorPattern(errors);
+  }
+
   return context;
 }
 
-// N8N 페이지 상세 분석
-function analyzeN8NPage() {
-  console.log('🔍 Analyzing N8N page...');
-
-  // 1. 기본 정보
-  const basicInfo = {
-    url: window.location.href,
-    title: document.title,
-    timestamp: new Date().toISOString()
+// 에러 패턴 분석 (설정 문제 감지)
+function analyzeErrorPattern(errors) {
+  const pattern = {
+    totalErrors: errors.length,
+    uniqueErrors: new Set(errors.map(e => e.message)).size,
+    repeatedError: null,
+    likelySettingIssue: false,
+    suggestion: null
   };
 
-  // 2. N8N 주요 요소 감지
-  const n8nElements = {
-    canvas: !!document.querySelector('[class*="canvas"]'),
-    canvasSelector: findElement('[class*="canvas"]'),
+  // 동일한 에러가 여러 번 반복되는지 확인
+  if (pattern.uniqueErrors === 1 && pattern.totalErrors > 1) {
+    pattern.repeatedError = errors[0].message;
+    pattern.likelySettingIssue = true;
+    pattern.suggestion = '동일한 에러가 ' + pattern.totalErrors + '번 반복됩니다. 노드 설정(특히 "Run once for all items" vs "Run once for each item" 토글)을 확인하세요.';
+  }
 
-    nodeView: !!document.querySelector('[class*="NodeView"]'),
-    nodeViewSelector: findElement('[class*="NodeView"]'),
+  // 에러 개수가 특정 패턴과 일치하는지
+  if (pattern.totalErrors > 10 && pattern.uniqueErrors < 5) {
+    pattern.likelySettingIssue = true;
+    pattern.suggestion = '많은 에러가 발생했지만 종류는 적습니다. 설정 문제일 가능성이 높습니다.';
+  }
 
-    workflow: !!document.querySelector('[class*="workflow"]'),
-    workflowSelector: findElement('[class*="workflow"]'),
-
-    settings: !!document.querySelector('[class*="settings"]'),
-    settingsSelector: findElement('[class*="settings"]'),
-
-    node: !!document.querySelector('[class*="node"]'),
-    nodeSelector: findElement('[class*="node"]'),
-
-    selected: !!document.querySelector('[class*="selected"]'),
-    selectedSelector: findElement('[class*="selected"]')
-  };
-
-  // 3. 모든 고유 클래스명 수집 (처음 100개)
-  const allClasses = new Set();
-  document.querySelectorAll('[class]').forEach(el => {
-    el.className.split(' ').forEach(cls => {
-      if (cls.trim()) allClasses.add(cls.trim());
-    });
-  });
-  const classList = Array.from(allClasses).slice(0, 100);
-
-  // 4. data-* 속성 수집
-  const dataAttributes = new Set();
-  document.querySelectorAll('[data-test-id]').forEach(el => {
-    const testId = el.getAttribute('data-test-id');
-    if (testId) dataAttributes.add(`data-test-id="${testId}"`);
-  });
-  const dataAttrList = Array.from(dataAttributes).slice(0, 50);
-
-  // 5. 입력 필드 감지
-  const inputs = document.querySelectorAll('input, textarea, select');
-  const inputInfo = {
-    totalInputs: inputs.length,
-    visibleInputs: Array.from(inputs).filter(el => el.offsetParent !== null).length,
-    inputTypes: [...new Set(Array.from(inputs).map(el => el.type || el.tagName.toLowerCase()))]
-  };
-
-  // 6. 에러 감지
-  const errors = window.n8nReader ? window.n8nReader.detectErrors() : [];
-
-  return {
-    basicInfo,
-    n8nElements,
-    classList,
-    dataAttributes: dataAttrList,
-    inputInfo,
-    errors: {
-      count: errors.length,
-      messages: errors.map(e => e.message).slice(0, 5)
-    },
-    summary: {
-      isN8NPage: n8nElements.canvas || n8nElements.workflow,
-      hasActiveNode: n8nElements.selected,
-      hasOpenSettings: n8nElements.settings,
-      hasErrors: errors.length > 0
-    }
-  };
-}
-
-// 요소를 찾고 선택자 정보 반환
-function findElement(selector) {
-  const el = document.querySelector(selector);
-  if (!el) return null;
-
-  return {
-    tagName: el.tagName.toLowerCase(),
-    className: el.className,
-    id: el.id,
-    dataAttrs: Array.from(el.attributes)
-      .filter(attr => attr.name.startsWith('data-'))
-      .map(attr => `${attr.name}="${attr.value}"`)
-  };
+  return pattern;
 }
 
 // Claude API 호출 (background.js를 통해)
@@ -1001,18 +807,40 @@ async function callClaudeAPI(userMessage, context) {
   const docsInfo = n8nDocs.n8nDocs;
 
   let docsSection = '';
-  if (docsInfo && docsInfo.nodes) {
+
+  // 이전 버전 호환성 (nodes) + 새 버전 (allNodes, detailedNodes)
+  const nodeList = docsInfo?.allNodes || docsInfo?.nodes || [];
+  const detailedList = docsInfo?.detailedNodes || [];
+
+  if (nodeList.length > 0) {
     const updateDate = new Date(docsInfo.lastUpdated).toLocaleDateString('ko-KR');
+
+    // 상세 노드 정보 (operations 포함)
+    let detailedSection = '';
+    if (detailedList.length > 0) {
+      detailedSection = '\n\n**상세 노드 정보 (operations 포함)**:\n';
+      detailedList.forEach(node => {
+        if (node.hasOperations && node.operations.length > 0) {
+          detailedSection += `- **${node.name}**: ${node.operations.join(', ')}\n`;
+        } else {
+          detailedSection += `- **${node.name}**: (operations 정보 없음)\n`;
+        }
+      });
+    }
+
+    // 노드 이름 추출 (이전 버전: string, 새 버전: object)
+    const nodeNames = nodeList.map(n => typeof n === 'string' ? n : n.name);
+
     docsSection = `
 **N8N 실시간 노드 목록** (자동 업데이트):
 📅 마지막 업데이트: ${updateDate}
-📦 사용 가능한 노드: ${docsInfo.nodes.length}개
+📦 사용 가능한 노드: ${nodeNames.length}개
 
 주요 노드 (A-Z):
-${docsInfo.nodes.slice(0, 30).map(node => `- \`${node}\``).join('\n')}
+${nodeNames.slice(0, 30).map(node => `- \`${node}\``).join('\n')}
 
-... 외 ${docsInfo.nodes.length - 30}개 노드
-
+... 외 ${nodeNames.length - 30}개 노드
+${detailedSection}
 최신 버전: ${docsInfo.version}
 `;
   } else {
@@ -1064,6 +892,110 @@ ${docsSection}
 - 워크플로우: ${context.workflowName}
 - 에러 개수: ${context.errors.length}개
 ${context.selectedNode ? `- 선택된 노드: ${context.selectedNode.name} (${context.selectedNode.type})` : ''}
+
+${context.nodeSettings && (context.nodeSettings.toggles.length > 0 || context.nodeSettings.options.length > 0) ? `
+**🎛️ 노드 설정 (현재 상태)**:
+${context.nodeSettings.toggles.length > 0 ? `
+토글/스위치:
+${context.nodeSettings.toggles.map(t => `- ${t.name}: ${t.checked ? 'ON ✅' : 'OFF ❌'}`).join('\n')}
+` : ''}
+${context.nodeSettings.options.length > 0 ? `
+옵션:
+${context.nodeSettings.options.map(o => `- ${o.name}: ${o.selectedText || o.value}`).join('\n')}
+` : ''}
+` : ''}
+
+${context.errorPattern && context.errorPattern.likelySettingIssue ? `
+**🚨 에러 패턴 분석 결과**:
+- 총 에러: ${context.errorPattern.totalErrors}개
+- 고유 에러: ${context.errorPattern.uniqueErrors}개
+- 설정 문제 가능성: 높음 ⚠️
+- 제안: ${context.errorPattern.suggestion}
+` : ''}
+
+${context.errors.length > 0 ? `
+**⚠️ 감지된 에러 상세 정보**:
+${context.errors.slice(0, 3).map((err, idx) => `
+에러 ${idx + 1}:
+- 타입: ${err.type}
+- 메시지: ${err.message}
+${err.details ? `- 노드 이름: ${err.details.nodeName || '알 수 없음'}
+- 줄 번호: ${err.details.lineNumber || '알 수 없음'}
+${err.details.stackTrace ? `- 스택 트레이스:\n  ${err.details.stackTrace.join('\n  ')}` : ''}` : ''}
+`).join('\n')}
+${context.errors.length > 3 ? `\n... 외 ${context.errors.length - 3}개 에러` : ''}
+` : ''}
+
+**에러 분석 전략 (매우 중요!)**:
+🚨 에러 진단 우선순위 (반드시 이 순서로!):
+
+**1순위: 노드 설정 확인 (가장 중요!)**
+   ⚠️ 코드를 보기 전에 먼저 설정을 확인하세요!
+
+   특히 확인해야 할 것:
+   - **Run once for all items** vs **Run once for each item**
+     * all items: 전체 items 배열을 한 번에 처리 (items.map, items.filter 등 사용)
+     * each item: 각 item을 개별로 처리 (item 하나만 접근)
+     * ⚠️ 동일한 에러가 여러 번 반복되면 이 설정이 잘못되었을 가능성 높음!
+
+   - **Always Output Data** (항상 데이터 출력)
+   - **Continue On Fail** (실패 시 계속)
+   - 기타 토글 설정들
+
+**2순위: 에러 패턴 분석**
+   - 에러 개수 = 아이템 개수? → 거의 확실히 설정 문제!
+   - 동일한 에러가 N번 반복? → 설정 또는 입력 데이터 문제
+   - 각기 다른 에러? → 코드 로직 문제일 가능성
+
+**3순위: 코드 검토**
+   - 설정과 패턴을 먼저 확인한 후에만 코드를 분석하세요
+
+**에러 분석 답변 예시**:
+
+✅ **올바른 예시** (설정 문제):
+\`\`\`
+⚠️ **설정 문제 발견!**
+
+**현재 상태**: 동일한 에러가 39번 반복
+**원인**: "Run once for each item" 모드로 설정되어 있음
+
+**문제**:
+코드가 전체 items 배열을 처리하도록 작성되었지만
+(items.map, items.filter 등 사용)
+노드는 각 item마다 개별 실행 중
+
+**해결 방법**:
+1. 노드 설정 열기
+2. "Run once for all items"로 토글 변경
+3. 저장 후 재실행
+
+또는 코드를 "each item" 모드에 맞게 수정:
+- \`items[0]\` 대신 \`item\` 사용
+- \`items.map()\` 제거하고 단일 item 처리
+\`\`\`
+
+✅ **올바른 예시** (코드 문제):
+\`\`\`
+**에러 타입**: ReferenceError
+**에러 메시지**: sortedNews is not defined
+**발생 위치**: 15번째 줄
+
+**원인**: sortedNews 변수 선언 없음
+
+**해결 방법**:
+15번째 줄 앞에 추가:
+\`\`\`javascript
+const sortedNews = items[0].json.news.sort(...);
+\`\`\`
+\`\`\`
+
+❌ **잘못된 예시** (절대 이렇게 답변하지 마세요):
+\`\`\`
+39개의 에러가 발생했습니다.
+코드 문법 오류일 수 있습니다.
+입력 데이터 형식을 확인하세요.
+console.log()로 디버깅하세요.
+\`\`\`
 
 **최신 정보 우선 원칙**:
 ⚠️ 당신이 가진 지식(2025년 1월)이 오래되었을 수 있습니다.
@@ -1287,18 +1219,11 @@ function findInputFields(container) {
   return visibleInputs;
 }
 
-// AI로부터 받은 JSON을 필드에 자동 입력 (Upgraded with VueInputWriter)
-async function autoFillNodeFields(jsonData) {
+// AI로부터 받은 JSON을 필드에 자동 입력
+function autoFillNodeFields(jsonData) {
   console.log('🤖 Auto-filling node fields with data:', jsonData);
 
-  // SafeSelector로 패널 찾기
-  const panel = SafeSelector.find([
-    '[data-test-id="node-parameters-panel"]',
-    '[data-test-id="ndv-parameters"]',
-    '.ndv-panel',
-    '[class*="NodeSettings"]'
-  ]);
-
+  const panel = detectNodePanel();
   if (!panel) {
     return { success: false, message: '노드 설정 패널을 찾을 수 없습니다.' };
   }
@@ -1312,7 +1237,9 @@ async function autoFillNodeFields(jsonData) {
   const results = [];
 
   // JSON 데이터를 각 필드에 매핑
-  for (const [key, value] of Object.entries(jsonData)) {
+  Object.keys(jsonData).forEach(key => {
+    const value = jsonData[key];
+
     // 키와 매칭되는 필드 찾기 (대소문자 무시, 부분 일치)
     const field = fields.find(f => {
       const keyLower = key.toLowerCase().replace(/[_\s-]/g, '');
@@ -1329,37 +1256,58 @@ async function autoFillNodeFields(jsonData) {
       try {
         const valueStr = typeof value === 'object' ? JSON.stringify(value, null, 2) : String(value);
 
-        // ResilientWriter로 값 입력 (재시도 메커니즘 포함)
-        const result = await ResilientWriter.setValueWithRetry(field.element, valueStr);
+        // 값 입력
+        if (field.element.tagName === 'INPUT' || field.element.tagName === 'TEXTAREA') {
+          // 기존 값 저장
+          const oldValue = field.element.value;
 
-        if (result.success) {
+          // 새 값 설정
+          field.element.value = valueStr;
+
+          // React/Vue의 상태 업데이트를 위한 이벤트 트리거
+          field.element.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+          field.element.dispatchEvent(new Event('change', { bubbles: true, cancelable: true }));
+          field.element.dispatchEvent(new Event('blur', { bubbles: true }));
+
+          // Vue용 이벤트
+          field.element.__vue__?.emit?.('input', valueStr);
+
           filledCount++;
-          results.push({
-            field: field.label || field.name,
-            value: valueStr,
-            status: 'success',
-            attempts: result.attempts
-          });
-          console.log(`✅ Filled: ${field.label || field.name} = ${valueStr} (${result.attempts} attempts)`);
-        } else {
-          results.push({
-            field: field.label || field.name,
-            value: valueStr,
-            status: 'error',
-            error: result.error
-          });
-          console.error(`❌ Failed to fill ${field.label || field.name}:`, result.error);
+          results.push({ field: field.label || field.name, value: valueStr, status: 'success' });
+          console.log(`✅ Filled: ${field.label || field.name} = ${valueStr}`);
+
+        } else if (field.element.tagName === 'SELECT') {
+          // 드롭다운 선택
+          const option = Array.from(field.element.options).find(opt =>
+            opt.value === value || opt.text === value
+          );
+
+          if (option) {
+            field.element.value = option.value;
+            field.element.dispatchEvent(new Event('change', { bubbles: true }));
+            filledCount++;
+            results.push({ field: field.label || field.name, value: value, status: 'success' });
+            console.log(`✅ Selected: ${field.label || field.name} = ${value}`);
+          }
+
+        } else if (field.element.contentEditable === 'true') {
+          // ContentEditable 요소
+          field.element.textContent = valueStr;
+          field.element.dispatchEvent(new Event('input', { bubbles: true }));
+          filledCount++;
+          results.push({ field: field.label || field.name, value: valueStr, status: 'success' });
+          console.log(`✅ Filled (contentEditable): ${field.label || field.name} = ${valueStr}`);
         }
 
       } catch (error) {
-        console.error(`❌ Exception while filling ${key}:`, error);
+        console.error(`❌ Failed to fill ${key}:`, error);
         results.push({ field: key, value: value, status: 'error', error: error.message });
       }
     } else {
       console.warn(`⚠️ No matching field found for: ${key}`);
       results.push({ field: key, value: value, status: 'not_found' });
     }
-  }
+  });
 
   const message = `${filledCount}개 필드가 자동으로 입력되었습니다.`;
   console.log(`✅ Auto-fill complete: ${message}`);
@@ -1374,12 +1322,11 @@ async function autoFillNodeFields(jsonData) {
 }
 
 // 메시지 리스너: iframe에서 자동 입력 요청 받기
-window.addEventListener('message', async (event) => {
+window.addEventListener('message', (event) => {
   if (event.data.type === 'auto-fill-node') {
     console.log('📥 Auto-fill request received from iframe');
 
-    // async 함수이므로 await 필요
-    const result = await autoFillNodeFields(event.data.data);
+    const result = autoFillNodeFields(event.data.data);
 
     // 결과를 iframe에 전송
     sendMessageToIframe({
@@ -1391,26 +1338,108 @@ window.addEventListener('message', async (event) => {
 
 
 // ========================================
-// 11. Cleanup (메모리 누수 방지)
+// 8. N8N 페이지 상세 분석
 // ========================================
+function analyzeN8NPage() {
+  console.log('🔍 Analyzing N8N page...');
 
-// 페이지 언로드 시 모든 리소스 정리
-window.addEventListener('beforeunload', () => {
-  console.log('🧹 Cleaning up N8N AI Copilot resources...');
+  // 1. 기본 정보
+  const basicInfo = {
+    url: window.location.href,
+    title: document.title,
+    timestamp: new Date().toISOString()
+  };
 
-  // MutationObserver 정리
-  if (window.n8nPageObserver) {
-    window.n8nPageObserver.disconnect();
-    window.n8nPageObserver = null;
-    console.log('✅ MutationObserver disconnected');
+  // 2. N8N 주요 요소 감지
+  const n8nElements = {
+    canvas: !!document.querySelector('[class*="canvas"]'),
+    canvasSelector: findElement('[class*="canvas"]'),
+
+    nodeView: !!document.querySelector('[class*="NodeView"]'),
+    nodeViewSelector: findElement('[class*="NodeView"]'),
+
+    workflow: !!document.querySelector('[class*="workflow"]'),
+    workflowSelector: findElement('[class*="workflow"]'),
+
+    settings: !!document.querySelector('[class*="settings"]'),
+    settingsSelector: findElement('[class*="settings"]'),
+
+    node: !!document.querySelector('[class*="node"]'),
+    nodeSelector: findElement('[class*="node"]'),
+
+    selected: !!document.querySelector('[class*="selected"]'),
+    selectedSelector: findElement('[class*="selected"]')
+  };
+
+  // 3. 모든 고유 클래스명 수집 (처음 100개)
+  const allClasses = new Set();
+  document.querySelectorAll('[class]').forEach(el => {
+    // classList를 사용하여 SVG 요소 호환성 확보
+    if (el.classList && el.classList.length > 0) {
+      el.classList.forEach(cls => {
+        if (cls.trim()) allClasses.add(cls.trim());
+      });
+    }
+  });
+  const classList = Array.from(allClasses).slice(0, 100);
+
+  // 4. data-* 속성 수집
+  const dataAttributes = new Set();
+  document.querySelectorAll('[data-test-id]').forEach(el => {
+    const testId = el.getAttribute('data-test-id');
+    if (testId) dataAttributes.add(`data-test-id="${testId}"`);
+  });
+  const dataAttrList = Array.from(dataAttributes).slice(0, 50);
+
+  // 5. 입력 필드 감지
+  const inputs = document.querySelectorAll('input, textarea, select');
+  const inputInfo = {
+    totalInputs: inputs.length,
+    visibleInputs: Array.from(inputs).filter(el => el.offsetParent !== null).length,
+    inputTypes: [...new Set(Array.from(inputs).map(el => el.type || el.tagName.toLowerCase()))]
+  };
+
+  // 6. 에러 감지
+  const errors = window.n8nReader ? window.n8nReader.detectErrors() : [];
+
+  return {
+    basicInfo,
+    n8nElements,
+    classList,
+    dataAttributes: dataAttrList,
+    inputInfo,
+    errors: {
+      count: errors.length,
+      messages: errors.map(e => e.message).slice(0, 5)
+    },
+    summary: {
+      isN8NPage: n8nElements.canvas || n8nElements.workflow,
+      hasActiveNode: n8nElements.selected,
+      hasOpenSettings: n8nElements.settings,
+      hasErrors: errors.length > 0
+    }
+  };
+}
+
+// 요소를 찾고 선택자 정보 반환
+function findElement(selector) {
+  const el = document.querySelector(selector);
+  if (!el) return null;
+
+  // className이 SVGAnimatedString일 수 있으므로 안전하게 변환
+  let classNameStr = '';
+  if (el.classList && el.classList.length > 0) {
+    classNameStr = Array.from(el.classList).join(' ');
+  } else if (typeof el.className === 'string') {
+    classNameStr = el.className;
   }
 
-  // setInterval 정리
-  if (window.errorCheckInterval) {
-    clearInterval(window.errorCheckInterval);
-    window.errorCheckInterval = null;
-    console.log('✅ Error check interval cleared');
-  }
-
-  console.log('✅ Cleanup complete');
-});
+  return {
+    tagName: el.tagName.toLowerCase(),
+    className: classNameStr,
+    id: el.id,
+    dataAttrs: Array.from(el.attributes)
+      .filter(attr => attr.name.startsWith('data-'))
+      .map(attr => `${attr.name}="${attr.value}"`)
+  };
+}
