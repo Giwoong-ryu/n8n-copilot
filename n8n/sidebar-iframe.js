@@ -288,6 +288,12 @@ document.querySelectorAll('.quick-action-btn').forEach(btn => {
       return;
     }
 
+    // 워크플로우 분석은 별도 처리
+    if (action === 'analyze-workflow') {
+      analyzeWorkflow();
+      return;
+    }
+
     let message = '';
     switch(action) {
       case 'generate-json':
@@ -331,6 +337,19 @@ function analyzeError() {
   }, '*');
 }
 
+// 워크플로우 분석 요청
+function analyzeWorkflow() {
+  console.log('🔬 Requesting workflow analysis...');
+
+  // 로딩 표시
+  const loadingId = showLoading();
+
+  // parent window(content.js)로 워크플로우 분석 요청
+  window.parent.postMessage({
+    type: 'analyze-workflow'
+  }, '*');
+}
+
 // parent window로부터 메시지 수신
 window.addEventListener('message', (event) => {
   console.log('📨 Message received from parent:', event.data);
@@ -362,6 +381,25 @@ window.addEventListener('message', (event) => {
       type: 'send-message',
       message: errorMessage,
       errorContext: errorData
+    }, '*');
+
+  } else if (event.data.type === 'workflow-analysis-result') {
+    // 워크플로우 분석 결과 처리 - AI에게 직접 전송
+    hideLoading('loading-indicator');
+    const workflowData = event.data.data;
+
+    // 분석 정보를 메시지로 전송
+    const workflowMessage = workflowData.userMessage || '워크플로우 분석 완료';
+    addMessage(workflowMessage, 'user');
+
+    // 로딩 표시
+    const loadingId = showLoading();
+
+    // AI에게 전송
+    window.parent.postMessage({
+      type: 'send-message',
+      message: workflowMessage,
+      workflowContext: workflowData
     }, '*');
 
   } else if (event.data.type === 'auto-fill-result') {

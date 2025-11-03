@@ -409,6 +409,97 @@ class N8NReader {
     return 'general';
   }
 
+  // 노드의 실행 데이터 읽기 (Input/Output)
+  getNodeExecutionData(nodeName) {
+    console.log('📊 Reading execution data from node:', nodeName);
+
+    const settingsPanel = document.querySelector('[class*="NodeSettings"]') ||
+                          document.querySelector('[class*="node-settings"]') ||
+                          document.querySelector('.ndv-panel');
+
+    if (!settingsPanel) {
+      console.warn('⚠️ Settings panel not found');
+      return null;
+    }
+
+    const executionData = {
+      nodeName: nodeName,
+      input: null,
+      output: null,
+      inputItems: 0,
+      outputItems: 0,
+      dataLoss: false,
+      dataChange: null
+    };
+
+    // Input/Output 탭 또는 데이터 표시 영역 찾기
+    const tabs = settingsPanel.querySelectorAll('[role="tab"], .tab, [class*="tab"]');
+    const dataDisplays = settingsPanel.querySelectorAll('[class*="data"], [class*="json"], pre, code');
+
+    // JSON 데이터 찾기
+    for (const display of dataDisplays) {
+      const text = display.textContent;
+      if (!text) continue;
+
+      try {
+        // JSON 파싱 시도
+        const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+        if (jsonMatch) {
+          const data = JSON.parse(jsonMatch[0]);
+
+          // items 배열 찾기
+          if (Array.isArray(data)) {
+            // Output일 가능성
+            if (!executionData.output) {
+              executionData.output = data;
+              executionData.outputItems = data.length;
+            } else if (!executionData.input) {
+              executionData.input = data;
+              executionData.inputItems = data.length;
+            }
+          } else if (data.items && Array.isArray(data.items)) {
+            // items가 있는 객체
+            if (!executionData.output) {
+              executionData.output = data.items;
+              executionData.outputItems = data.items.length;
+            } else if (!executionData.input) {
+              executionData.input = data.items;
+              executionData.inputItems = data.items.length;
+            }
+          }
+        }
+      } catch (e) {
+        // JSON 파싱 실패는 무시
+      }
+    }
+
+    // Items 개수 표시 찾기 (예: "3 items")
+    const itemCountElements = settingsPanel.querySelectorAll('[class*="item"], [class*="count"]');
+    for (const el of itemCountElements) {
+      const text = el.textContent;
+      const match = text.match(/(\d+)\s*items?/i);
+      if (match) {
+        const count = parseInt(match[1]);
+        if (executionData.outputItems === 0) {
+          executionData.outputItems = count;
+        }
+      }
+    }
+
+    // 데이터 손실 감지
+    if (executionData.inputItems > 0 && executionData.outputItems > 0) {
+      if (executionData.outputItems < executionData.inputItems) {
+        executionData.dataLoss = true;
+        executionData.dataChange = `${executionData.inputItems} items → ${executionData.outputItems} items (손실!)`;
+      } else if (executionData.outputItems > executionData.inputItems) {
+        executionData.dataChange = `${executionData.inputItems} items → ${executionData.outputItems} items (증가)`;
+      }
+    }
+
+    console.log('📊 Execution data:', executionData);
+    return executionData;
+  }
+
   // Code 노드에서 JavaScript 코드 읽기
   getCodeFromNode(nodeName) {
     console.log('🔍 Trying to read code from node:', nodeName);
@@ -483,6 +574,166 @@ class N8NReader {
         id: this.getNodeId(node)
       }))
     };
+  }
+
+  // 모든 노드의 실행 데이터 수집 (자동으로 각 노드 클릭하며 수집)
+  async getAllNodesExecutionData() {
+    console.log('🔄 Collecting execution data from all nodes...');
+
+    const nodes = document.querySelectorAll('[class*="CanvasNode"], [data-node-type]');
+    const nodesData = [];
+
+    for (const nodeElement of nodes) {
+      const nodeName = this.getNodeName(nodeElement);
+      console.log(`📍 Checking node: ${nodeName}`);
+
+      // 노드 클릭하여 설정 패널 열기
+      nodeElement.click();
+
+      // 패널이 열릴 때까지 대기
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // 실행 데이터 읽기
+      const execData = this.getNodeExecutionData(nodeName);
+      const code = this.getCodeFromNode(nodeName);
+
+      if (execData || code) {
+        nodesData.push({
+          nodeName,
+          nodeType: this.getNodeType(nodeElement),
+          executionData: execData,
+          code: code,
+          hasDataLoss: execData?.dataLoss || false
+        });
+      }
+
+      // ESC 키로 패널 닫기
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    console.log('✅ Data collection complete:', nodesData);
+    return nodesData;
+  }
+
+  // 워크플로우 데이터 흐름 분석
+  analyzeWorkflowDataFlow(nodesData) {
+    console.log('🔍 Analyzing workflow data flow...');
+
+    const analysis = {
+      totalNodes: nodesData.length,
+      nodesWithDataLoss: [],
+      dataFlowIssues: [],
+      recommendations: []
+    };
+
+    // 데이터 손실 노드 찾기
+    nodesData.forEach((nodeData, index) => {
+      if (nodeData.hasDataLoss) {
+        analysis.nodesWithDataLoss.push({
+          nodeName: nodeData.nodeName,
+          issue: nodeData.executionData.dataChange,
+          position: index
+        });
+      }
+
+      // 이전 노드와 데이터 개수 비교
+      if (index > 0) {
+        const prevNode = nodesData[index - 1];
+        const currentNode = nodeData;
+
+        if (prevNode.executionData && currentNode.executionData) {
+          const prevOutput = prevNode.executionData.outputItems;
+          const currentInput = currentNode.executionData.inputItems;
+
+          if (prevOutput !== currentInput && prevOutput > 0 && currentInput > 0) {
+            analysis.dataFlowIssues.push({
+              from: prevNode.nodeName,
+              to: currentNode.nodeName,
+              issue: `${prevOutput} items → ${currentInput} items`,
+              severity: prevOutput > currentInput ? 'high' : 'low'
+            });
+          }
+        }
+      }
+    });
+
+    // 추천 사항 생성
+    if (analysis.nodesWithDataLoss.length > 0) {
+      const firstLoss = analysis.nodesWithDataLoss[0];
+      analysis.recommendations.push({
+        priority: 'high',
+        nodeName: firstLoss.nodeName,
+        message: `"${firstLoss.nodeName}" 노드에서 데이터 손실 발생`,
+        suggestion: '코드 검토 또는 "Run Once for All Items" 설정 확인 필요'
+      });
+    }
+
+    if (analysis.dataFlowIssues.length > 0) {
+      const highSeverityIssues = analysis.dataFlowIssues.filter(i => i.severity === 'high');
+      if (highSeverityIssues.length > 0) {
+        const issue = highSeverityIssues[0];
+        analysis.recommendations.push({
+          priority: 'high',
+          nodeName: issue.from,
+          message: `"${issue.from}" → "${issue.to}" 사이 데이터 손실`,
+          suggestion: `"${issue.from}" 노드 출력 확인 필요`
+        });
+      }
+    }
+
+    console.log('📊 Analysis result:', analysis);
+    return analysis;
+  }
+
+  // 문제의 근원 노드 찾기
+  findIssueSource(nodesData, problemDescription) {
+    console.log('🎯 Finding issue source:', problemDescription);
+
+    const issues = [];
+
+    // 키워드 기반 문제 감지
+    const isItemCountIssue = /\d+.*전송.*\d+.*전송|개수|1개만|하나만/i.test(problemDescription);
+    const isTextTruncated = /짤림|잘림|truncate|substring|짧/i.test(problemDescription);
+
+    nodesData.forEach((nodeData, index) => {
+      // 데이터 손실이 있는 노드
+      if (nodeData.hasDataLoss && isItemCountIssue) {
+        issues.push({
+          priority: 'critical',
+          nodeName: nodeData.nodeName,
+          type: 'data_loss',
+          description: `데이터 개수 감소: ${nodeData.executionData.dataChange}`,
+          codeSnippet: nodeData.code ? nodeData.code.substring(0, 200) : null,
+          suggestion: '코드에서 items[0] 또는 필터링 로직 확인'
+        });
+      }
+
+      // 텍스트 잘림 패턴 감지
+      if (nodeData.code && isTextTruncated) {
+        if (nodeData.code.includes('substring') ||
+            nodeData.code.includes('slice') ||
+            nodeData.code.includes('substr')) {
+          issues.push({
+            priority: 'high',
+            nodeName: nodeData.nodeName,
+            type: 'text_truncation',
+            description: '코드에서 문자열 자르기 사용 중',
+            codeSnippet: nodeData.code,
+            suggestion: 'substring/slice 로직 제거 또는 길이 조정'
+          });
+        }
+      }
+    });
+
+    // 우선순위 정렬
+    issues.sort((a, b) => {
+      const priority = { critical: 3, high: 2, medium: 1, low: 0 };
+      return priority[b.priority] - priority[a.priority];
+    });
+
+    console.log('🎯 Found issues:', issues);
+    return issues;
   }
 }
 
@@ -824,6 +1075,7 @@ window.addEventListener('message', async (event) => {
   if (event.data.type === 'send-message') {
     const userMessage = event.data.message;
     const errorContext = event.data.errorContext; // 에러 분석 컨텍스트
+    const workflowContext = event.data.workflowContext; // 워크플로우 분석 컨텍스트
     console.log('💬 User message:', userMessage);
 
     try {
@@ -834,6 +1086,12 @@ window.addEventListener('message', async (event) => {
       if (errorContext) {
         context.errorAnalysis = errorContext;
         console.log('📄 Error context included:', errorContext);
+      }
+
+      // 워크플로우 분석 컨텍스트가 있으면 추가
+      if (workflowContext) {
+        context.workflowAnalysis = workflowContext;
+        console.log('📄 Workflow context included:', workflowContext);
       }
 
       console.log('📄 Page context collected:', context);
@@ -893,6 +1151,63 @@ window.addEventListener('message', async (event) => {
       sendMessageToIframe({
         type: 'error',
         message: '에러 분석 중 오류가 발생했습니다: ' + error.message
+      });
+    }
+  }
+
+  if (event.data.type === 'analyze-workflow') {
+    console.log('🔬 Workflow analysis requested');
+
+    try {
+      // 비동기로 워크플로우 분석 실행
+      (async () => {
+        console.log('🔄 Starting workflow analysis...');
+
+        // 모든 노드의 실행 데이터 수집
+        const nodesData = await window.n8nReader.getAllNodesExecutionData();
+        console.log('📊 Nodes data collected:', nodesData);
+
+        // 데이터 흐름 분석
+        const flowAnalysis = window.n8nReader.analyzeWorkflowDataFlow(nodesData);
+        console.log('📊 Flow analysis complete:', flowAnalysis);
+
+        // 사용자 메시지 생성
+        let userMessage = '워크플로우 분석 완료\n\n';
+
+        if (flowAnalysis.nodesWithDataLoss.length > 0) {
+          userMessage += `⚠️ 데이터 손실 발견: ${flowAnalysis.nodesWithDataLoss.length}개 노드\n`;
+          flowAnalysis.nodesWithDataLoss.forEach(node => {
+            userMessage += `- ${node.nodeName}: ${node.issue}\n`;
+          });
+        }
+
+        if (flowAnalysis.dataFlowIssues.length > 0) {
+          userMessage += `\n⚠️ 데이터 흐름 문제: ${flowAnalysis.dataFlowIssues.length}개\n`;
+          flowAnalysis.dataFlowIssues.forEach(issue => {
+            userMessage += `- ${issue.from} → ${issue.to}: ${issue.issue}\n`;
+          });
+        }
+
+        if (flowAnalysis.nodesWithDataLoss.length === 0 && flowAnalysis.dataFlowIssues.length === 0) {
+          userMessage = '워크플로우 분석 완료: 문제 없음 ✅';
+        }
+
+        // iframe으로 결과 전송
+        sendMessageToIframe({
+          type: 'workflow-analysis-result',
+          data: {
+            userMessage: userMessage,
+            nodesData: nodesData,
+            flowAnalysis: flowAnalysis
+          }
+        });
+      })();
+
+    } catch (error) {
+      console.error('❌ Error analyzing workflow:', error);
+      sendMessageToIframe({
+        type: 'error',
+        message: '워크플로우 분석 중 오류가 발생했습니다: ' + error.message
       });
     }
   }
@@ -1100,6 +1415,27 @@ ${context.errorPattern && context.errorPattern.likelySettingIssue ? `
 - 고유 에러: ${context.errorPattern.uniqueErrors}개
 - 설정 문제 가능성: 높음 ⚠️
 - 제안: ${context.errorPattern.suggestion}
+` : ''}
+
+${context.workflowAnalysis ? `
+**🔬 워크플로우 분석 결과**:
+- 총 노드 수: ${context.workflowAnalysis.flowAnalysis.totalNodes}개
+${context.workflowAnalysis.flowAnalysis.nodesWithDataLoss.length > 0 ? `
+- ⚠️ 데이터 손실 노드:
+${context.workflowAnalysis.flowAnalysis.nodesWithDataLoss.map(node => `  * ${node.nodeName}: ${node.issue}`).join('\n')}
+` : ''}
+${context.workflowAnalysis.flowAnalysis.dataFlowIssues.length > 0 ? `
+- ⚠️ 데이터 흐름 문제:
+${context.workflowAnalysis.flowAnalysis.dataFlowIssues.map(issue => `  * ${issue.from} → ${issue.to}: ${issue.issue}`).join('\n')}
+` : ''}
+${context.workflowAnalysis.flowAnalysis.recommendations.length > 0 ? `
+- 💡 추천 사항:
+${context.workflowAnalysis.flowAnalysis.recommendations.map(rec => `  * [${rec.priority}] ${rec.nodeName}: ${rec.message} - ${rec.suggestion}`).join('\n')}
+` : ''}
+${context.workflowAnalysis.nodesData.length > 0 ? `
+- 📊 각 노드 실행 데이터:
+${context.workflowAnalysis.nodesData.map(node => `  * ${node.nodeName} (${node.nodeType}): ${node.executionData ? `input ${node.executionData.inputItems} items → output ${node.executionData.outputItems} items${node.hasDataLoss ? ' ⚠️' : ''}` : '실행 데이터 없음'}`).join('\n')}
+` : ''}
 ` : ''}
 
 ${context.errorAnalysis ? `
