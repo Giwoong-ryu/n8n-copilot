@@ -1119,75 +1119,45 @@ ${context.errors.length > 3 ? `\n... 외 ${context.errors.length - 3}개 에러`
 ` : ''}
 
 **에러 분석 전략 (매우 중요!)**:
-🚨 에러 진단 우선순위 (반드시 이 순서로!):
+${context.errorAnalysis ? `
+⚠️ **에러 분석 모드 - 짧고 명확하게 답변하세요**
 
-**1순위: 노드 설정 확인 (가장 중요!)**
-   ⚠️ 코드를 보기 전에 먼저 설정을 확인하세요!
+답변 형식 (최대 3-4줄):
+1. 에러 타입과 메시지 (1줄)
+2. 원인 분석 (1줄)
+3. 해결 방법 (1-2줄)
 
-   특히 확인해야 할 것:
+예시:
+\`\`\`
+에러: ReferenceError - sortedNews is not defined
+원인: sortedNews 변수 선언 없이 사용
+해결: 15번째 줄 앞에 const sortedNews = items[0].json.news.sort(...) 추가
+\`\`\`
+
+❌ 금지: 장황한 설명, 여러 가능성 나열, 일반론
+✅ 필수: 코드를 봤으면 정확한 줄 번호와 수정 방법 제시
+` : `
+🚨 에러 진단 우선순위:
+
+**1순위: 노드 설정 확인**
    - **Run once for all items** vs **Run once for each item**
-     * all items: 전체 items 배열을 한 번에 처리 (items.map, items.filter 등 사용)
-     * each item: 각 item을 개별로 처리 (item 하나만 접근)
-     * ⚠️ 동일한 에러가 여러 번 반복되면 이 설정이 잘못되었을 가능성 높음!
-
-   - **Always Output Data** (항상 데이터 출력)
-   - **Continue On Fail** (실패 시 계속)
-   - 기타 토글 설정들
+     * all items: 전체 items 배열 처리 (items.map, items.filter)
+     * each item: 단일 item 처리
+   - **Continue On Fail**, **Always Output Data**
 
 **2순위: 에러 패턴 분석**
-   - 에러 개수 = 아이템 개수? → 거의 확실히 설정 문제!
-   - 동일한 에러가 N번 반복? → 설정 또는 입력 데이터 문제
-   - 각기 다른 에러? → 코드 로직 문제일 가능성
+   - 에러 개수 = 아이템 개수? → 설정 문제!
+   - 동일 에러 반복? → 설정 문제
 
 **3순위: 코드 검토**
-   - 설정과 패턴을 먼저 확인한 후에만 코드를 분석하세요
 
-**에러 분석 답변 예시**:
-
-✅ **올바른 예시** (설정 문제):
+답변 예시:
 \`\`\`
-⚠️ **설정 문제 발견!**
-
-**현재 상태**: 동일한 에러가 39번 반복
-**원인**: "Run once for each item" 모드로 설정되어 있음
-
-**문제**:
-코드가 전체 items 배열을 처리하도록 작성되었지만
-(items.map, items.filter 등 사용)
-노드는 각 item마다 개별 실행 중
-
-**해결 방법**:
-1. 노드 설정 열기
-2. "Run once for all items"로 토글 변경
-3. 저장 후 재실행
-
-또는 코드를 "each item" 모드에 맞게 수정:
-- \`items[0]\` 대신 \`item\` 사용
-- \`items.map()\` 제거하고 단일 item 처리
+설정 문제:
+- "Run once for each item" → "Run once for all items"로 변경
+- 코드가 items 배열 전체를 처리하므로
 \`\`\`
-
-✅ **올바른 예시** (코드 문제):
-\`\`\`
-**에러 타입**: ReferenceError
-**에러 메시지**: sortedNews is not defined
-**발생 위치**: 15번째 줄
-
-**원인**: sortedNews 변수 선언 없음
-
-**해결 방법**:
-15번째 줄 앞에 추가:
-\`\`\`javascript
-const sortedNews = items[0].json.news.sort(...);
-\`\`\`
-\`\`\`
-
-❌ **잘못된 예시** (절대 이렇게 답변하지 마세요):
-\`\`\`
-39개의 에러가 발생했습니다.
-코드 문법 오류일 수 있습니다.
-입력 데이터 형식을 확인하세요.
-console.log()로 디버깅하세요.
-\`\`\`
+`}
 
 **최신 정보 우선 원칙**:
 ⚠️ 당신이 가진 지식(2025년 1월)이 오래되었을 수 있습니다.
