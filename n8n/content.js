@@ -39,23 +39,60 @@ async function fetchNodesFromCurrentInstance() {
   console.log('📥 Fetching node types from current N8N instance...');
 
   try {
-    const response = await fetch('/rest/node-types', {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json'
-      }
-    });
+    // 방법 1: REST API 시도 (여러 엔드포인트)
+    const apiEndpoints = [
+      '/api/v1/node-types',
+      '/rest/node-types',
+      '/types/nodes.json'
+    ];
 
-    if (!response.ok) {
-      throw new Error(`N8N API error: ${response.status}`);
+    for (const endpoint of apiEndpoints) {
+      try {
+        const response = await fetch(endpoint, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const nodeTypes = Array.isArray(data) ? data : Object.values(data);
+          console.log(`✅ Fetched ${nodeTypes.length} node types from ${endpoint}`);
+          return nodeTypes;
+        }
+      } catch (e) {
+        // 다음 엔드포인트 시도
+      }
     }
 
-    const nodeTypes = await response.json();
-    console.log(`✅ Fetched ${nodeTypes.length} node types`);
+    // 방법 2: N8N의 전역 Vue store에서 가져오기
+    console.log('🔍 Trying to access Vue store...');
 
-    return nodeTypes;
+    if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__ && window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps) {
+      const app = window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps[0];
+      if (app && app._instance && app._instance.proxy) {
+        const proxy = app._instance.proxy;
+
+        // Pinia store 접근
+        if (proxy.$pinia && proxy.$pinia._s) {
+          const stores = proxy.$pinia._s;
+
+          // nodeTypes store 찾기
+          for (const [key, store] of stores) {
+            if (store.allNodeTypes || store.nodeTypes) {
+              const nodeTypes = Object.values(store.allNodeTypes || store.nodeTypes);
+              console.log(`✅ Fetched ${nodeTypes.length} node types from Pinia store (${key})`);
+              return nodeTypes;
+            }
+          }
+        }
+      }
+    }
+
+    throw new Error('Could not find node types - please report the N8N version');
+
   } catch (error) {
     console.error('❌ Failed to fetch node types:', error);
+    console.error('💡 Tip: Check browser Network tab for node-types requests');
     return null;
   }
 }
