@@ -1104,8 +1104,9 @@ ${context.errorPattern && context.errorPattern.likelySettingIssue ? `
 
 ${context.errorAnalysis ? `
 **에러**: ${context.errorAnalysis.errors.map((err) => `${err.message}`).join(', ')}
-
-2줄로만 답변!
+${context.errorAnalysis.errors.some(e => e.autoFix) ? `
+**자동 진단**: ${context.errorAnalysis.errors.find(e => e.autoFix).autoFix}
+이 해결책을 2줄로 간단히 전달!` : '2줄로만 답변!'}
 ` : context.errors.length > 0 ? `
 **⚠️ 감지된 에러 상세 정보**:
 ${context.errors.slice(0, 3).map((err, idx) => `
@@ -1496,10 +1497,20 @@ function analyzeErrorsWithCode() {
       message: error.message,
       nodeName: error.details?.nodeName || 'Unknown',
       lineNumber: error.details?.lineNumber || null,
-      code: null
+      code: null,
+      autoFix: null // 자동 진단
     };
 
-    // Code 노드 또는 JavaScript 관련 에러인 경우 코드 읽기 시도
+    // 1. 에러 메시지에서 직접적인 힌트 찾기
+    const msgLower = error.message.toLowerCase();
+    if (msgLower.includes('run once for all items') ||
+        msgLower.includes('.all()') ||
+        msgLower.includes("can't use .all") ||
+        msgLower.includes('only available in')) {
+      errorDetail.autoFix = '"Run Once for All Items" 모드로 변경';
+    }
+
+    // 2. Code 노드인 경우 코드 읽기 시도
     const isCodeError = error.type === 'ReferenceError' ||
                         error.type === 'SyntaxError' ||
                         error.type === 'TypeError' ||
@@ -1513,6 +1524,15 @@ function analyzeErrorsWithCode() {
         errorDetail.code = code;
         codeFound = true;
         console.log(`✅ Code found for error ${index + 1}`, code.substring(0, 100));
+
+        // 3. 코드 패턴 분석 (자동 진단이 없을 때만)
+        if (!errorDetail.autoFix) {
+          if (code.includes('items.map') || code.includes('items.filter') ||
+              code.includes('items.forEach') || code.includes('.all()') ||
+              code.includes('$input.all()')) {
+            errorDetail.autoFix = '"Run Once for All Items" 모드로 변경 (코드가 items 배열 전체 처리)';
+          }
+        }
       }
     }
 
