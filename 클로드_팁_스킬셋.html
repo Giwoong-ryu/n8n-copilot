@@ -464,6 +464,519 @@
       </table>
     </div>
 
+    <!-- 개발 자동화 스킬 상세 설명 -->
+    <div class="content-section">
+      <h2>🔧 개발 자동화 스킬 상세</h2>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 40px;">1. Code Changelog</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        AI가 생성한 모든 코드 변경사항을 자동으로 문서화하고 웹 브라우저에서 실시간으로 확인할 수 있는 스킬입니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>자동 문서 생성 (Markdown):</strong> Claude가 작성한 모든 코드 변경사항을 구조화된 마크다운 형식으로 자동 저장</li>
+        <li><strong>HTML 뷰어 (설치 불필요):</strong> Python 내장 서버로 별도 설치 없이 브라우저에서 바로 확인</li>
+        <li><strong>다크 모드 UI (GitHub 스타일):</strong> 눈이 편한 다크 테마와 익숙한 GitHub 디자인</li>
+        <li><strong>실시간 서버:</strong> http://localhost:4000 에서 변경사항을 실시간으로 확인</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>상황:</strong> React 프로젝트에서 로그인 기능을 추가한 후</p>
+        <div class="code-block" style="margin-top: 10px;">code-changelog
+
+<span class="comment"># 자동으로 다음 내용이 생성됨:</span>
+<span class="comment"># - src/components/LoginForm.tsx 추가</span>
+<span class="comment"># - src/hooks/useAuth.ts 추가</span>
+<span class="comment"># - API 엔드포인트 /api/auth/login 연동</span>
+<span class="comment"># - 브라우저에서 http://localhost:4000 으로 확인</span></div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>실전 시나리오:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li>코드 리뷰 전에 팀원에게 공유할 문서 자동 생성</li>
+          <li>프로젝트 변경 이력을 시각적으로 추적</li>
+          <li>클라이언트에게 작업 내용 보고서 제출</li>
+        </ul>
+      </div>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 60px;">2. Meta Prompt Generator</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        간단한 설명을 받아 단계별 병렬 처리가 가능한 구조화된 커스텀 슬래시 커맨드를 자동으로 생성합니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>지능형 지식 수집:</strong> 웹 검색을 통해 최신 기술 스택과 베스트 프랙티스 자동 수집</li>
+        <li><strong>단계 기반 워크플로우 설계:</strong> 복잡한 작업을 논리적인 단계로 자동 분해</li>
+        <li><strong>포괄적인 테스트 생성:</strong> 각 단계마다 검증 가능한 테스트 케이스 자동 생성</li>
+        <li><strong>병렬 처리 최적화:</strong> 독립적인 작업을 동시 실행하도록 최적화</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>상황:</strong> "결제 시스템 구현" 커맨드를 만들고 싶을 때</p>
+        <div class="code-block" style="margin-top: 10px;">meta-prompt-generator
+
+<span class="comment"># AI가 자동으로 생성:</span>
+<span class="comment"># 1. 결제 API 연동 (Stripe, Toss Payments 비교)</span>
+<span class="comment"># 2. 데이터베이스 스키마 설계</span>
+<span class="comment"># 3. 보안 처리 (토큰, 암호화)</span>
+<span class="comment"># 4. 테스트 케이스 작성</span>
+<span class="comment"># 5. 에러 처리 및 로깅</span>
+<span class="comment"># → .claude/commands/payment-system.md 자동 생성</span></div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>실전 시나리오:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li>복잡한 기능을 반복적으로 구현할 때 (CRUD, 인증, 알림 등)</li>
+          <li>팀 전체가 사용할 표준화된 워크플로우 생성</li>
+          <li>신입 개발자를 위한 가이드 커맨드 제작</li>
+        </ul>
+      </div>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 60px;">3. Prompt Enhancer</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        프로젝트 컨텍스트를 분석하여 간단한 개발 요청을 명확하고 상세한 요구사항으로 변환합니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>프로젝트 구조 자동 분석:</strong> 현재 프로젝트의 폴더 구조, 패키지, 설정 파일 자동 파악</li>
+        <li><strong>기존 패턴 인식:</strong> 코드베이스에서 사용 중인 네이밍 컨벤션, 아키텍처 패턴 감지</li>
+        <li><strong>구조화된 요구사항 생성:</strong> 모호한 요청을 구체적인 구현 단계로 변환</li>
+        <li><strong>프레임워크별 최적화:</strong> Flutter, Next.js, Python 등 각 스택에 맞는 베스트 프랙티스 적용</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>Before:</strong> "로그인 기능 만들어줘"</p>
+        <div class="code-block" style="margin-top: 10px;">prompt-enhancer "로그인 기능 만들어줘"</div>
+
+        <p style="margin: 20px 0 10px;"><strong>After:</strong> AI가 자동으로 변환:</p>
+        <div class="code-block" style="margin-top: 10px;"><span class="comment"># Flutter Clean Architecture 기반 로그인 기능 구현</span>
+
+<span class="comment">## 1. Domain Layer</span>
+- entities/user.dart (id, email, name, token)
+- repositories/auth_repository.dart (interface)
+- usecases/login_usecase.dart
+
+<span class="comment">## 2. Data Layer</span>
+- models/user_model.dart (fromJson/toJson)
+- datasources/auth_remote_datasource.dart (HTTP)
+- repositories/auth_repository_impl.dart
+
+<span class="comment">## 3. Presentation Layer</span>
+- screens/login_screen.dart
+- providers/auth_provider.dart (Riverpod)
+- widgets/login_form.dart
+
+<span class="comment">## 4. 보안 요구사항</span>
+- JWT 토큰 flutter_secure_storage 저장
+- 입력 검증 (이메일 형식, 비밀번호 최소 8자)
+- 에러 처리 (네트워크, 인증 실패)</div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>실전 시나리오:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li><strong>신속한 프로토타이핑:</strong> "쇼핑몰 만들어줘" → 완전한 기능 명세서</li>
+          <li><strong>기술 부채 해결:</strong> "이 코드 리팩토링" → 단계별 개선 계획</li>
+          <li><strong>코드 리뷰 준비:</strong> 구현 전 상세한 설계 문서 자동 생성</li>
+        </ul>
+      </div>
+
+      <div class="info-box" style="margin-top: 24px;">
+        <p><strong>지원 스택:</strong></p>
+        <ul style="margin-left: 20px; margin-top: 10px;">
+          <li>Flutter (Clean Architecture, Riverpod, BLoC)</li>
+          <li>Next.js/React (App Router, Zustand, TanStack Query)</li>
+          <li>Python (Django, FastAPI, SQLAlchemy)</li>
+        </ul>
+      </div>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 60px;">4. Codex Claude Loop</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        Claude와 OpenAI Codex가 서로 코드를 검증하고 개선하는 이중 AI 검증 시스템입니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>이중 AI 검증:</strong> Claude가 작성한 코드를 Codex가 리뷰하고, 다시 Claude가 개선</li>
+        <li><strong>자동 반복 개선:</strong> 두 AI가 합의할 때까지 코드 품질 향상</li>
+        <li><strong>다각도 분석:</strong> Claude(설계/아키텍처) + Codex(성능/최적화)의 강점 결합</li>
+        <li><strong>실시간 피드백:</strong> 각 반복마다 개선 내용 시각화</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>상황:</strong> 복잡한 알고리즘 구현 후 품질 검증</p>
+        <div class="code-block" style="margin-top: 10px;">codex-claude-loop
+
+<span class="comment"># 실행 흐름:</span>
+[Claude] 최단 경로 알고리즘 구현 (Dijkstra)
+    ↓
+[Codex] 리뷰: "시간복잡도 O(n²) → 우선순위 큐로 O(n log n) 개선 가능"
+    ↓
+[Claude] 우선순위 큐 적용 + 엣지 케이스 처리 추가
+    ↓
+[Codex] 리뷰: "메모리 사용량 최적화 가능, 나머지 Good"
+    ↓
+[Claude] 최종 개선
+    ↓
+✅ 두 AI 합의 완료</div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>실전 시나리오:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li>프로덕션 배포 전 핵심 로직 검증</li>
+          <li>성능 크리티컬한 코드 최적화</li>
+          <li>보안이 중요한 인증/결제 코드 리뷰</li>
+        </ul>
+      </div>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 60px;">5. Codex</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        OpenAI Codex를 CLI에서 직접 호출하여 코드 분석, 리팩토링, 버그 수정을 수행합니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>레거시 코드 분석:</strong> 오래된 코드베이스를 빠르게 이해하고 문서화</li>
+        <li><strong>자동 리팩토링:</strong> 코드 스멜 감지 및 개선안 제시</li>
+        <li><strong>버그 탐지:</strong> 잠재적인 버그와 보안 취약점 발견</li>
+        <li><strong>성능 최적화:</strong> 병목 지점 찾기 및 최적화 제안</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>상황:</strong> 3년 전에 작성된 React 컴포넌트 개선</p>
+        <div class="code-block" style="margin-top: 10px;">codex "이 컴포넌트를 React 18 기준으로 리팩토링해줘"
+
+<span class="comment"># Codex가 분석:</span>
+<span class="comment"># ❌ Class Component → ✅ Function Component</span>
+<span class="comment"># ❌ componentDidMount → ✅ useEffect</span>
+<span class="comment"># ❌ this.setState → ✅ useState</span>
+<span class="comment"># + Suspense, Error Boundary 추가 제안</span></div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>실전 시나리오:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li>새로 합류한 프로젝트의 코드 빠르게 이해하기</li>
+          <li>레거시 시스템 모던 기술 스택으로 마이그레이션</li>
+          <li>코드 리뷰 전 자동 사전 검사</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 프로젝트 초기화 스킬 상세 설명 -->
+    <div class="content-section">
+      <h2>🚀 프로젝트 초기화 스킬 상세</h2>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 40px;">6. Flutter Init</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        Clean Architecture 기반 Flutter 프로젝트를 완전히 구조화된 상태로 자동 생성합니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>3-Layer 아키텍처 자동 생성:</strong> Domain / Data / Presentation 레이어 완전 구성</li>
+        <li><strong>필수 패키지 설치:</strong> Riverpod, Dio, Go Router, Freezed 등 주요 패키지 사전 설정</li>
+        <li><strong>폴더 구조 완성:</strong> features별 모듈화된 폴더 구조 (screens, widgets, providers)</li>
+        <li><strong>보일러플레이트 코드:</strong> 즉시 개발 시작 가능한 예제 코드 포함</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>명령 한 줄로 완성:</strong></p>
+        <div class="code-block" style="margin-top: 10px;">flutter-init my_app
+
+<span class="comment"># 자동으로 생성되는 구조:</span>
+my_app/
+├── lib/
+│   ├── core/              <span class="comment"># 공통 유틸리티</span>
+│   ├── domain/            <span class="comment"># 엔티티, 유스케이스</span>
+│   │   ├── entities/
+│   │   ├── repositories/
+│   │   └── usecases/
+│   ├── data/              <span class="comment"># API, DB, 모델</span>
+│   │   ├── models/
+│   │   ├── datasources/
+│   │   └── repositories/
+│   ├── presentation/      <span class="comment"># UI, 상태관리</span>
+│   │   ├── screens/
+│   │   ├── widgets/
+│   │   └── providers/
+│   └── main.dart
+└── pubspec.yaml           <span class="comment"># 필수 패키지 설치 완료</span></div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>포함된 패키지:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li><strong>riverpod:</strong> 상태 관리 (Provider 패턴)</li>
+          <li><strong>dio:</strong> HTTP 클라이언트 + 인터셉터</li>
+          <li><strong>go_router:</strong> 선언적 라우팅</li>
+          <li><strong>freezed:</strong> 불변 데이터 클래스 자동 생성</li>
+          <li><strong>flutter_secure_storage:</strong> 안전한 로컬 저장소</li>
+        </ul>
+      </div>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 60px;">7. Next.js 15 Init</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        Next.js 15 App Router 기반 프로젝트를 최신 베스트 프랙티스로 자동 구성합니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>App Router 구조:</strong> 최신 Next.js 15 App Router 기반 설정</li>
+        <li><strong>TypeScript 완전 지원:</strong> 타입 안전성을 위한 엄격한 설정</li>
+        <li><strong>상태관리 Zustand:</strong> 가볍고 강력한 상태관리 라이브러리 사전 설정</li>
+        <li><strong>TailwindCSS 설정:</strong> 유틸리티 우선 CSS 프레임워크 + 커스텀 테마</li>
+        <li><strong>API Routes:</strong> 풀스택 개발을 위한 API 라우트 예제 포함</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>명령 한 줄로 완성:</strong></p>
+        <div class="code-block" style="margin-top: 10px;">nextjs15-init my-app
+
+<span class="comment"># 자동으로 생성되는 구조:</span>
+my-app/
+├── src/
+│   ├── app/               <span class="comment"># App Router</span>
+│   │   ├── (auth)/        <span class="comment"># Route Groups</span>
+│   │   ├── api/           <span class="comment"># API Routes</span>
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/        <span class="comment"># 재사용 컴포넌트</span>
+│   │   ├── ui/            <span class="comment"># 기본 UI 컴포넌트</span>
+│   │   └── layouts/
+│   ├── lib/               <span class="comment"># 유틸리티</span>
+│   │   ├── api.ts
+│   │   └── utils.ts
+│   └── stores/            <span class="comment"># Zustand 스토어</span>
+├── public/
+├── tailwind.config.ts     <span class="comment"># TailwindCSS 설정</span>
+└── tsconfig.json          <span class="comment"># TypeScript 엄격 모드</span></div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>포함된 기능:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li><strong>Server Components:</strong> 서버 사이드 렌더링 최적화</li>
+          <li><strong>Suspense & Streaming:</strong> 로딩 상태 자동 처리</li>
+          <li><strong>Metadata API:</strong> SEO 최적화 설정</li>
+          <li><strong>환경변수 관리:</strong> .env.local 템플릿 제공</li>
+          <li><strong>ESLint & Prettier:</strong> 코드 품질 자동 관리</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 콘텐츠 생성 스킬 상세 설명 -->
+    <div class="content-section">
+      <h2>🎨 콘텐츠 생성 스킬 상세</h2>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 40px;">8. Landing Page Guide</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        마케팅 전환율을 극대화하는 랜딩페이지 구조와 카피를 단계별로 생성합니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>전환율 최적화 구조:</strong> Hero → Features → Social Proof → CTA 최적 배치</li>
+        <li><strong>고객 심리 기반 카피:</strong> AIDA 모델 기반 설득 메시지 자동 생성</li>
+        <li><strong>A/B 테스트 변형안:</strong> 헤드라인, CTA 버튼 3가지 변형 자동 제안</li>
+        <li><strong>반응형 디자인 가이드:</strong> 모바일/데스크톱 최적화 레이아웃</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>상황:</strong> SaaS 제품 런칭 준비</p>
+        <div class="code-block" style="margin-top: 10px;">landing-page-guide "AI 기반 마케팅 자동화 도구"
+
+<span class="comment"># AI가 자동으로 생성:</span>
+
+<span class="comment">## Hero Section</span>
+헤드라인: "마케팅 시간을 90% 줄이세요"
+서브헤드: "AI가 당신의 마케팅 팀이 됩니다"
+CTA: "무료로 시작하기" / "데모 보기"
+
+<span class="comment">## Features (3-4개)</span>
+✅ 자동 콘텐츠 생성 - 블로그, SNS 포스트를 5분 안에
+✅ 타겟 분석 - AI가 고객 페르소나 자동 파악
+✅ 캠페인 최적화 - 실시간 A/B 테스트
+
+<span class="comment">## Social Proof</span>
+"런칭 2주만에 고객 500명 달성"
+고객 후기 3가지 + 로고 배치
+
+<span class="comment">## FAQ (예상 질문 5가지)</span>
+- 설치가 어렵나요?
+- 가격은 얼마인가요?
+...</div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>실전 활용:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li>제품 출시 전 랜딩페이지 1시간 안에 완성</li>
+          <li>광고 캠페인용 여러 변형 페이지 대량 생성</li>
+          <li>웨비나, 이벤트 신청 페이지 제작</li>
+        </ul>
+      </div>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 60px;">9. Card News Generator</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        긴 텍스트를 인스타그램 카드 뉴스 형태로 자동 변환하여 SNS 콘텐츠를 빠르게 제작합니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>자동 슬라이드 분할:</strong> 긴 글을 읽기 좋은 10장 내외의 카드로 분할</li>
+        <li><strong>시각적 구조화:</strong> 제목/본문/번호 자동 배치 및 가독성 최적화</li>
+        <li><strong>이모지 자동 삽입:</strong> 내용에 맞는 이모지 자동 추천</li>
+        <li><strong>인스타그램 최적화:</strong> 1080x1080 정사각형 비율 기본 설정</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>상황:</strong> 블로그 글을 SNS용으로 재가공</p>
+        <div class="code-block" style="margin-top: 10px;">card-news-generator "Claude Code 활용 팁 10가지.txt"
+
+<span class="comment"># 자동 생성 결과:</span>
+
+[카드 1] 📱 Claude Code 활용법
+         "생산성 10배 높이는 비법"
+
+[카드 2] 💡 TIP 1: 스킬 활용하기
+         간단한 명령어로 반복 작업 자동화
+
+[카드 3] 🚀 TIP 2: 커스텀 커맨드
+         자주 쓰는 작업은 명령어로 저장
+
+...
+
+[카드 10] ✅ 오늘부터 시작하세요!
+          @계정명 팔로우하고 더 많은 팁 받기</div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>활용 분야:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li>기술 블로그 → 인스타그램 카드 뉴스</li>
+          <li>제품 설명서 → 쉬운 사용 가이드</li>
+          <li>통계 데이터 → 시각적 인포그래픽</li>
+        </ul>
+      </div>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 60px;">10. Card News Generator V2</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        커스텀 배경 이미지를 지원하는 고급 버전 카드 뉴스 생성기입니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>배경 이미지 지원:</strong> 각 카드마다 다른 배경 이미지 설정 가능</li>
+        <li><strong>텍스트 오버레이:</strong> 배경 위에 가독성 높은 텍스트 자동 배치</li>
+        <li><strong>그라데이션 효과:</strong> 텍스트 가독성을 위한 오버레이 자동 적용</li>
+        <li><strong>템플릿 선택:</strong> 5가지 디자인 템플릿 (모던/클래식/미니멀/비즈니스/크리에이티브)</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>상황:</strong> 여행 관련 콘텐츠 제작</p>
+        <div class="code-block" style="margin-top: 10px;">card-news-generator-v2 --template modern --bg-folder ./images/
+
+<span class="comment"># 내용: "제주도 숨은 맛집 7곳"</span>
+
+[카드 1] 배경: 제주 바다 사진
+         텍스트: "제주도 로컬만 아는 맛집" (반투명 오버레이)
+
+[카드 2] 배경: 식당 외관
+         텍스트: "1. 해녀의 집 - 성산포 숨은 맛집"
+
+[카드 3] 배경: 음식 사진
+         텍스트: "신선한 해산물로 만든 해물라면"
+
+<span class="comment"># 각 카드마다 어울리는 배경 자동 매칭</span></div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>V1과의 차이점:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li><strong>V1:</strong> 단색 배경 + 텍스트 (빠른 제작용)</li>
+          <li><strong>V2:</strong> 이미지 배경 + 고급 디자인 (마케팅용)</li>
+        </ul>
+      </div>
+
+      <h3 style="color: var(--accent); font-size: 26px; margin-top: 60px;">11. Midjourney CardNews BG</h3>
+      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
+        카드 뉴스 주제에 맞는 Midjourney AI 이미지 생성 프롬프트를 자동으로 만들어줍니다.
+      </p>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
+      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
+        <li><strong>주제 분석:</strong> 카드 뉴스 내용을 분석하여 적합한 이미지 스타일 추천</li>
+        <li><strong>프롬프트 최적화:</strong> Midjourney V6 기준 최적화된 프롬프트 생성</li>
+        <li><strong>스타일 가이드:</strong> 비즈니스/일러스트/사진/추상 등 다양한 스타일 옵션</li>
+        <li><strong>배치 생성:</strong> 한 번에 10장의 카드 뉴스용 프롬프트 자동 생성</li>
+      </ul>
+
+      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
+      <div class="scenario-box">
+        <p style="margin-bottom: 10px;"><strong>상황:</strong> "AI 스타트업 창업 가이드" 카드 뉴스 배경 제작</p>
+        <div class="code-block" style="margin-top: 10px;">midjourney-cardnews-bg "AI 스타트업 창업 가이드" --style business
+
+<span class="comment"># 자동 생성된 프롬프트들:</span>
+
+[카드 1 - 표지]
+/imagine modern tech startup office, minimalist design,
+blue and purple gradient, professional lighting,
+clean composition --ar 1:1 --v 6
+
+[카드 2 - Step 1]
+/imagine business planning concept, digital interface,
+holographic charts, futuristic workspace,
+soft focus background --ar 1:1 --v 6
+
+[카드 3 - Step 2]
+/imagine AI technology abstract, neural network visualization,
+glowing connections, dark background, cinematic lighting
+--ar 1:1 --v 6
+
+<span class="comment"># 각 카드의 내용에 맞는 프롬프트 자동 생성</span></div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>워크플로우:</strong></p>
+        <div class="code-block" style="margin-top: 10px;"><span class="comment"># 1단계: 프롬프트 생성</span>
+midjourney-cardnews-bg "주제" --style business
+
+<span class="comment"># 2단계: Midjourney에서 이미지 생성</span>
+<span class="comment"># (Discord에서 생성된 프롬프트 복사 붙여넣기)</span>
+
+<span class="comment"># 3단계: 생성된 이미지로 카드 뉴스 제작</span>
+card-news-generator-v2 --bg-folder ./midjourney-images/</div>
+      </div>
+
+      <div class="scenario-box">
+        <p><strong>지원 스타일:</strong></p>
+        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
+          <li><strong>business:</strong> 비즈니스, 스타트업, 기업 콘텐츠</li>
+          <li><strong>illustration:</strong> 설명형 콘텐츠, 교육 자료</li>
+          <li><strong>photographic:</strong> 리얼리즘, 제품 소개</li>
+          <li><strong>abstract:</strong> 테크, AI, 추상적 개념</li>
+          <li><strong>minimal:</strong> 미니멀 디자인, 고급스러운 브랜딩</li>
+        </ul>
+      </div>
+    </div>
+
     <!-- 설치 위치 및 사용법 -->
     <div class="content-section">
       <h2>⚙️ 설치 위치</h2>
