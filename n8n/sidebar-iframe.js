@@ -4,6 +4,62 @@
  */
 
 // ========================================
+// 간단한 마크다운 파서 (marked.js 대체)
+// ========================================
+function parseMarkdown(markdown) {
+  let html = markdown;
+
+  // 코드 블록 (```)
+  html = html.replace(/```([\w-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+    const langClass = lang ? `language-${lang}` : '';
+    return `<pre><code class="${langClass}">${escapeHtml(code.trim())}</code></pre>`;
+  });
+
+  // 인라인 코드 (`)
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+  // 굵은 글씨 (**)
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  // 기울임 (*)
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+  // 제목 (###, ##, #)
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+  // 순서 있는 리스트
+  html = html.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>)/s, '<ol>$1</ol>');
+
+  // 순서 없는 리스트
+  html = html.replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>');
+
+  // 링크
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+  // 줄바꿈 (두 개의 개행을 <p>로)
+  html = html.split('\n\n').map(para => {
+    if (!para.trim().match(/^<[^>]+>/)) {
+      return `<p>${para.trim()}</p>`;
+    }
+    return para;
+  }).join('');
+
+  // 단일 줄바꿈을 <br>로
+  html = html.replace(/\n/g, '<br>');
+
+  return html;
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// ========================================
 // iframe 내부 스크립트
 // ========================================
 console.log('📦 Sidebar iframe script loaded');
@@ -57,13 +113,11 @@ function addMessage(text, type = 'assistant') {
 
   // assistant 메시지는 마크다운을 HTML로 변환
   if (type === 'assistant') {
-    // marked 라이브러리가 로드되어 있는지 확인
-    if (typeof marked !== 'undefined') {
-      // 마크다운을 HTML로 변환
-      messageDiv.innerHTML = marked.parse(text);
+    // 내장 마크다운 파서 사용
+    messageDiv.innerHTML = parseMarkdown(text);
 
-      // 단계 버튼에 이벤트 리스너 추가
-      setTimeout(() => {
+    // 단계 버튼에 이벤트 리스너 추가
+    setTimeout(() => {
         // 1. 기존 HTML 버튼 처리
         const stepButtons = messageDiv.querySelectorAll('.step-button');
         stepButtons.forEach(button => {
@@ -155,10 +209,6 @@ function addMessage(text, type = 'assistant') {
           }
         });
       }, 0);
-    } else {
-      // marked 라이브러리가 없으면 텍스트만 표시
-      messageDiv.textContent = text;
-    }
   } else {
     // user, error 메시지는 일반 텍스트
     messageDiv.textContent = text;
@@ -168,16 +218,31 @@ function addMessage(text, type = 'assistant') {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// 로딩 표시
+// 로딩 표시 (정지 버튼 포함)
 function showLoading() {
   const loadingDiv = document.createElement('div');
   loadingDiv.className = 'loading';
   loadingDiv.id = 'loading-indicator';
   loadingDiv.innerHTML = `
-    <div class="loading-dot"></div>
-    <div class="loading-dot"></div>
-    <div class="loading-dot"></div>
+    <div class="loading-content">
+      <div class="loading-dots">
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+        <div class="loading-dot"></div>
+      </div>
+      <button class="stop-loading-btn" title="응답 대기 중단">⏹ 정지</button>
+    </div>
   `;
+
+  // 정지 버튼 이벤트 리스너
+  const stopBtn = loadingDiv.querySelector('.stop-loading-btn');
+  stopBtn.addEventListener('click', () => {
+    console.log('🛑 Stop button clicked');
+    hideLoading('loading-indicator');
+    sendButton.disabled = false;
+    addMessage('⏹ 응답 대기를 중단했습니다.', 'assistant');
+  });
+
   messagesContainer.appendChild(loadingDiv);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
   return 'loading-indicator';
@@ -211,6 +276,12 @@ document.querySelectorAll('.quick-action-btn').forEach(btn => {
     const action = e.target.dataset.action;
     console.log('🎯 Quick action clicked:', action);
 
+    // 페이지 분석은 별도 처리
+    if (action === 'analyze-page') {
+      analyzePage();
+      return;
+    }
+
     let message = '';
     switch(action) {
       case 'analyze-error':
@@ -231,6 +302,19 @@ document.querySelectorAll('.quick-action-btn').forEach(btn => {
   });
 });
 
+// 페이지 분석 요청
+function analyzePage() {
+  console.log('🔍 Requesting page analysis...');
+
+  // 로딩 표시
+  const loadingId = showLoading();
+
+  // parent window(content.js)로 분석 요청
+  window.parent.postMessage({
+    type: 'analyze-page'
+  }, '*');
+}
+
 // parent window로부터 메시지 수신
 window.addEventListener('message', (event) => {
   console.log('📨 Message received from parent:', event.data);
@@ -239,6 +323,11 @@ window.addEventListener('message', (event) => {
     hideLoading('loading-indicator');
     addMessage(event.data.message, 'assistant');
     sendButton.disabled = false;
+
+  } else if (event.data.type === 'page-analysis-result') {
+    // 페이지 분석 결과 처리
+    hideLoading('loading-indicator');
+    displayPageAnalysis(event.data.data);
 
   } else if (event.data.type === 'auto-fill-result') {
     // 자동 입력 결과 처리
@@ -283,5 +372,80 @@ window.addEventListener('message', (event) => {
     sendButton.disabled = false;
   }
 });
+
+// 페이지 분석 결과 표시
+function displayPageAnalysis(data) {
+  console.log('📊 Displaying page analysis:', data);
+
+  let message = `# 🔍 N8N 페이지 분석 결과\n\n`;
+
+  // 요약
+  message += `## 📋 요약\n\n`;
+  message += `- N8N 페이지: ${data.summary.isN8NPage ? '✅ 확인됨' : '❌ 감지 안됨'}\n`;
+  message += `- 활성 노드: ${data.summary.hasActiveNode ? '✅ 있음' : '❌ 없음'}\n`;
+  message += `- 설정 패널 열림: ${data.summary.hasOpenSettings ? '✅ 열림' : '❌ 닫힘'}\n`;
+  message += `- 에러: ${data.summary.hasErrors ? `⚠️ ${data.errors.count}개 발견` : '✅ 없음'}\n\n`;
+
+  // 기본 정보
+  message += `## 🌐 기본 정보\n\n`;
+  message += `- URL: \`${data.basicInfo.url}\`\n`;
+  message += `- 제목: ${data.basicInfo.title}\n\n`;
+
+  // 입력 필드 정보
+  message += `## 📝 입력 필드\n\n`;
+  message += `- 전체 입력 필드: ${data.inputInfo.totalInputs}개\n`;
+  message += `- 보이는 입력 필드: ${data.inputInfo.visibleInputs}개\n`;
+  if (data.inputInfo.inputTypes.length > 0) {
+    message += `- 입력 타입: ${data.inputInfo.inputTypes.map(t => `\`${t}\``).join(', ')}\n`;
+  }
+  message += `\n`;
+
+  // N8N 요소 감지
+  message += `## 🎯 N8N 요소 감지\n\n`;
+  message += `| 요소 | 감지됨 | 선택자 |\n`;
+  message += `|------|--------|--------|\n`;
+  message += `| Canvas | ${data.n8nElements.canvas ? '✅' : '❌'} | ${data.n8nElements.canvasSelector ? `\`${data.n8nElements.canvasSelector.className}\`` : '-'} |\n`;
+  message += `| NodeView | ${data.n8nElements.nodeView ? '✅' : '❌'} | ${data.n8nElements.nodeViewSelector ? `\`${data.n8nElements.nodeViewSelector.className}\`` : '-'} |\n`;
+  message += `| Workflow | ${data.n8nElements.workflow ? '✅' : '❌'} | ${data.n8nElements.workflowSelector ? `\`${data.n8nElements.workflowSelector.className}\`` : '-'} |\n`;
+  message += `| Settings | ${data.n8nElements.settings ? '✅' : '❌'} | ${data.n8nElements.settingsSelector ? `\`${data.n8nElements.settingsSelector.className}\`` : '-'} |\n`;
+  message += `| Node | ${data.n8nElements.node ? '✅' : '❌'} | ${data.n8nElements.nodeSelector ? `\`${data.n8nElements.nodeSelector.className}\`` : '-'} |\n`;
+  message += `| Selected | ${data.n8nElements.selected ? '✅' : '❌'} | ${data.n8nElements.selectedSelector ? `\`${data.n8nElements.selectedSelector.className}\`` : '-'} |\n\n`;
+
+  // data-test-id 속성
+  if (data.dataAttributes.length > 0) {
+    message += `## 🏷️ data-test-id 속성 (처음 10개)\n\n`;
+    data.dataAttributes.slice(0, 10).forEach(attr => {
+      message += `- \`${attr}\`\n`;
+    });
+    if (data.dataAttributes.length > 10) {
+      message += `\n... 외 ${data.dataAttributes.length - 10}개\n`;
+    }
+    message += `\n`;
+  }
+
+  // 클래스명 목록
+  if (data.classList.length > 0) {
+    message += `## 🎨 발견된 클래스명 (처음 20개)\n\n`;
+    message += '```\n';
+    data.classList.slice(0, 20).forEach(cls => {
+      message += `${cls}\n`;
+    });
+    if (data.classList.length > 20) {
+      message += `... 외 ${data.classList.length - 20}개\n`;
+    }
+    message += '```\n\n';
+  }
+
+  // 에러 메시지
+  if (data.errors.count > 0) {
+    message += `## ⚠️ 에러 메시지\n\n`;
+    data.errors.messages.forEach((msg, idx) => {
+      message += `${idx + 1}. ${msg}\n`;
+    });
+    message += `\n`;
+  }
+
+  addMessage(message, 'assistant');
+}
 
 console.log('✅ Sidebar iframe script initialized');

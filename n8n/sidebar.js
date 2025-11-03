@@ -45,6 +45,12 @@ function createSidebarElements() {
   const sidebar = document.createElement('div');
   sidebar.id = 'n8n-ai-copilot-sidebar';
 
+  // 리사이즈 핸들 생성
+  const resizeHandle = document.createElement('div');
+  resizeHandle.id = 'n8n-ai-copilot-resize-handle';
+  resizeHandle.title = '드래그하여 크기 조절';
+  sidebar.appendChild(resizeHandle);
+
   // iframe 생성
   const iframe = document.createElement('iframe');
   iframe.src = chrome.runtime.getURL('sidebar.html');
@@ -64,23 +70,28 @@ function attachEventListeners() {
   const toggleButton = document.getElementById('n8n-ai-copilot-toggle');
   const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
   const overlay = document.getElementById('n8n-ai-copilot-overlay');
-  
+  const resizeHandle = document.getElementById('n8n-ai-copilot-resize-handle');
+
   // 토글 버튼 클릭
   toggleButton.addEventListener('click', toggleSidebar);
-  
+
   // 오버레이 클릭 시 사이드바 닫기
   overlay.addEventListener('click', closeSidebar);
-  
+
   // ESC 키로 사이드바 닫기
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && sidebar.classList.contains('open')) {
       closeSidebar();
     }
   });
-  
-  // iframe과의 메시지 통신 설정
-  window.addEventListener('message', handleIframeMessage);
-  
+
+  // 리사이즈 핸들 드래그
+  if (resizeHandle) {
+    resizeHandle.addEventListener('mousedown', startResize);
+  }
+
+  // iframe과의 메시지 통신은 content.js에서 처리합니다
+
   console.log('🔗 Event listeners attached');
 }
 
@@ -156,6 +167,71 @@ window.addEventListener('message', (event) => {
     showNotificationBadge(event.data.errors.length);
   }
 });
+
+// ========================================
+// 8. 사이드바 크기 조절
+// ========================================
+let isResizing = false;
+let startX = 0;
+let startWidth = 0;
+const MIN_WIDTH = 300;
+const MAX_WIDTH = 800;
+
+function startResize(e) {
+  isResizing = true;
+  startX = e.clientX;
+
+  const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
+  startWidth = sidebar.offsetWidth;
+
+  // 드래그 중 이벤트
+  document.addEventListener('mousemove', doResize);
+  document.addEventListener('mouseup', stopResize);
+
+  // 드래그 중 선택 방지
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = 'ew-resize';
+
+  console.log('📏 Resize started');
+}
+
+function doResize(e) {
+  if (!isResizing) return;
+
+  const sidebar = document.getElementById('n8n-ai-copilot-sidebar');
+  const toggleButton = document.getElementById('n8n-ai-copilot-toggle');
+
+  // 마우스 이동 거리 계산 (왼쪽으로 드래그하면 사이드바가 넓어짐)
+  const deltaX = startX - e.clientX;
+  let newWidth = startWidth + deltaX;
+
+  // 최소/최대 크기 제한
+  newWidth = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, newWidth));
+
+  // 사이드바 너비 적용
+  sidebar.style.width = newWidth + 'px';
+
+  // 토글 버튼 위치 조정 (사이드바가 열려있을 때)
+  if (sidebar.classList.contains('open') && window.innerWidth > 1024) {
+    toggleButton.style.right = (newWidth + 20) + 'px';
+  }
+}
+
+function stopResize() {
+  if (!isResizing) return;
+
+  isResizing = false;
+
+  // 이벤트 리스너 제거
+  document.removeEventListener('mousemove', doResize);
+  document.removeEventListener('mouseup', stopResize);
+
+  // 스타일 복원
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+
+  console.log('📏 Resize stopped');
+}
 
 
 console.log('📦 Sidebar.js loaded');

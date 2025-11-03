@@ -33,7 +33,7 @@
         "https://*.n8n.io/*",
         "https://n8nryugw10.site/*"
       ],
-      "js": ["content.js", "sidebar.js"],
+      "js": ["sidebar.js", "content.js"],
       "css": ["sidebar.css"],
       "run_at": "document_idle"
     }
