@@ -102,11 +102,20 @@ async function fetchNodesFromCurrentInstance() {
   return null;
 }
 
-// Background에 노드 정보 전달
+// 노드 정보 가져오기 flag (중복 방지)
+let nodeTypesFetched = false;
+
+// Background에 노드 정보 전달 (한 번만)
 async function updateNodesInBackground() {
+  if (nodeTypesFetched) {
+    console.log('⏭️ Node types already fetched, skipping...');
+    return;
+  }
+
   const nodeTypes = await fetchNodesFromCurrentInstance();
 
   if (nodeTypes) {
+    nodeTypesFetched = true;
     chrome.runtime.sendMessage({
       action: 'updateNodeTypes',
       nodeTypes: nodeTypes
