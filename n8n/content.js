@@ -579,21 +579,58 @@ class N8NReader {
   }
 
   // 모든 노드의 실행 데이터 수집 (자동으로 각 노드 클릭하며 수집)
-  async getAllNodesExecutionData() {
+  async getAllNodesExecutionData(onProgress = null) {
     console.log('🔄 Collecting execution data from all nodes...');
 
     const nodes = document.querySelectorAll('[class*="CanvasNode"], [data-node-type]');
     const nodesData = [];
+    const total = nodes.length;
+    const startTime = Date.now();
+    const MAX_TOTAL_TIME = 120000; // 2분 최대 타임아웃
 
-    for (const nodeElement of nodes) {
+    for (let index = 0; index < nodes.length; index++) {
+      const nodeElement = nodes[index];
       const nodeName = this.getNodeName(nodeElement);
-      console.log(`📍 Checking node: ${nodeName}`);
+
+      // 취소 확인 (전역 변수 참조)
+      if (window.currentAnalysisTask && window.currentAnalysisTask.isCancelled()) {
+        console.log(`🛑 Collection cancelled at node ${index + 1}/${total}`);
+        break;
+      }
+
+      // 진행률 업데이트
+      const progress = {
+        current: index + 1,
+        total: total,
+        percentage: Math.round(((index + 1) / total) * 100),
+        nodeName: nodeName
+      };
+
+      if (onProgress) {
+        onProgress(progress);
+      }
+
+      console.log(`📍 [${progress.current}/${progress.total}] Checking node: ${nodeName}`);
+
+      // 전체 시간 초과 체크
+      if (Date.now() - startTime > MAX_TOTAL_TIME) {
+        console.warn(`⏰ Total timeout reached. Processed ${nodesData.length}/${total} nodes`);
+        break;
+      }
 
       // 노드 클릭하여 설정 패널 열기
       nodeElement.click();
 
-      // 패널이 열릴 때까지 대기
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 패널이 실제로 열릴 때까지 대기 (최대 3초)
+      const panel = await waitForPanel(3000);
+
+      if (!panel) {
+        console.warn(`⚠️ Panel failed to open for node: ${nodeName} (skipping)`);
+        // 패널 닫기 시도
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        await new Promise(resolve => setTimeout(resolve, 200));
+        continue;
+      }
 
       // 실행 데이터 읽기
       const execData = this.getNodeExecutionData(nodeName);
@@ -614,7 +651,8 @@ class N8NReader {
       await new Promise(resolve => setTimeout(resolve, 200));
     }
 
-    console.log('✅ Data collection complete:', nodesData);
+    const status = window.currentAnalysisTask && window.currentAnalysisTask.isCancelled() ? 'cancelled' : 'complete';
+    console.log(`✅ Data collection ${status}: ${nodesData.length}/${total} nodes`);
     return nodesData;
   }
 
@@ -1000,16 +1038,55 @@ function initializeAICopilot() {
     console.error('❌ initializeSidebar function not found!');
   }
 
-  // 에러 자동 감지 (5초마다)
-  setInterval(() => {
-    const errors = window.n8nReader.detectErrors();
-    if (errors.length > 0 && window.sendMessageToSidebar) {
-      window.sendMessageToSidebar({
-        type: 'error-detected',
-        errors: errors
-      });
+  // 에러 자동 감지 (5초마다) - 메모리 누수 방지
+  let errorDetectionInterval = null;
+
+  function startErrorDetection() {
+    // 이미 실행 중이면 중복 방지
+    if (errorDetectionInterval) {
+      console.log('⚠️ Error detection already running');
+      return;
     }
-  }, 5000);
+
+    console.log('🔄 Starting error detection (every 5s)');
+    errorDetectionInterval = setInterval(() => {
+      const errors = window.n8nReader.detectErrors();
+      if (errors.length > 0 && window.sendMessageToSidebar) {
+        window.sendMessageToSidebar({
+          type: 'error-detected',
+          errors: errors
+        });
+      }
+    }, 5000);
+  }
+
+  function stopErrorDetection() {
+    if (errorDetectionInterval) {
+      console.log('🛑 Stopping error detection');
+      clearInterval(errorDetectionInterval);
+      errorDetectionInterval = null;
+    }
+  }
+
+  // 페이지 언로드 시 정리
+  window.addEventListener('beforeunload', () => {
+    console.log('🧹 Cleaning up: page unload');
+    stopErrorDetection();
+  });
+
+  // 사이드바 닫힐 때 정리
+  window.addEventListener('message', (event) => {
+    if (event.data.type === 'sidebar-closed') {
+      console.log('🧹 Cleaning up: sidebar closed');
+      stopErrorDetection();
+    } else if (event.data.type === 'sidebar-opened') {
+      console.log('▶️ Sidebar opened: starting error detection');
+      startErrorDetection();
+    }
+  });
+
+  // 초기 시작
+  startErrorDetection();
 
   console.log('✅ N8N AI Copilot initialized successfully!');
 }
@@ -1069,6 +1146,33 @@ if (document.body) {
 // ========================================
 // 10. iframe과의 메시지 통신
 // ========================================
+
+// 분석 취소를 위한 전역 변수
+let currentAnalysisTask = null;
+window.currentAnalysisTask = null; // N8NReader에서 접근 가능하도록
+
+class AnalysisTask {
+  constructor(type) {
+    this.type = type;
+    this.cancelled = false;
+    this.startTime = Date.now();
+  }
+
+  cancel() {
+    console.log(`🛑 Cancelling ${this.type} analysis`);
+    this.cancelled = true;
+  }
+
+  isCancelled() {
+    return this.cancelled;
+  }
+
+  getElapsedTime() {
+    return Date.now() - this.startTime;
+  }
+}
+
+window.AnalysisTask = AnalysisTask; // N8NReader에서 사용 가능하도록
 
 // iframe으로부터 메시지 수신
 window.addEventListener('message', async (event) => {
@@ -1166,10 +1270,37 @@ window.addEventListener('message', async (event) => {
     try {
       // 비동기로 워크플로우 분석 실행
       (async () => {
+        // 새 분석 태스크 생성
+        currentAnalysisTask = new AnalysisTask('workflow');
+        window.currentAnalysisTask = currentAnalysisTask; // N8NReader에서 접근 가능하도록
         console.log('🔄 Starting workflow analysis...');
 
-        // 모든 노드의 실행 데이터 수집
-        const nodesData = await window.n8nReader.getAllNodesExecutionData();
+        // 모든 노드의 실행 데이터 수집 (진행률 콜백 포함)
+        const nodesData = await window.n8nReader.getAllNodesExecutionData((progress) => {
+          // 취소되었는지 확인
+          if (currentAnalysisTask && currentAnalysisTask.isCancelled()) {
+            return;
+          }
+
+          // 진행률을 iframe으로 전송
+          sendMessageToIframe({
+            type: 'workflow-analysis-progress',
+            progress: progress
+          });
+        });
+
+        // 취소되었으면 중단
+        if (currentAnalysisTask && currentAnalysisTask.isCancelled()) {
+          console.log('🛑 Workflow analysis cancelled');
+          sendMessageToIframe({
+            type: 'workflow-analysis-cancelled',
+            message: '워크플로우 분석이 취소되었습니다.'
+          });
+          currentAnalysisTask = null;
+          window.currentAnalysisTask = null;
+          return;
+        }
+
         console.log('📊 Nodes data collected:', nodesData);
 
         // 데이터 흐름 분석
@@ -1206,6 +1337,10 @@ window.addEventListener('message', async (event) => {
             flowAnalysis: flowAnalysis
           }
         });
+
+        // 태스크 완료
+        currentAnalysisTask = null;
+        window.currentAnalysisTask = null;
       })();
 
     } catch (error) {
@@ -1214,6 +1349,23 @@ window.addEventListener('message', async (event) => {
         type: 'error',
         message: '워크플로우 분석 중 오류가 발생했습니다: ' + error.message
       });
+      currentAnalysisTask = null;
+      window.currentAnalysisTask = null;
+    }
+  }
+
+  // 분석 취소 요청
+  if (event.data.type === 'cancel-analysis') {
+    console.log('🛑 Cancel analysis requested');
+
+    if (currentAnalysisTask) {
+      currentAnalysisTask.cancel();
+      sendMessageToIframe({
+        type: 'analysis-cancelled',
+        message: '분석이 취소되었습니다.'
+      });
+    } else {
+      console.warn('⚠️ No analysis running to cancel');
     }
   }
 });
@@ -1824,40 +1976,78 @@ window.addEventListener('message', (event) => {
 // 8. 에러 분석 with 코드 읽기
 // ========================================
 
-// 노드 이름으로 DOM 요소 찾기
-function findNodeElementByName(nodeName) {
-  console.log('🔍 Finding node element:', nodeName);
+// 노드 이름으로 DOM 요소 찾기 (중복 노드 지원)
+function findNodeElementByName(nodeName, options = {}) {
+  const { index = 0, exactMatch = false } = options;
 
-  // N8N 캔버스의 노드 요소 찾기 (여러 selector 시도)
-  const selectors = [
-    `[data-name="${nodeName}"]`,
-    `[title="${nodeName}"]`,
-    `[class*="CanvasNode"]`,
-    `[data-test-id*="canvas-node"]`
-  ];
+  console.log(`🔍 Finding node element: "${nodeName}" (index: ${index}, exactMatch: ${exactMatch})`);
 
-  for (const selector of selectors) {
-    const nodes = document.querySelectorAll(selector);
-    for (const node of nodes) {
-      const nodeText = node.textContent || node.getAttribute('data-name') || node.getAttribute('title');
-      if (nodeText && nodeText.includes(nodeName)) {
-        console.log('✅ Found node element:', selector);
-        return node;
-      }
-    }
-  }
-
-  // 텍스트로 직접 찾기
   const allNodes = document.querySelectorAll('[class*="CanvasNode"], [data-node-type]');
+  const matches = [];
+
+  // 모든 노드를 순회하며 일치하는 것 찾기
   for (const node of allNodes) {
-    if (node.textContent.includes(nodeName)) {
-      console.log('✅ Found node by text content');
-      return node;
+    const nodeText = (node.textContent || '').trim();
+    const dataName = (node.getAttribute('data-name') || '').trim();
+    const title = (node.getAttribute('title') || '').trim();
+
+    // 정확히 일치하는지 또는 포함하는지 체크
+    let isMatch = false;
+
+    if (exactMatch) {
+      // 완전 일치 (중복 노드 이름 구분)
+      isMatch = nodeText === nodeName || dataName === nodeName || title === nodeName;
+    } else {
+      // 부분 일치
+      isMatch = nodeText.includes(nodeName) || dataName.includes(nodeName) || title.includes(nodeName);
+    }
+
+    if (isMatch) {
+      matches.push({
+        element: node,
+        text: nodeText,
+        dataName: dataName,
+        title: title
+      });
     }
   }
 
-  console.warn('⚠️ Node element not found:', nodeName);
-  return null;
+  // 결과 확인
+  if (matches.length === 0) {
+    console.warn(`⚠️ No node found with name: "${nodeName}"`);
+    return null;
+  }
+
+  if (matches.length > 1) {
+    console.warn(`⚠️ Found ${matches.length} nodes with name "${nodeName}". Using index ${index}`);
+    matches.forEach((match, idx) => {
+      console.log(`  [${idx}] ${match.text || match.dataName || match.title}`);
+    });
+  }
+
+  // 지정된 인덱스의 노드 반환
+  const selectedMatch = matches[index] || matches[0];
+  console.log(`✅ Selected node [${index}]: ${selectedMatch.text || selectedMatch.dataName}`);
+
+  return selectedMatch.element;
+}
+
+// 모든 일치하는 노드 찾기 (디버깅용)
+function findAllNodeElementsByName(nodeName) {
+  const allNodes = document.querySelectorAll('[class*="CanvasNode"], [data-node-type]');
+  const matches = [];
+
+  for (const node of allNodes) {
+    const nodeText = (node.textContent || '').trim();
+    if (nodeText.includes(nodeName)) {
+      matches.push({
+        element: node,
+        text: nodeText
+      });
+    }
+  }
+
+  return matches;
 }
 
 // 패널이 열릴 때까지 대기

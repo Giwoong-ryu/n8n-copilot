@@ -256,6 +256,60 @@ function hideLoading(loadingId) {
   }
 }
 
+// 진행률 표시
+function updateProgress(progress) {
+  let progressDiv = document.getElementById('progress-indicator');
+
+  if (!progressDiv) {
+    // 진행률 div 생성
+    progressDiv = document.createElement('div');
+    progressDiv.className = 'loading';
+    progressDiv.id = 'progress-indicator';
+    progressDiv.innerHTML = `
+      <div class="progress-content">
+        <div class="progress-bar-container">
+          <div class="progress-bar"></div>
+        </div>
+        <div class="progress-text">0%</div>
+        <div class="progress-node"></div>
+        <button class="cancel-btn" title="분석 취소">❌ 취소</button>
+      </div>
+    `;
+
+    // 취소 버튼 이벤트 리스너
+    const cancelBtn = progressDiv.querySelector('.cancel-btn');
+    cancelBtn.addEventListener('click', () => {
+      console.log('🛑 Cancel button clicked');
+      window.parent.postMessage({
+        type: 'cancel-analysis'
+      }, '*');
+      cancelBtn.disabled = true;
+      cancelBtn.textContent = '⏳ 취소 중...';
+    });
+
+    messagesContainer.appendChild(progressDiv);
+  }
+
+  // 진행률 업데이트
+  const progressBar = progressDiv.querySelector('.progress-bar');
+  const progressText = progressDiv.querySelector('.progress-text');
+  const progressNode = progressDiv.querySelector('.progress-node');
+
+  progressBar.style.width = progress.percentage + '%';
+  progressText.textContent = `${progress.percentage}% (${progress.current}/${progress.total})`;
+  progressNode.textContent = `현재: ${progress.nodeName}`;
+
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// 진행률 숨김
+function hideProgress() {
+  const progressDiv = document.getElementById('progress-indicator');
+  if (progressDiv) {
+    progressDiv.remove();
+  }
+}
+
 // 전송 버튼 클릭 이벤트
 sendButton.addEventListener('click', () => {
   console.log('🖱️ Send button clicked');
@@ -383,9 +437,22 @@ window.addEventListener('message', (event) => {
       errorContext: errorData
     }, '*');
 
+  } else if (event.data.type === 'workflow-analysis-progress') {
+    // 워크플로우 분석 진행률 업데이트
+    const progress = event.data.progress;
+    updateProgress(progress);
+
+  } else if (event.data.type === 'workflow-analysis-cancelled') {
+    // 워크플로우 분석 취소됨
+    hideLoading('loading-indicator');
+    hideProgress();
+    addMessage('🛑 워크플로우 분석이 취소되었습니다.', 'assistant');
+    sendButton.disabled = false;
+
   } else if (event.data.type === 'workflow-analysis-result') {
     // 워크플로우 분석 결과 처리 - AI에게 직접 전송
     hideLoading('loading-indicator');
+    hideProgress();
     const workflowData = event.data.data;
 
     // 분석 정보를 메시지로 전송
