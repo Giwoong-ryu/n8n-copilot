@@ -359,6 +359,127 @@
     </div>
   </div>
 
+  <!-- 인벤토리 통계 -->
+  <div class="container section">
+    <h2>📊 Claude Code 도구 인벤토리</h2>
+    <p class="section-subtitle">현재 보유 중인 모든 Claude Code 확장 도구 및 토큰 사용량 분석</p>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 60px;">
+      <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(167, 139, 250, 0.05) 100%); border: 2px solid var(--accent); border-radius: 16px; padding: 32px; text-align: center;">
+        <div style="font-size: 48px; font-weight: 800; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;">37</div>
+        <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Skills</div>
+        <div style="font-size: 13px; color: var(--text-secondary);">~81,891 토큰</div>
+      </div>
+
+      <div style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; padding: 32px; text-align: center;">
+        <div style="font-size: 48px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">60</div>
+        <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Agents</div>
+        <div style="font-size: 13px; color: var(--text-secondary);">전문화된 AI 페르소나</div>
+      </div>
+
+      <div style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; padding: 32px; text-align: center;">
+        <div style="font-size: 48px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">17</div>
+        <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Commands</div>
+        <div style="font-size: 13px; color: var(--text-secondary);">슬래시 커맨드</div>
+      </div>
+
+      <div style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%); border: 2px solid var(--success); border-radius: 16px; padding: 32px; text-align: center;">
+        <div style="font-size: 48px; font-weight: 800; color: var(--success); margin-bottom: 8px;">10</div>
+        <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Plugins</div>
+        <div style="font-size: 13px; color: var(--text-secondary);">claude-plugins.dev</div>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 60px;">
+      <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">🔍 토큰 사용량 분석 결과</h3>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 32px;">
+        <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 20px;">
+          <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">총 스킬 수</div>
+          <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">27개 (서버)</div>
+          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;">평균: ~3,000 토큰/스킬</div>
+        </div>
+
+        <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 20px;">
+          <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">토큰 분포</div>
+          <div style="font-size: 16px; color: var(--text-primary); line-height: 1.8;">
+            초대형 (10K+): 1개<br>
+            대형 (5-10K): 1개<br>
+            중형 (2-5K): 17개<br>
+            소형 (<2K): 8개
+          </div>
+        </div>
+
+        <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 20px;">
+          <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">n8n 스킬 패키지</div>
+          <div style="font-size: 28px; font-weight: 700; color: var(--success);">6개</div>
+          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;">~20,408 토큰 (적정 크기)</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(124, 58, 237, 0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px;">
+        <p style="font-size: 14px; color: var(--text-primary); line-height: 1.8; margin: 0;">
+          <strong>💡 최적화 인사이트:</strong> 37개 전체 스킬 로드 시 ~81,891 토큰 사용.
+          패키지당 15-30K 토큰 (5-10개 스킬) 규모가 최적입니다.
+          현재 n8n 스킬 패키지(6개, ~20K 토큰)가 이상적인 크기입니다.
+        </p>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 60px;">
+      <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">📦 설치된 플러그인 (10개)</h3>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">wshobson/claude-code-workflows (5개)</h4>
+        <div style="display: grid; gap: 12px;">
+          <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+            <strong>backend-development</strong> - API 설계, GraphQL, 마이크로서비스 패턴
+          </div>
+          <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+            <strong>javascript-typescript</strong> - ES6+, Node.js, React, TypeScript 고급 타입
+          </div>
+          <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+            <strong>api-scaffolding</strong> - REST/GraphQL 스캐폴딩, FastAPI 템플릿
+          </div>
+          <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+            <strong>debugging-toolkit</strong> - 인터랙티브 디버깅, DX 최적화
+          </div>
+          <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+            <strong>git-pr-workflows</strong> - Git 자동화, PR 향상, 팀 온보딩
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">기타 플러그인 (5개)</h4>
+        <div style="display: grid; gap: 12px;">
+          <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+            <strong>dotclaude/frontend-excellence</strong> - React 19, Next.js 15, 컴포넌트 아키텍처
+          </div>
+          <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+            <strong>anthropic/document-skills</strong> - Excel, Word, PowerPoint, PDF 처리
+          </div>
+          <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+            <strong>fcakyon/code-quality-hooks</strong> - 8개 언어 자동 포맷팅
+          </div>
+          <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+            <strong>anthropic/pr-review-toolkit</strong> - 전문 에이전트를 활용한 자동 PR 리뷰
+          </div>
+          <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
+            <strong>anthropic/commit-commands</strong> - Git 커밋/푸시/PR 생성 자동화
+          </div>
+        </div>
+      </div>
+
+      <div style="background: rgba(5, 150, 105, 0.1); border-left: 4px solid var(--success); padding: 20px; border-radius: 8px;">
+        <p style="font-size: 14px; color: var(--text-primary); line-height: 1.8; margin: 0;">
+          <strong>✅ 설치 완료:</strong> 모든 플러그인이 <code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px;">C:\Users\user\.claude\</code>에 성공적으로 설치되었습니다.
+          즉시 사용 가능합니다.
+        </p>
+      </div>
+    </div>
+  </div>
+
   <!-- 스킬셋 상세 -->
   <div class="container section">
     <h2>🎯 11개 Claude Code 스킬셋</h2>
