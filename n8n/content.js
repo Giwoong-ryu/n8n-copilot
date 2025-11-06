@@ -775,6 +775,320 @@ class N8NReader {
     console.log('🎯 Found issues:', issues);
     return issues;
   }
+
+  // ========================================
+  // 고급 분석 시스템
+  // ========================================
+
+  // 자동 문제 감지 (사용자 설명 없이도 일반적인 문제 패턴 자동 감지)
+  detectAutomaticIssues(nodesData) {
+    console.log('🔍 Auto-detecting common issues...');
+    const detectedIssues = [];
+
+    nodesData.forEach((nodeData, index) => {
+      const { nodeName, executionData, code, error } = nodeData;
+
+      // 1. 데이터 개수 감소 (items[0] 패턴)
+      if (executionData && executionData.inputItems > executionData.outputItems) {
+        const reduction = executionData.inputItems - executionData.outputItems;
+
+        // 코드에서 원인 찾기
+        let cause = '알 수 없음';
+        let codeSnippet = null;
+
+        if (code) {
+          if (code.match(/items\[0\]|item\[0\]/)) {
+            cause = 'items[0] 사용 - 첫 번째 아이템만 선택';
+            codeSnippet = code.split('\n').find(line => line.includes('items[0]') || line.includes('item[0]'));
+          } else if (code.match(/\.filter\(/)) {
+            cause = 'filter() 사용 - 일부 아이템 필터링';
+            codeSnippet = code.split('\n').find(line => line.includes('.filter('));
+          } else if (code.match(/\.slice\(.*,.*\)/)) {
+            cause = 'slice() 사용 - 배열 일부만 선택';
+            codeSnippet = code.split('\n').find(line => line.includes('.slice('));
+          } else if (code.match(/\.limit\(|\.take\(/)) {
+            cause = 'limit/take 사용 - 개수 제한';
+            codeSnippet = code.split('\n').find(line => line.includes('.limit(') || line.includes('.take('));
+          }
+        }
+
+        detectedIssues.push({
+          priority: 'critical',
+          nodeName: nodeName,
+          nodeIndex: index,
+          type: 'data_count_reduction',
+          description: `데이터 개수 감소: ${executionData.inputItems}개 → ${executionData.outputItems}개 (${reduction}개 손실)`,
+          cause: cause,
+          codeSnippet: codeSnippet,
+          suggestion: cause === 'items[0] 사용 - 첫 번째 아이템만 선택'
+            ? '모든 아이템 처리하려면 items.map() 또는 반복문 사용'
+            : '필터 조건 또는 slice/limit 파라미터 확인'
+        });
+      }
+
+      // 2. 텍스트 잘림 패턴
+      if (code) {
+        const truncationPatterns = [
+          { pattern: /\.substring\((\d+),\s*(\d+)\)/, name: 'substring' },
+          { pattern: /\.slice\((\d+),\s*(\d+)\)/, name: 'slice' },
+          { pattern: /\.substr\((\d+),\s*(\d+)\)/, name: 'substr' }
+        ];
+
+        truncationPatterns.forEach(({ pattern, name }) => {
+          const match = code.match(pattern);
+          if (match) {
+            const startIdx = match[1];
+            const endIdx = match[2];
+            const length = endIdx - startIdx;
+
+            detectedIssues.push({
+              priority: 'high',
+              nodeName: nodeName,
+              nodeIndex: index,
+              type: 'text_truncation',
+              description: `텍스트 잘림 가능성: ${name}(${startIdx}, ${endIdx}) 사용`,
+              cause: `문자열을 ${length}자로 제한`,
+              codeSnippet: code.split('\n').find(line => line.match(pattern)),
+              suggestion: '전체 텍스트가 필요하면 substring/slice 제거, 또는 길이 늘리기'
+            });
+          }
+        });
+      }
+
+      // 3. 인증 에러
+      if (error && (error.includes('401') || error.includes('403') || error.includes('Unauthorized'))) {
+        detectedIssues.push({
+          priority: 'critical',
+          nodeName: nodeName,
+          nodeIndex: index,
+          type: 'authentication_error',
+          description: '인증 실패',
+          cause: error,
+          suggestion: 'Credentials 설정 확인, API 키/토큰 유효성 검사'
+        });
+      }
+
+      // 4. 필수 필드 누락
+      if (executionData && executionData.output) {
+        const outputs = Array.isArray(executionData.output) ? executionData.output : [executionData.output];
+        const missingFields = [];
+
+        outputs.forEach((item, idx) => {
+          if (item && typeof item === 'object') {
+            const values = Object.values(item);
+            const hasUndefined = values.some(v => v === undefined || v === null || v === '');
+            if (hasUndefined) {
+              const undefinedKeys = Object.keys(item).filter(k =>
+                item[k] === undefined || item[k] === null || item[k] === ''
+              );
+              missingFields.push({ itemIndex: idx, fields: undefinedKeys });
+            }
+          }
+        });
+
+        if (missingFields.length > 0) {
+          detectedIssues.push({
+            priority: 'medium',
+            nodeName: nodeName,
+            nodeIndex: index,
+            type: 'missing_fields',
+            description: `일부 아이템에 빈 필드 존재 (${missingFields.length}개 아이템)`,
+            cause: `누락된 필드: ${missingFields[0].fields.join(', ')}`,
+            suggestion: '이전 노드에서 데이터가 제대로 전달되었는지 확인'
+          });
+        }
+      }
+
+      // 5. 반복 실행 실패 (Loop + 일부만 성공)
+      if (executionData && executionData.inputItems > 1 && executionData.outputItems === 1) {
+        // 여러 입력이 있었는데 출력이 1개만 = 반복 실행 실패 의심
+        if (code && code.includes('for') || code.includes('forEach') || code.includes('map')) {
+          detectedIssues.push({
+            priority: 'high',
+            nodeName: nodeName,
+            nodeIndex: index,
+            type: 'loop_partial_failure',
+            description: `반복 실행 실패 의심: ${executionData.inputItems}개 입력 → 1개 출력`,
+            cause: '반복문 안에서 일부만 처리되거나 에러 발생',
+            suggestion: '반복문 로직 확인, try-catch로 에러 처리 추가'
+          });
+        }
+      }
+    });
+
+    // 우선순위 정렬
+    detectedIssues.sort((a, b) => {
+      const priority = { critical: 3, high: 2, medium: 1, low: 0 };
+      return (priority[b.priority] || 0) - (priority[a.priority] || 0);
+    });
+
+    console.log(`✅ Auto-detected ${detectedIssues.length} issues:`, detectedIssues);
+    return detectedIssues;
+  }
+
+  // 노드 체인 역추적 분석 (문제 노드부터 이전 노드까지)
+  analyzeNodeChain(nodesData, problemNodeIndex) {
+    console.log(`🔙 Analyzing node chain from index ${problemNodeIndex} backwards...`);
+
+    const chain = [];
+    const problemNode = nodesData[problemNodeIndex];
+
+    if (!problemNode) {
+      console.warn('⚠️ Problem node not found');
+      return chain;
+    }
+
+    // 문제 노드부터 역순으로 분석
+    for (let i = problemNodeIndex; i >= 0; i--) {
+      const node = nodesData[i];
+      const prevNode = i > 0 ? nodesData[i - 1] : null;
+
+      const analysis = {
+        nodeIndex: i,
+        nodeName: node.nodeName,
+        role: i === problemNodeIndex ? 'problem_node' : 'upstream_node',
+        executionData: node.executionData,
+        code: node.code,
+        error: node.error,
+        issues: []
+      };
+
+      // 데이터 변화 감지
+      if (prevNode && node.executionData && prevNode.executionData) {
+        const prevOutput = prevNode.executionData.outputItems;
+        const currentInput = node.executionData.inputItems;
+        const currentOutput = node.executionData.outputItems;
+
+        // 입력-출력 불일치
+        if (prevOutput !== currentInput && prevOutput > 0 && currentInput > 0) {
+          analysis.issues.push({
+            type: 'data_mismatch',
+            description: `이전 노드 출력(${prevOutput}개)과 현재 입력(${currentInput}개) 불일치`,
+            severity: 'high'
+          });
+        }
+
+        // 데이터 손실
+        if (currentOutput < currentInput) {
+          analysis.issues.push({
+            type: 'data_loss_in_node',
+            description: `노드 내부에서 데이터 감소: ${currentInput}개 → ${currentOutput}개`,
+            severity: 'critical'
+          });
+        }
+      }
+
+      // 코드 패턴 검사
+      if (node.code) {
+        // items[0] 패턴
+        if (node.code.match(/items\[0\]|item\[0\]/)) {
+          analysis.issues.push({
+            type: 'single_item_access',
+            description: 'items[0] 사용 - 첫 번째 아이템만 처리',
+            severity: 'critical',
+            codeSnippet: node.code.split('\n').find(line => line.includes('items[0]'))
+          });
+        }
+
+        // return 문 확인
+        const returnMatch = node.code.match(/return\s+(.+?);/);
+        if (returnMatch) {
+          const returnValue = returnMatch[1].trim();
+          if (!returnValue.includes('items') && !returnValue.includes('[')) {
+            analysis.issues.push({
+              type: 'suspicious_return',
+              description: `return 문이 배열을 반환하지 않을 수 있음: ${returnValue}`,
+              severity: 'high',
+              codeSnippet: returnMatch[0]
+            });
+          }
+        }
+      }
+
+      chain.push(analysis);
+
+      // 문제가 명확히 발견되면 더 이상 역추적하지 않음 (최적화)
+      if (analysis.issues.some(issue => issue.severity === 'critical') && i < problemNodeIndex) {
+        console.log(`✅ Root cause found at node ${i}: ${node.nodeName}`);
+        break;
+      }
+    }
+
+    console.log(`📊 Chain analysis complete: ${chain.length} nodes analyzed`);
+    return chain;
+  }
+
+  // AI 분석을 위한 워크플로우 컨텍스트 구축
+  buildAIContext(nodesData, userIntent = null, errorDescription = null) {
+    console.log('🤖 Building AI analysis context...');
+
+    const context = {
+      summary: {
+        totalNodes: nodesData.length,
+        nodesWithErrors: nodesData.filter(n => n.error).length,
+        nodesWithDataLoss: nodesData.filter(n => n.hasDataLoss).length,
+        userIntent: userIntent,
+        errorDescription: errorDescription
+      },
+      nodes: [],
+      dataFlow: [],
+      detectedIssues: this.detectAutomaticIssues(nodesData)
+    };
+
+    // 각 노드 정보
+    nodesData.forEach((node, index) => {
+      const nodeInfo = {
+        index: index,
+        name: node.nodeName,
+        type: node.nodeType || 'unknown',
+        input: node.executionData ? {
+          itemCount: node.executionData.inputItems,
+          sample: this._getSampleData(node.executionData.input, 2)
+        } : null,
+        output: node.executionData ? {
+          itemCount: node.executionData.outputItems,
+          sample: this._getSampleData(node.executionData.output, 2)
+        } : null,
+        code: node.code ? this._truncateCode(node.code, 50) : null,
+        error: node.error || null,
+        hasDataLoss: node.hasDataLoss || false
+      };
+
+      context.nodes.push(nodeInfo);
+
+      // 데이터 흐름 정보
+      if (index > 0) {
+        const prevNode = nodesData[index - 1];
+        if (prevNode.executionData && node.executionData) {
+          context.dataFlow.push({
+            from: { name: prevNode.nodeName, output: prevNode.executionData.outputItems },
+            to: { name: node.nodeName, input: node.executionData.inputItems },
+            itemsLost: prevNode.executionData.outputItems - node.executionData.inputItems,
+            status: prevNode.executionData.outputItems === node.executionData.inputItems ? 'ok' : 'mismatch'
+          });
+        }
+      }
+    });
+
+    console.log('✅ AI context built:', context);
+    return context;
+  }
+
+  // 헬퍼: 샘플 데이터 추출 (처음 N개 아이템)
+  _getSampleData(data, count = 2) {
+    if (!data) return null;
+    if (Array.isArray(data)) {
+      return data.slice(0, count);
+    }
+    return data;
+  }
+
+  // 헬퍼: 코드 잘라내기 (처음 N줄)
+  _truncateCode(code, lines = 50) {
+    const codeLines = code.split('\n');
+    if (codeLines.length <= lines) return code;
+    return codeLines.slice(0, lines).join('\n') + '\n... (' + (codeLines.length - lines) + ' more lines)';
+  }
 }
 
 
@@ -1303,29 +1617,105 @@ window.addEventListener('message', async (event) => {
 
         console.log('📊 Nodes data collected:', nodesData);
 
-        // 데이터 흐름 분석
+        // ========================================
+        // 고급 분석 시스템 실행
+        // ========================================
+
+        // 1. 기본 데이터 흐름 분석
         const flowAnalysis = window.n8nReader.analyzeWorkflowDataFlow(nodesData);
         console.log('📊 Flow analysis complete:', flowAnalysis);
 
-        // 사용자 메시지 생성
-        let userMessage = '워크플로우 분석 완료\n\n';
+        // 2. 자동 문제 감지 (사용자 설명 없이도 일반적인 패턴 자동 감지)
+        const automaticIssues = window.n8nReader.detectAutomaticIssues(nodesData);
+        console.log('🔍 Automatic issues detected:', automaticIssues);
 
-        if (flowAnalysis.nodesWithDataLoss.length > 0) {
-          userMessage += `⚠️ 데이터 손실 발견: ${flowAnalysis.nodesWithDataLoss.length}개 노드\n`;
-          flowAnalysis.nodesWithDataLoss.forEach(node => {
-            userMessage += `- ${node.nodeName}: ${node.issue}\n`;
-          });
+        // 3. 문제 노드 역추적 분석
+        let chainAnalysis = null;
+        if (automaticIssues.length > 0) {
+          // 가장 심각한 문제가 있는 노드부터 역추적
+          const mostCriticalIssue = automaticIssues[0];
+          chainAnalysis = window.n8nReader.analyzeNodeChain(nodesData, mostCriticalIssue.nodeIndex);
+          console.log('🔙 Chain analysis complete:', chainAnalysis);
         }
 
-        if (flowAnalysis.dataFlowIssues.length > 0) {
-          userMessage += `\n⚠️ 데이터 흐름 문제: ${flowAnalysis.dataFlowIssues.length}개\n`;
-          flowAnalysis.dataFlowIssues.forEach(issue => {
-            userMessage += `- ${issue.from} → ${issue.to}: ${issue.issue}\n`;
-          });
-        }
+        // 4. AI 분석을 위한 전체 컨텍스트 구축
+        const aiContext = window.n8nReader.buildAIContext(nodesData);
+        console.log('🤖 AI context built:', aiContext);
 
-        if (flowAnalysis.nodesWithDataLoss.length === 0 && flowAnalysis.dataFlowIssues.length === 0) {
-          userMessage = '워크플로우 분석 완료: 문제 없음 ✅';
+        // ========================================
+        // 사용자 메시지 생성 (개선된 버전)
+        // ========================================
+        let userMessage = '';
+
+        if (automaticIssues.length > 0) {
+          userMessage += `🔍 워크플로우 분석 완료: ${automaticIssues.length}개 문제 발견\n\n`;
+
+          // 자동 감지된 문제들 표시 (상위 5개만)
+          const topIssues = automaticIssues.slice(0, 5);
+          topIssues.forEach((issue, idx) => {
+            const priorityEmoji = {
+              critical: '🔴',
+              high: '🟠',
+              medium: '🟡',
+              low: '⚪'
+            }[issue.priority] || '⚪';
+
+            userMessage += `${priorityEmoji} **${issue.nodeName}** (${issue.type})\n`;
+            userMessage += `   ${issue.description}\n`;
+            if (issue.cause && issue.cause !== '알 수 없음') {
+              userMessage += `   원인: ${issue.cause}\n`;
+            }
+            if (issue.codeSnippet) {
+              userMessage += `   코드: \`${issue.codeSnippet.substring(0, 60)}...\`\n`;
+            }
+            userMessage += `   💡 ${issue.suggestion}\n\n`;
+          });
+
+          if (automaticIssues.length > 5) {
+            userMessage += `... 그 외 ${automaticIssues.length - 5}개 문제 더 있음\n\n`;
+          }
+
+          // 역추적 분석 결과
+          if (chainAnalysis && chainAnalysis.length > 1) {
+            userMessage += `\n🔙 **근본 원인 추적**\n`;
+            userMessage += `문제 노드: ${chainAnalysis[0].nodeName}\n`;
+
+            // 역추적 체인에서 critical 이슈를 가진 노드 찾기
+            const rootCauseNode = chainAnalysis.find(node =>
+              node.issues.some(issue => issue.severity === 'critical')
+            );
+
+            if (rootCauseNode && rootCauseNode.nodeIndex !== chainAnalysis[0].nodeIndex) {
+              userMessage += `진짜 원인 노드: ${rootCauseNode.nodeName}\n`;
+              const criticalIssue = rootCauseNode.issues.find(i => i.severity === 'critical');
+              if (criticalIssue) {
+                userMessage += `   → ${criticalIssue.description}\n`;
+                if (criticalIssue.codeSnippet) {
+                  userMessage += `   → 코드: \`${criticalIssue.codeSnippet}\`\n`;
+                }
+              }
+            }
+          }
+
+        } else if (flowAnalysis.nodesWithDataLoss.length > 0 || flowAnalysis.dataFlowIssues.length > 0) {
+          // 자동 감지는 안됐지만 기본 분석에서 문제 발견
+          userMessage += '워크플로우 분석 완료\n\n';
+
+          if (flowAnalysis.nodesWithDataLoss.length > 0) {
+            userMessage += `⚠️ 데이터 손실 발견: ${flowAnalysis.nodesWithDataLoss.length}개 노드\n`;
+            flowAnalysis.nodesWithDataLoss.forEach(node => {
+              userMessage += `- ${node.nodeName}: ${node.issue}\n`;
+            });
+          }
+
+          if (flowAnalysis.dataFlowIssues.length > 0) {
+            userMessage += `\n⚠️ 데이터 흐름 문제: ${flowAnalysis.dataFlowIssues.length}개\n`;
+            flowAnalysis.dataFlowIssues.forEach(issue => {
+              userMessage += `- ${issue.from} → ${issue.to}: ${issue.issue}\n`;
+            });
+          }
+        } else {
+          userMessage = '✅ 워크플로우 분석 완료: 문제 없음';
         }
 
         // iframe으로 결과 전송
@@ -1334,7 +1724,10 @@ window.addEventListener('message', async (event) => {
           data: {
             userMessage: userMessage,
             nodesData: nodesData,
-            flowAnalysis: flowAnalysis
+            flowAnalysis: flowAnalysis,
+            automaticIssues: automaticIssues,
+            chainAnalysis: chainAnalysis,
+            aiContext: aiContext
           }
         });
 
@@ -1582,10 +1975,69 @@ ${context.errorPattern && context.errorPattern.likelySettingIssue ? `
 ` : ''}
 
 ${context.workflowAnalysis ? `
-**🔬 워크플로우 분석 결과**:
+**🔬 워크플로우 분석 결과 (고급)**:
 - 총 노드 수: ${context.workflowAnalysis.flowAnalysis.totalNodes}개
+${context.workflowAnalysis.automaticIssues && context.workflowAnalysis.automaticIssues.length > 0 ? `
+
+🔍 **자동 감지된 문제들** (사용자 설명 없이도 감지):
+${context.workflowAnalysis.automaticIssues.slice(0, 3).map(issue => `
+  ${issue.priority === 'critical' ? '🔴' : issue.priority === 'high' ? '🟠' : '🟡'} **${issue.nodeName}** - ${issue.type}
+  - 설명: ${issue.description}
+  ${issue.cause ? `- 원인: ${issue.cause}` : ''}
+  ${issue.codeSnippet ? `- 코드: \`${issue.codeSnippet.substring(0, 80)}\`` : ''}
+  - 💡 제안: ${issue.suggestion}
+`).join('\n')}
+${context.workflowAnalysis.automaticIssues.length > 3 ? `  ... 그 외 ${context.workflowAnalysis.automaticIssues.length - 3}개 문제 더 있음\n` : ''}
+` : ''}
+${context.workflowAnalysis.chainAnalysis && context.workflowAnalysis.chainAnalysis.length > 0 ? `
+
+🔙 **근본 원인 역추적 분석**:
+문제 노드: ${context.workflowAnalysis.chainAnalysis[0].nodeName}
+${(() => {
+  const rootCause = context.workflowAnalysis.chainAnalysis.find(node =>
+    node.issues && node.issues.some(issue => issue.severity === 'critical')
+  );
+  if (rootCause && rootCause.nodeIndex !== context.workflowAnalysis.chainAnalysis[0].nodeIndex) {
+    const criticalIssue = rootCause.issues.find(i => i.severity === 'critical');
+    return `진짜 원인 노드: ${rootCause.nodeName}
+  - ${criticalIssue.description}
+  ${criticalIssue.codeSnippet ? `- 코드: \`${criticalIssue.codeSnippet}\`` : ''}`;
+  }
+  return '원인 추적 결과: 현재 노드가 근본 원인';
+})()}
+
+체인 상세:
+${context.workflowAnalysis.chainAnalysis.slice(0, 3).map((node, idx) => `
+  ${idx === 0 ? '🎯' : '⬅️'} ${node.nodeName} (${node.role === 'problem_node' ? '문제 노드' : '이전 노드'})
+  ${node.executionData ? `  Input: ${node.executionData.inputItems}개 → Output: ${node.executionData.outputItems}개` : ''}
+  ${node.issues && node.issues.length > 0 ? `  ⚠️ 이슈: ${node.issues.map(i => i.description).join(', ')}` : '  ✅ 이상 없음'}
+`).join('')}
+` : ''}
+${context.workflowAnalysis.aiContext ? `
+
+🤖 **AI 컨텍스트 요약**:
+- 에러가 있는 노드: ${context.workflowAnalysis.aiContext.summary.nodesWithErrors}개
+- 데이터 손실 노드: ${context.workflowAnalysis.aiContext.summary.nodesWithDataLoss}개
+- 감지된 이슈: ${context.workflowAnalysis.aiContext.detectedIssues.length}개
+
+데이터 흐름:
+${context.workflowAnalysis.aiContext.dataFlow.slice(0, 5).map(flow =>
+  `  ${flow.from.name}(${flow.from.output}개) → ${flow.to.name}(${flow.to.input}개) ${flow.status === 'mismatch' ? `⚠️ ${flow.itemsLost}개 손실` : '✅'}`
+).join('\n')}
+${context.workflowAnalysis.aiContext.dataFlow.length > 5 ? `  ... 그 외 ${context.workflowAnalysis.aiContext.dataFlow.length - 5}개 노드` : ''}
+
+노드별 상세:
+${context.workflowAnalysis.aiContext.nodes.slice(0, 3).map(node => `
+  📦 ${node.name} (${node.type})
+  ${node.input ? `  - Input: ${node.input.itemCount}개 아이템` : ''}
+  ${node.output ? `  - Output: ${node.output.itemCount}개 아이템` : ''}
+  ${node.code ? `  - 코드 있음 (${node.code.split('\\n').length}줄)` : ''}
+  ${node.error ? `  - ❌ 에러: ${node.error}` : ''}
+  ${node.hasDataLoss ? `  - ⚠️ 데이터 손실 발생` : ''}
+`).join('')}
+` : ''}
 ${context.workflowAnalysis.flowAnalysis.nodesWithDataLoss.length > 0 ? `
-- ⚠️ 데이터 손실 노드:
+- ⚠️ 데이터 손실 노드 (기본 분석):
 ${context.workflowAnalysis.flowAnalysis.nodesWithDataLoss.map(node => `  * ${node.nodeName}: ${node.issue}`).join('\n')}
 ` : ''}
 ${context.workflowAnalysis.flowAnalysis.dataFlowIssues.length > 0 ? `
@@ -1596,10 +2048,15 @@ ${context.workflowAnalysis.flowAnalysis.recommendations.length > 0 ? `
 - 💡 추천 사항:
 ${context.workflowAnalysis.flowAnalysis.recommendations.map(rec => `  * [${rec.priority}] ${rec.nodeName}: ${rec.message} - ${rec.suggestion}`).join('\n')}
 ` : ''}
-${context.workflowAnalysis.nodesData.length > 0 ? `
-- 📊 각 노드 실행 데이터:
-${context.workflowAnalysis.nodesData.map(node => `  * ${node.nodeName} (${node.nodeType}): ${node.executionData ? `input ${node.executionData.inputItems} items → output ${node.executionData.outputItems} items${node.hasDataLoss ? ' ⚠️' : ''}` : '실행 데이터 없음'}`).join('\n')}
-` : ''}
+
+**🎯 사용자 의도 vs 실제 결과 분석**:
+위의 자동 감지 결과를 바탕으로:
+1. 사용자가 원했던 결과는 무엇인가? (예: 카톡 3개 전송)
+2. 실제 결과는 무엇인가? (예: 1개만 전송됨)
+3. 차이가 발생한 정확한 원인은?
+4. 어느 노드에서 문제가 시작되었는가?
+
+이 질문들에 답하면서 근본 원인을 찾아주세요.
 ` : ''}
 
 ${context.errorAnalysis ? `
