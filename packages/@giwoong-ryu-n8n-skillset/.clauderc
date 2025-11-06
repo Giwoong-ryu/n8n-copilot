@@ -1,0 +1,55 @@
+{
+  "skills": [
+    {
+      "name": "n8n-workflow-patterns",
+      "description": "5 core n8n workflow patterns for common automation scenarios",
+      "path": "skills/n8n-workflow-patterns/SKILL.md",
+      "tags": ["n8n", "workflow", "patterns", "automation"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "n8n-node-configuration",
+      "description": "Complete guide for configuring n8n nodes correctly",
+      "path": "skills/n8n-node-configuration/SKILL.md",
+      "tags": ["n8n", "nodes", "configuration", "setup"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "n8n-validation-expert",
+      "description": "Expert validation and error handling for n8n workflows",
+      "path": "skills/n8n-validation-expert/SKILL.md",
+      "tags": ["n8n", "validation", "debugging", "errors"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "n8n-code-javascript",
+      "description": "Complete guide for writing JavaScript in n8n Code nodes",
+      "path": "skills/n8n-code-javascript/SKILL.md",
+      "tags": ["n8n", "javascript", "code", "programming"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "n8n-expression-syntax",
+      "description": "Master {{ }} expressions in n8n for dynamic data access",
+      "path": "skills/n8n-expression-syntax/SKILL.md",
+      "tags": ["n8n", "expressions", "syntax", "data-access"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "n8n-mcp-tools-expert",
+      "description": "Expert guide for n8n MCP tools: search, validate, create",
+      "path": "skills/n8n-mcp-tools-expert/SKILL.md",
+      "tags": ["n8n", "mcp", "tools", "automation", "api"],
+      "version": "1.0.0"
+    }
+  ],
+  "metadata": {
+    "package": "@giwoong-ryu/n8n-skillset",
+    "version": "1.0.0",
+    "totalTokens": 20408,
+    "skillCount": 6,
+    "categories": ["n8n", "automation", "workflow", "no-code"],
+    "license": "MIT",
+    "author": "Giwoong Ryu"
+  }
+}
