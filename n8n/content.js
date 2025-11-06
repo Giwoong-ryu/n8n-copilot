@@ -38,33 +38,84 @@ function detectN8NPage() {
 async function fetchNodesFromCurrentInstance() {
   console.log('📥 Fetching node types from current N8N instance...');
 
-  try {
-    const response = await fetch('/rest/node-types', {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json'
+  // 방법 1: REST API 시도 (여러 엔드포인트)
+  const apiEndpoints = [
+    '/api/v1/node-types',
+    '/rest/node-types',
+    '/types/nodes.json'
+  ];
+
+  for (const endpoint of apiEndpoints) {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const nodeTypes = Array.isArray(data) ? data : Object.values(data);
+        console.log(`✅ Fetched ${nodeTypes.length} node types from ${endpoint}`);
+        return nodeTypes;
       }
-    });
-
-    if (!response.ok) {
-      throw new Error(`N8N API error: ${response.status}`);
+    } catch (e) {
+      // 조용히 다음 방법 시도
     }
-
-    const nodeTypes = await response.json();
-    console.log(`✅ Fetched ${nodeTypes.length} node types`);
-
-    return nodeTypes;
-  } catch (error) {
-    console.error('❌ Failed to fetch node types:', error);
-    return null;
   }
+
+  // 방법 2: N8N의 전역 Vue store에서 가져오기
+  try {
+    if (window.__VUE_DEVTOOLS_GLOBAL_HOOK__ && window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps) {
+      const apps = window.__VUE_DEVTOOLS_GLOBAL_HOOK__.apps;
+
+      for (const app of apps) {
+        if (app && app._instance && app._instance.proxy) {
+          const proxy = app._instance.proxy;
+
+          // Pinia store 접근
+          if (proxy.$pinia && proxy.$pinia._s) {
+            const stores = proxy.$pinia._s;
+
+            // nodeTypes store 찾기
+            for (const [key, store] of stores) {
+              if (store.allNodeTypes) {
+                const nodeTypes = Object.values(store.allNodeTypes);
+                console.log(`✅ Fetched ${nodeTypes.length} node types from Pinia store (${key})`);
+                return nodeTypes;
+              }
+
+              if (store.nodeTypes) {
+                const nodeTypes = Object.values(store.nodeTypes);
+                console.log(`✅ Fetched ${nodeTypes.length} node types from Pinia store (${key})`);
+                return nodeTypes;
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (error) {
+    // 조용히 실패
+  }
+
+  console.warn('⚠️ Could not fetch node types - N8N version may not be supported');
+  return null;
 }
 
-// Background에 노드 정보 전달
+// 노드 정보 가져오기 flag (중복 방지)
+let nodeTypesFetched = false;
+
+// Background에 노드 정보 전달 (한 번만)
 async function updateNodesInBackground() {
+  if (nodeTypesFetched) {
+    console.log('⏭️ Node types already fetched, skipping...');
+    return;
+  }
+
   const nodeTypes = await fetchNodesFromCurrentInstance();
 
   if (nodeTypes) {
+    nodeTypesFetched = true;
     chrome.runtime.sendMessage({
       action: 'updateNodeTypes',
       nodeTypes: nodeTypes
@@ -80,15 +131,46 @@ async function updateNodesInBackground() {
 // 2. N8N DOM 읽기 클래스
 // ========================================
 class N8NReader {
-  
+
+  // 워크플로우의 모든 노드 읽기
+  getAllNodes() {
+    const nodes = [];
+
+    // N8N 캔버스에서 모든 노드 찾기
+    const nodeElements = document.querySelectorAll('[data-name], [class*="node_"], .node');
+
+    nodeElements.forEach(nodeEl => {
+      const nodeType = this.getNodeType(nodeEl);
+      const nodeName = this.getNodeName(nodeEl);
+
+      // 유효한 노드만 추가
+      if (nodeType && nodeType !== 'unknown' && nodeType.trim() !== '') {
+        nodes.push({
+          type: nodeType,
+          name: nodeName,
+          element: nodeEl
+        });
+      }
+    });
+
+    // 중복 제거 (같은 타입의 노드가 여러 개일 수 있음)
+    const uniqueTypes = [...new Set(nodes.map(n => n.type))];
+
+    return {
+      all: nodes,
+      types: uniqueTypes,
+      count: nodes.length
+    };
+  }
+
   // 현재 선택된 노드 정보 읽기
   getSelectedNode() {
     const selectedNode = document.querySelector('[class*="selected"]');
-    
+
     if (!selectedNode) {
       return null;
     }
-    
+
     return {
       element: selectedNode,
       type: this.getNodeType(selectedNode),
@@ -741,6 +823,7 @@ function sendMessageToIframe(data) {
 function collectPageContext() {
   const errors = window.n8nReader.detectErrors();
   const settings = window.n8nReader.getNodeSettings();
+  const workflowNodes = window.n8nReader.getAllNodes();
 
   const context = {
     url: window.location.href,
@@ -748,7 +831,8 @@ function collectPageContext() {
     errors: errors,
     selectedNode: null,
     nodeSettings: settings,
-    errorPattern: null
+    errorPattern: null,
+    workflowNodes: workflowNodes // 워크플로우의 모든 노드
   };
 
   // 선택된 노드 정보 수집 (가능한 경우)
@@ -798,60 +882,62 @@ function analyzeErrorPattern(errors) {
   return pattern;
 }
 
+// 워크플로우의 노드들에 대한 operations 정보 찾기
+function getWorkflowNodeOperations(workflowNodes, docsInfo) {
+  if (!workflowNodes || !workflowNodes.types || !docsInfo || !docsInfo.detailedNodes) {
+    return [];
+  }
+
+  const nodeOperations = [];
+
+  // 워크플로우에 있는 각 노드 타입에 대해
+  for (const nodeType of workflowNodes.types) {
+    // docs에서 매칭되는 노드 찾기
+    const matchedNode = docsInfo.detailedNodes.find(docNode => {
+      const docName = (docNode.displayName || docNode.name || '').toLowerCase();
+      const workflowType = nodeType.toLowerCase();
+
+      // 정확히 일치하거나 포함하는 경우
+      return docName === workflowType ||
+             docName.includes(workflowType) ||
+             workflowType.includes(docName);
+    });
+
+    if (matchedNode) {
+      nodeOperations.push(matchedNode);
+    }
+  }
+
+  return nodeOperations;
+}
+
 // Claude API 호출 (background.js를 통해)
 async function callClaudeAPI(userMessage, context) {
   console.log('🚀 Calling Claude API via background...');
 
-  // N8N 최신 문서 불러오기
+  // N8N 문서 불러오기
   const n8nDocs = await chrome.storage.local.get('n8nDocs');
   const docsInfo = n8nDocs.n8nDocs;
 
-  let docsSection = '';
+  // 워크플로우의 실제 노드들에 대한 operations 찾기
+  const workflowNodeOps = getWorkflowNodeOperations(context.workflowNodes, docsInfo);
 
-  // 이전 버전 호환성 (nodes) + 새 버전 (allNodes, detailedNodes)
-  const nodeList = docsInfo?.allNodes || docsInfo?.nodes || [];
-  const detailedList = docsInfo?.detailedNodes || [];
-
-  if (nodeList.length > 0) {
-    const updateDate = new Date(docsInfo.lastUpdated).toLocaleDateString('ko-KR');
-
-    // 상세 노드 정보 (operations 포함)
-    let detailedSection = '';
-    if (detailedList.length > 0) {
-      detailedSection = '\n\n**상세 노드 정보 (operations 포함)**:\n';
-      detailedList.forEach(node => {
-        if (node.hasOperations && node.operations.length > 0) {
-          detailedSection += `- **${node.name}**: ${node.operations.join(', ')}\n`;
-        } else {
-          detailedSection += `- **${node.name}**: (operations 정보 없음)\n`;
-        }
-      });
-    }
-
-    // 노드 이름 추출 (이전 버전: string, 새 버전: object)
-    const nodeNames = nodeList.map(n => typeof n === 'string' ? n : n.name);
-
-    docsSection = `
-**N8N 실시간 노드 목록** (자동 업데이트):
-📅 마지막 업데이트: ${updateDate}
-📦 사용 가능한 노드: ${nodeNames.length}개
-
-주요 노드 (A-Z):
-${nodeNames.slice(0, 30).map(node => `- \`${node}\``).join('\n')}
-
-... 외 ${nodeNames.length - 30}개 노드
-${detailedSection}
-최신 버전: ${docsInfo.version}
-`;
-  } else {
-    docsSection = `
-⚠️ N8N 문서를 아직 로드하지 못했습니다.
-공식 문서를 참고하세요: https://docs.n8n.io
-`;
+  let nodeContext = '';
+  if (workflowNodeOps.length > 0) {
+    nodeContext = '\n\n**🔍 현재 워크플로우의 노드 정보**:\n';
+    workflowNodeOps.forEach(node => {
+      nodeContext += `\n**${node.displayName || node.name}**:\n`;
+      if (node.description) {
+        nodeContext += `- 설명: ${node.description}\n`;
+      }
+      if (node.operations && node.operations.length > 0) {
+        nodeContext += `- 사용 가능한 Operations: ${node.operations.join(', ')}\n`;
+      }
+    });
+    console.log(`📚 Workflow nodes with operations: ${workflowNodeOps.length}/${context.workflowNodes.types.length}`);
   }
 
   const systemPrompt = `당신은 N8N 워크플로우 자동화 전문가입니다 (2025년 10월 기준 최신 버전).
-${docsSection}
 사용자의 워크플로우 작성, 에러 해결, JSON 데이터 생성 등을 도와주세요.
 
 **N8N 최신 정보 (2025년 10월)**:
@@ -886,7 +972,7 @@ ${docsSection}
   * 토스페이먼츠 (Toss Payments API)
 
 - **OAuth2 지원**: Google, Facebook, Kakao, Naver, GitHub, Microsoft
-
+${nodeContext}
 **현재 페이지 컨텍스트**:
 - URL: ${context.url}
 - 워크플로우: ${context.workflowName}

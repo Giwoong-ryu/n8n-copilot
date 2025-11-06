@@ -7,8 +7,8 @@
 #n8n-ai-copilot-sidebar {
   position: fixed;
   bottom: 0; /* top → bottom */
-  right: -400px; /* 초기에는 숨김 */
-  width: 400px;
+  right: -550px; /* 초기에는 숨김 */
+  width: 550px; /* 400px → 550px */
   height: 50vh; /* 100vh → 50vh (화면 절반) */
   background: white;
   box-shadow: -4px -4px 24px rgba(0, 0, 0, 0.15); /* 위쪽 그림자 추가 */
@@ -64,7 +64,7 @@
 
 /* 사이드바가 열렸을 때 토글 버튼 위치 조정 */
 #n8n-ai-copilot-toggle.sidebar-open {
-  right: 420px;
+  right: 570px; /* 420px → 570px */
 }
 
 /* 알림 뱃지 */
@@ -144,7 +144,7 @@
 
 /* N8N 컨텐츠 푸시 효과 (선택사항) */
 body.n8n-copilot-active {
-  margin-right: 400px;
+  margin-right: 550px; /* 400px → 550px */
 }
 
 @media (max-width: 1024px) {
@@ -154,7 +154,7 @@ body.n8n-copilot-active {
   }
 }
 
-/* 드래그 핸들 (사이드바 크기 조절용) */
+/* 드래그 핸들 (좌우 크기 조절용) */
 #n8n-ai-copilot-resize-handle {
   position: absolute;
   left: 0;
@@ -191,5 +191,45 @@ body.n8n-copilot-active {
 }
 
 #n8n-ai-copilot-resize-handle:hover::after {
+  opacity: 0.6;
+}
+
+/* 드래그 핸들 (상하 크기 조절용) */
+#n8n-ai-copilot-resize-handle-vertical {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 8px;
+  cursor: ns-resize;
+  background: transparent;
+  z-index: 10;
+  transition: background 0.2s ease;
+}
+
+#n8n-ai-copilot-resize-handle-vertical:hover {
+  background: rgba(102, 126, 234, 0.3);
+}
+
+#n8n-ai-copilot-resize-handle-vertical:active {
+  background: rgba(102, 126, 234, 0.5);
+}
+
+/* 상하 리사이즈 핸들 중앙 인디케이터 */
+#n8n-ai-copilot-resize-handle-vertical::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 2px;
+  background: #667eea;
+  border-radius: 1px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+#n8n-ai-copilot-resize-handle-vertical:hover::after {
   opacity: 0.6;
 }

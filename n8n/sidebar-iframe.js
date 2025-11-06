@@ -377,73 +377,12 @@ window.addEventListener('message', (event) => {
 function displayPageAnalysis(data) {
   console.log('📊 Displaying page analysis:', data);
 
-  let message = `# 🔍 N8N 페이지 분석 결과\n\n`;
+  let message = `# 🔍 페이지 분석\n\n`;
 
-  // 요약
-  message += `## 📋 요약\n\n`;
-  message += `- N8N 페이지: ${data.summary.isN8NPage ? '✅ 확인됨' : '❌ 감지 안됨'}\n`;
-  message += `- 활성 노드: ${data.summary.hasActiveNode ? '✅ 있음' : '❌ 없음'}\n`;
-  message += `- 설정 패널 열림: ${data.summary.hasOpenSettings ? '✅ 열림' : '❌ 닫힘'}\n`;
-  message += `- 에러: ${data.summary.hasErrors ? `⚠️ ${data.errors.count}개 발견` : '✅ 없음'}\n\n`;
-
-  // 기본 정보
-  message += `## 🌐 기본 정보\n\n`;
-  message += `- URL: \`${data.basicInfo.url}\`\n`;
-  message += `- 제목: ${data.basicInfo.title}\n\n`;
-
-  // 입력 필드 정보
-  message += `## 📝 입력 필드\n\n`;
-  message += `- 전체 입력 필드: ${data.inputInfo.totalInputs}개\n`;
-  message += `- 보이는 입력 필드: ${data.inputInfo.visibleInputs}개\n`;
-  if (data.inputInfo.inputTypes.length > 0) {
-    message += `- 입력 타입: ${data.inputInfo.inputTypes.map(t => `\`${t}\``).join(', ')}\n`;
-  }
-  message += `\n`;
-
-  // N8N 요소 감지
-  message += `## 🎯 N8N 요소 감지\n\n`;
-  message += `| 요소 | 감지됨 | 선택자 |\n`;
-  message += `|------|--------|--------|\n`;
-  message += `| Canvas | ${data.n8nElements.canvas ? '✅' : '❌'} | ${data.n8nElements.canvasSelector ? `\`${data.n8nElements.canvasSelector.className}\`` : '-'} |\n`;
-  message += `| NodeView | ${data.n8nElements.nodeView ? '✅' : '❌'} | ${data.n8nElements.nodeViewSelector ? `\`${data.n8nElements.nodeViewSelector.className}\`` : '-'} |\n`;
-  message += `| Workflow | ${data.n8nElements.workflow ? '✅' : '❌'} | ${data.n8nElements.workflowSelector ? `\`${data.n8nElements.workflowSelector.className}\`` : '-'} |\n`;
-  message += `| Settings | ${data.n8nElements.settings ? '✅' : '❌'} | ${data.n8nElements.settingsSelector ? `\`${data.n8nElements.settingsSelector.className}\`` : '-'} |\n`;
-  message += `| Node | ${data.n8nElements.node ? '✅' : '❌'} | ${data.n8nElements.nodeSelector ? `\`${data.n8nElements.nodeSelector.className}\`` : '-'} |\n`;
-  message += `| Selected | ${data.n8nElements.selected ? '✅' : '❌'} | ${data.n8nElements.selectedSelector ? `\`${data.n8nElements.selectedSelector.className}\`` : '-'} |\n\n`;
-
-  // data-test-id 속성
-  if (data.dataAttributes.length > 0) {
-    message += `## 🏷️ data-test-id 속성 (처음 10개)\n\n`;
-    data.dataAttributes.slice(0, 10).forEach(attr => {
-      message += `- \`${attr}\`\n`;
-    });
-    if (data.dataAttributes.length > 10) {
-      message += `\n... 외 ${data.dataAttributes.length - 10}개\n`;
-    }
-    message += `\n`;
-  }
-
-  // 클래스명 목록
-  if (data.classList.length > 0) {
-    message += `## 🎨 발견된 클래스명 (처음 20개)\n\n`;
-    message += '```\n';
-    data.classList.slice(0, 20).forEach(cls => {
-      message += `${cls}\n`;
-    });
-    if (data.classList.length > 20) {
-      message += `... 외 ${data.classList.length - 20}개\n`;
-    }
-    message += '```\n\n';
-  }
-
-  // 에러 메시지
-  if (data.errors.count > 0) {
-    message += `## ⚠️ 에러 메시지\n\n`;
-    data.errors.messages.forEach((msg, idx) => {
-      message += `${idx + 1}. ${msg}\n`;
-    });
-    message += `\n`;
-  }
+  // 워크플로우 노드만 간략하게 표시
+  message += `**워크플로우 노드**: ${data.summary.hasActiveNode ? '있음' : '없음'}\n`;
+  message += `**설정 패널**: ${data.summary.hasOpenSettings ? '열림' : '닫힘'}\n`;
+  message += `**에러**: ${data.summary.hasErrors ? `${data.errors.count}개` : '없음'}\n`;
 
   addMessage(message, 'assistant');
 }
