@@ -4,30 +4,220 @@
  */
 
 // ========================================
+// 0. SafeSelector - N8N 버전 변경에 안전한 셀렉터 시스템
+// ========================================
+
+/**
+ * SafeSelector 클래스
+ * N8N의 DOM 구조 변경에 대응하는 fallback 셀렉터 시스템
+ * 여러 셀렉터를 시도하여 가장 먼저 찾아지는 요소를 반환
+ */
+class SafeSelector {
+  constructor() {
+    // 각 타입별 fallback 셀렉터 정의 (우선순위 순서)
+    this.selectors = {
+      // 노드 설정 패널 (오른쪽 사이드바)
+      settingsPanel: [
+        '[class*="NodeSettings"]',
+        '[class*="node-settings"]',
+        '[data-test-id*="node-settings"]',
+        '.ndv-panel',
+        '[class*="ndv"]',
+        // 추가 fallback: 특정 구조 탐색
+        '[class*="panel"][class*="side"]',
+        'aside[class*="panel"]'
+      ],
+
+      // Monaco 코드 에디터
+      codeEditor: [
+        '.monaco-editor',
+        '[class*="monaco"]',
+        '.CodeMirror',
+        '[class*="CodeMirror"]',
+        'textarea[class*="code"]'
+      ],
+
+      // 에러 패널
+      errorPanel: [
+        '[class*="ExecutionError"]',
+        '[class*="execution-error"]',
+        '[data-test-id*="error"]',
+        '[class*="error-message"]',
+        '[class*="RunData"][class*="error"]'
+      ],
+
+      // 캔버스 (워크플로우 영역)
+      canvas: [
+        '[class*="canvas"]',
+        '[class*="Canvas"]',
+        '[data-test-id*="canvas"]',
+        '.workflow-canvas'
+      ],
+
+      // 노드 요소들
+      nodes: [
+        '[class*="CanvasNode"]',
+        '[data-node-type]',
+        '[class*="node_"]',
+        '.node'
+      ],
+
+      // 선택된 노드
+      selectedNode: [
+        '[class*="selected"][class*="node"]',
+        '[class*="node"][class*="active"]',
+        '.node.selected'
+      ],
+
+      // 워크플로우 정보
+      workflow: [
+        '[class*="workflow"]',
+        '[data-test-id*="workflow"]',
+        '#workflow'
+      ],
+
+      // Vue 앱 루트
+      app: [
+        '#app',
+        '[id*="app"]',
+        'body > div:first-child'
+      ]
+    };
+  }
+
+  /**
+   * 단일 요소 찾기 (querySelector)
+   * @param {string} type - selectors 객체의 키
+   * @param {Element} parent - 검색 시작 요소 (기본: document)
+   * @returns {Element|null}
+   */
+  find(type, parent = document) {
+    const selectorList = this.selectors[type];
+
+    if (!selectorList) {
+      console.warn(`⚠️ SafeSelector: Unknown type "${type}"`);
+      return null;
+    }
+
+    for (const selector of selectorList) {
+      try {
+        const element = parent.querySelector(selector);
+        if (element) {
+          console.log(`✅ SafeSelector: Found "${type}" with selector: ${selector}`);
+          return element;
+        }
+      } catch (error) {
+        console.warn(`⚠️ SafeSelector: Invalid selector "${selector}":`, error.message);
+      }
+    }
+
+    console.warn(`❌ SafeSelector: Could not find "${type}" with any selector`);
+    return null;
+  }
+
+  /**
+   * 여러 요소 찾기 (querySelectorAll)
+   * @param {string} type - selectors 객체의 키
+   * @param {Element} parent - 검색 시작 요소 (기본: document)
+   * @returns {NodeList|Array}
+   */
+  findAll(type, parent = document) {
+    const selectorList = this.selectors[type];
+
+    if (!selectorList) {
+      console.warn(`⚠️ SafeSelector: Unknown type "${type}"`);
+      return [];
+    }
+
+    for (const selector of selectorList) {
+      try {
+        const elements = parent.querySelectorAll(selector);
+        if (elements.length > 0) {
+          console.log(`✅ SafeSelector: Found ${elements.length} "${type}" with selector: ${selector}`);
+          return elements;
+        }
+      } catch (error) {
+        console.warn(`⚠️ SafeSelector: Invalid selector "${selector}":`, error.message);
+      }
+    }
+
+    console.warn(`❌ SafeSelector: Could not find any "${type}" with any selector`);
+    return [];
+  }
+
+  /**
+   * 커스텀 셀렉터 리스트로 찾기
+   * @param {string[]} selectors - 시도할 셀렉터 배열
+   * @param {Element} parent - 검색 시작 요소
+   * @returns {Element|null}
+   */
+  findWithCustom(selectors, parent = document) {
+    for (const selector of selectors) {
+      try {
+        const element = parent.querySelector(selector);
+        if (element) {
+          console.log(`✅ SafeSelector (custom): Found with selector: ${selector}`);
+          return element;
+        }
+      } catch (error) {
+        console.warn(`⚠️ SafeSelector (custom): Invalid selector "${selector}":`, error.message);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 특정 타입에 대한 커스텀 셀렉터 추가
+   * @param {string} type - 타입 이름
+   * @param {string} selector - 추가할 셀렉터
+   * @param {number} priority - 우선순위 (0이 가장 높음)
+   */
+  addSelector(type, selector, priority = 999) {
+    if (!this.selectors[type]) {
+      this.selectors[type] = [];
+    }
+
+    // 우선순위에 따라 삽입
+    if (priority === 0) {
+      this.selectors[type].unshift(selector);
+    } else if (priority >= this.selectors[type].length) {
+      this.selectors[type].push(selector);
+    } else {
+      this.selectors[type].splice(priority, 0, selector);
+    }
+
+    console.log(`✅ SafeSelector: Added "${selector}" to "${type}" at priority ${priority}`);
+  }
+}
+
+// SafeSelector 인스턴스 생성 (전역에서 사용)
+const safeSelector = new SafeSelector();
+window.safeSelector = safeSelector; // 디버깅용
+
+// ========================================
 // 1. N8N 페이지 감지
 // ========================================
 function detectN8NPage() {
   console.log('🔍 N8N AI Copilot - Detecting N8N page...');
-  
-  // N8N 특유의 요소 찾기
+
+  // N8N 특유의 요소 찾기 (SafeSelector 사용)
   const indicators = {
-    canvas: document.querySelector('[class*="canvas"]'),
-    nodeView: document.querySelector('[class*="NodeView"]'),
-    workflow: document.querySelector('[class*="workflow"]'),
-    vueApp: document.querySelector('#app')
+    canvas: safeSelector.find('canvas'),
+    workflow: safeSelector.find('workflow'),
+    vueApp: safeSelector.find('app')
   };
-  
+
   const isN8N = Object.values(indicators).some(el => el !== null);
-  
+
   console.log('📊 Detection results:', indicators);
-  
+
   if (isN8N) {
     console.log('✅ N8N page detected!');
     initializeAICopilot();
   } else {
     console.log('❌ Not an N8N page');
   }
-  
+
   return isN8N;
 }
 
@@ -136,8 +326,8 @@ class N8NReader {
   getAllNodes() {
     const nodes = [];
 
-    // N8N 캔버스에서 모든 노드 찾기
-    const nodeElements = document.querySelectorAll('[data-name], [class*="node_"], .node');
+    // N8N 캔버스에서 모든 노드 찾기 (SafeSelector 사용)
+    const nodeElements = safeSelector.findAll('nodes');
 
     nodeElements.forEach(nodeEl => {
       const nodeType = this.getNodeType(nodeEl);
@@ -165,7 +355,7 @@ class N8NReader {
 
   // 현재 선택된 노드 정보 읽기
   getSelectedNode() {
-    const selectedNode = document.querySelector('[class*="selected"]');
+    const selectedNode = safeSelector.find('selectedNode');
 
     if (!selectedNode) {
       return null;
@@ -197,12 +387,10 @@ class N8NReader {
   
   // 노드 설정 패널의 입력 필드 읽기 (토글 포함)
   getNodeSettings() {
-    const settingsPanel = document.querySelector('[class*="NodeSettings"]') ||
-                          document.querySelector('[class*="node-settings"]') ||
-                          document.querySelector('[data-test-id*="node-settings"]') ||
-                          document.querySelector('.ndv-panel');
+    const settingsPanel = safeSelector.find('settingsPanel');
 
     if (!settingsPanel) {
+      console.warn('⚠️ Settings panel not found');
       return { fields: [], toggles: [], options: [] };
     }
 
@@ -291,14 +479,8 @@ class N8NReader {
   detectErrors() {
     const detectedErrors = [];
 
-    // 1. 노드 실행 에러 패널에서 상세 정보 추출
-    const errorPanels = document.querySelectorAll([
-      '[class*="ExecutionError"]',
-      '[class*="execution-error"]',
-      '[data-test-id*="error"]',
-      '[class*="error-message"]',
-      '[class*="RunData"]'
-    ].join(','));
+    // 1. 노드 실행 에러 패널에서 상세 정보 추출 (SafeSelector 사용)
+    const errorPanels = safeSelector.findAll('errorPanel');
 
     errorPanels.forEach(panel => {
       const errorInfo = this.extractDetailedError(panel);
@@ -307,26 +489,32 @@ class N8NReader {
       }
     });
 
-    // 2. 일반 에러 요소에서 추출 (백업)
+    // 2. 일반 에러 요소에서 추출 (백업) - 커스텀 셀렉터 사용
     if (detectedErrors.length === 0) {
-      const generalErrors = document.querySelectorAll([
+      const generalErrorSelectors = [
         '[class*="error"]',
         '[class*="Error"]',
         '[class*="issue"]',
         '.el-message--error'
-      ].join(','));
+      ];
 
-      generalErrors.forEach(errorEl => {
-        const text = errorEl.textContent.trim();
-        if (text && text.length > 0 && text.length < 5000) {
-          detectedErrors.push({
-            element: errorEl,
-            message: text,
-            type: this.getErrorType(text),
-            details: null
+      for (const selector of generalErrorSelectors) {
+        const generalErrors = document.querySelectorAll(selector);
+        if (generalErrors.length > 0) {
+          generalErrors.forEach(errorEl => {
+            const text = errorEl.textContent.trim();
+            if (text && text.length > 0 && text.length < 5000) {
+              detectedErrors.push({
+                element: errorEl,
+                message: text,
+                type: this.getErrorType(text),
+                details: null
+              });
+            }
           });
+          break; // 찾았으면 중단
         }
-      });
+      }
     }
 
     if (detectedErrors.length > 0) {
@@ -415,9 +603,7 @@ class N8NReader {
   getNodeExecutionData(nodeName) {
     console.log('📊 Reading execution data from node:', nodeName);
 
-    const settingsPanel = document.querySelector('[class*="NodeSettings"]') ||
-                          document.querySelector('[class*="node-settings"]') ||
-                          document.querySelector('.ndv-panel');
+    const settingsPanel = safeSelector.find('settingsPanel');
 
     if (!settingsPanel) {
       console.warn('⚠️ Settings panel not found');
@@ -506,18 +692,16 @@ class N8NReader {
   getCodeFromNode(nodeName) {
     console.log('🔍 Trying to read code from node:', nodeName);
 
-    // 설정 패널이 열려있는지 확인
-    const settingsPanel = document.querySelector('[class*="NodeSettings"]') ||
-                          document.querySelector('[class*="node-settings"]') ||
-                          document.querySelector('.ndv-panel');
+    // 설정 패널이 열려있는지 확인 (SafeSelector 사용)
+    const settingsPanel = safeSelector.find('settingsPanel');
 
     if (!settingsPanel) {
       console.warn('⚠️ Settings panel not found - node may not be clicked');
       return null; // 에러 대신 null 반환
     }
 
-    // Monaco Editor (N8N이 주로 사용)
-    const monacoEditors = settingsPanel.querySelectorAll('.monaco-editor, [class*="monaco"]');
+    // Monaco Editor (N8N이 주로 사용) - SafeSelector 사용
+    const monacoEditors = safeSelector.findAll('codeEditor', settingsPanel);
     for (const editor of monacoEditors) {
       // Monaco의 실제 텍스트 영역 찾기
       const textArea = editor.querySelector('textarea');
@@ -582,7 +766,7 @@ class N8NReader {
   async getAllNodesExecutionData(onProgress = null) {
     console.log('🔄 Collecting execution data from all nodes...');
 
-    const nodes = document.querySelectorAll('[class*="CanvasNode"], [data-node-type]');
+    const nodes = safeSelector.findAll('nodes');
     const nodesData = [];
     const total = nodes.length;
     const startTime = Date.now();
@@ -1790,9 +1974,9 @@ function collectPageContext() {
     workflowNodes: workflowNodes // 워크플로우의 모든 노드
   };
 
-  // 선택된 노드 정보 수집 (가능한 경우)
+  // 선택된 노드 정보 수집 (가능한 경우) - SafeSelector 사용
   try {
-    const selectedNodeElement = document.querySelector('[class*="selected"]');
+    const selectedNodeElement = safeSelector.find('selectedNode');
     if (selectedNodeElement) {
       context.selectedNode = {
         type: selectedNodeElement.getAttribute('data-node-type') || 'unknown',
@@ -2439,7 +2623,7 @@ function findNodeElementByName(nodeName, options = {}) {
 
   console.log(`🔍 Finding node element: "${nodeName}" (index: ${index}, exactMatch: ${exactMatch})`);
 
-  const allNodes = document.querySelectorAll('[class*="CanvasNode"], [data-node-type]');
+  const allNodes = safeSelector.findAll('nodes');
   const matches = [];
 
   // 모든 노드를 순회하며 일치하는 것 찾기
@@ -2512,9 +2696,7 @@ async function waitForPanel(maxWaitMs = 2000) {
   const startTime = Date.now();
 
   while (Date.now() - startTime < maxWaitMs) {
-    const panel = document.querySelector('[class*="NodeSettings"]') ||
-                  document.querySelector('[class*="node-settings"]') ||
-                  document.querySelector('.ndv-panel');
+    const panel = safeSelector.find('settingsPanel');
 
     if (panel) {
       console.log('✅ Panel opened');
