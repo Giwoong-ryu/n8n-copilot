@@ -256,6 +256,60 @@ function hideLoading(loadingId) {
   }
 }
 
+// 진행률 표시
+function updateProgress(progress) {
+  let progressDiv = document.getElementById('progress-indicator');
+
+  if (!progressDiv) {
+    // 진행률 div 생성
+    progressDiv = document.createElement('div');
+    progressDiv.className = 'loading';
+    progressDiv.id = 'progress-indicator';
+    progressDiv.innerHTML = `
+      <div class="progress-content">
+        <div class="progress-bar-container">
+          <div class="progress-bar"></div>
+        </div>
+        <div class="progress-text">0%</div>
+        <div class="progress-node"></div>
+        <button class="cancel-btn" title="분석 취소">❌ 취소</button>
+      </div>
+    `;
+
+    // 취소 버튼 이벤트 리스너
+    const cancelBtn = progressDiv.querySelector('.cancel-btn');
+    cancelBtn.addEventListener('click', () => {
+      console.log('🛑 Cancel button clicked');
+      window.parent.postMessage({
+        type: 'cancel-analysis'
+      }, '*');
+      cancelBtn.disabled = true;
+      cancelBtn.textContent = '⏳ 취소 중...';
+    });
+
+    messagesContainer.appendChild(progressDiv);
+  }
+
+  // 진행률 업데이트
+  const progressBar = progressDiv.querySelector('.progress-bar');
+  const progressText = progressDiv.querySelector('.progress-text');
+  const progressNode = progressDiv.querySelector('.progress-node');
+
+  progressBar.style.width = progress.percentage + '%';
+  progressText.textContent = `${progress.percentage}% (${progress.current}/${progress.total})`;
+  progressNode.textContent = `현재: ${progress.nodeName}`;
+
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// 진행률 숨김
+function hideProgress() {
+  const progressDiv = document.getElementById('progress-indicator');
+  if (progressDiv) {
+    progressDiv.remove();
+  }
+}
+
 // 전송 버튼 클릭 이벤트
 sendButton.addEventListener('click', () => {
   console.log('🖱️ Send button clicked');
@@ -282,11 +336,20 @@ document.querySelectorAll('.quick-action-btn').forEach(btn => {
       return;
     }
 
+    // 에러 분석은 별도 처리
+    if (action === 'analyze-error') {
+      analyzeError();
+      return;
+    }
+
+    // 워크플로우 분석은 별도 처리
+    if (action === 'analyze-workflow') {
+      analyzeWorkflow();
+      return;
+    }
+
     let message = '';
     switch(action) {
-      case 'analyze-error':
-        message = '현재 워크플로우의 에러를 분석해주세요';
-        break;
       case 'generate-json':
         message = 'JSON 샘플 데이터를 생성해주세요';
         break;
@@ -315,6 +378,32 @@ function analyzePage() {
   }, '*');
 }
 
+// 에러 분석 요청
+function analyzeError() {
+  console.log('⚠️ Requesting error analysis...');
+
+  // 로딩 표시
+  const loadingId = showLoading();
+
+  // parent window(content.js)로 에러 분석 요청
+  window.parent.postMessage({
+    type: 'analyze-error'
+  }, '*');
+}
+
+// 워크플로우 분석 요청
+function analyzeWorkflow() {
+  console.log('🔬 Requesting workflow analysis...');
+
+  // 로딩 표시
+  const loadingId = showLoading();
+
+  // parent window(content.js)로 워크플로우 분석 요청
+  window.parent.postMessage({
+    type: 'analyze-workflow'
+  }, '*');
+}
+
 // parent window로부터 메시지 수신
 window.addEventListener('message', (event) => {
   console.log('📨 Message received from parent:', event.data);
@@ -328,6 +417,57 @@ window.addEventListener('message', (event) => {
     // 페이지 분석 결과 처리
     hideLoading('loading-indicator');
     displayPageAnalysis(event.data.data);
+
+  } else if (event.data.type === 'error-analysis-result') {
+    // 에러 분석 결과 처리 - AI에게 직접 전송
+    hideLoading('loading-indicator');
+    const errorData = event.data.data;
+
+    // 에러 정보를 메시지로 전송
+    const errorMessage = `에러 분석: ${errorData.errorCount}개 발견`;
+    addMessage(errorMessage, 'user');
+
+    // 로딩 표시
+    const loadingId = showLoading();
+
+    // AI에게 전송
+    window.parent.postMessage({
+      type: 'send-message',
+      message: errorMessage,
+      errorContext: errorData
+    }, '*');
+
+  } else if (event.data.type === 'workflow-analysis-progress') {
+    // 워크플로우 분석 진행률 업데이트
+    const progress = event.data.progress;
+    updateProgress(progress);
+
+  } else if (event.data.type === 'workflow-analysis-cancelled') {
+    // 워크플로우 분석 취소됨
+    hideLoading('loading-indicator');
+    hideProgress();
+    addMessage('🛑 워크플로우 분석이 취소되었습니다.', 'assistant');
+    sendButton.disabled = false;
+
+  } else if (event.data.type === 'workflow-analysis-result') {
+    // 워크플로우 분석 결과 처리 - AI에게 직접 전송
+    hideLoading('loading-indicator');
+    hideProgress();
+    const workflowData = event.data.data;
+
+    // 분석 정보를 메시지로 전송
+    const workflowMessage = workflowData.userMessage || '워크플로우 분석 완료';
+    addMessage(workflowMessage, 'user');
+
+    // 로딩 표시
+    const loadingId = showLoading();
+
+    // AI에게 전송
+    window.parent.postMessage({
+      type: 'send-message',
+      message: workflowMessage,
+      workflowContext: workflowData
+    }, '*');
 
   } else if (event.data.type === 'auto-fill-result') {
     // 자동 입력 결과 처리

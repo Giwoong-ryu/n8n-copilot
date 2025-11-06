@@ -4,30 +4,220 @@
  */
 
 // ========================================
+// 0. SafeSelector - N8N 버전 변경에 안전한 셀렉터 시스템
+// ========================================
+
+/**
+ * SafeSelector 클래스
+ * N8N의 DOM 구조 변경에 대응하는 fallback 셀렉터 시스템
+ * 여러 셀렉터를 시도하여 가장 먼저 찾아지는 요소를 반환
+ */
+class SafeSelector {
+  constructor() {
+    // 각 타입별 fallback 셀렉터 정의 (우선순위 순서)
+    this.selectors = {
+      // 노드 설정 패널 (오른쪽 사이드바)
+      settingsPanel: [
+        '[class*="NodeSettings"]',
+        '[class*="node-settings"]',
+        '[data-test-id*="node-settings"]',
+        '.ndv-panel',
+        '[class*="ndv"]',
+        // 추가 fallback: 특정 구조 탐색
+        '[class*="panel"][class*="side"]',
+        'aside[class*="panel"]'
+      ],
+
+      // Monaco 코드 에디터
+      codeEditor: [
+        '.monaco-editor',
+        '[class*="monaco"]',
+        '.CodeMirror',
+        '[class*="CodeMirror"]',
+        'textarea[class*="code"]'
+      ],
+
+      // 에러 패널
+      errorPanel: [
+        '[class*="ExecutionError"]',
+        '[class*="execution-error"]',
+        '[data-test-id*="error"]',
+        '[class*="error-message"]',
+        '[class*="RunData"][class*="error"]'
+      ],
+
+      // 캔버스 (워크플로우 영역)
+      canvas: [
+        '[class*="canvas"]',
+        '[class*="Canvas"]',
+        '[data-test-id*="canvas"]',
+        '.workflow-canvas'
+      ],
+
+      // 노드 요소들
+      nodes: [
+        '[class*="CanvasNode"]',
+        '[data-node-type]',
+        '[class*="node_"]',
+        '.node'
+      ],
+
+      // 선택된 노드
+      selectedNode: [
+        '[class*="selected"][class*="node"]',
+        '[class*="node"][class*="active"]',
+        '.node.selected'
+      ],
+
+      // 워크플로우 정보
+      workflow: [
+        '[class*="workflow"]',
+        '[data-test-id*="workflow"]',
+        '#workflow'
+      ],
+
+      // Vue 앱 루트
+      app: [
+        '#app',
+        '[id*="app"]',
+        'body > div:first-child'
+      ]
+    };
+  }
+
+  /**
+   * 단일 요소 찾기 (querySelector)
+   * @param {string} type - selectors 객체의 키
+   * @param {Element} parent - 검색 시작 요소 (기본: document)
+   * @returns {Element|null}
+   */
+  find(type, parent = document) {
+    const selectorList = this.selectors[type];
+
+    if (!selectorList) {
+      console.warn(`⚠️ SafeSelector: Unknown type "${type}"`);
+      return null;
+    }
+
+    for (const selector of selectorList) {
+      try {
+        const element = parent.querySelector(selector);
+        if (element) {
+          console.log(`✅ SafeSelector: Found "${type}" with selector: ${selector}`);
+          return element;
+        }
+      } catch (error) {
+        console.warn(`⚠️ SafeSelector: Invalid selector "${selector}":`, error.message);
+      }
+    }
+
+    console.warn(`❌ SafeSelector: Could not find "${type}" with any selector`);
+    return null;
+  }
+
+  /**
+   * 여러 요소 찾기 (querySelectorAll)
+   * @param {string} type - selectors 객체의 키
+   * @param {Element} parent - 검색 시작 요소 (기본: document)
+   * @returns {NodeList|Array}
+   */
+  findAll(type, parent = document) {
+    const selectorList = this.selectors[type];
+
+    if (!selectorList) {
+      console.warn(`⚠️ SafeSelector: Unknown type "${type}"`);
+      return [];
+    }
+
+    for (const selector of selectorList) {
+      try {
+        const elements = parent.querySelectorAll(selector);
+        if (elements.length > 0) {
+          console.log(`✅ SafeSelector: Found ${elements.length} "${type}" with selector: ${selector}`);
+          return elements;
+        }
+      } catch (error) {
+        console.warn(`⚠️ SafeSelector: Invalid selector "${selector}":`, error.message);
+      }
+    }
+
+    console.warn(`❌ SafeSelector: Could not find any "${type}" with any selector`);
+    return [];
+  }
+
+  /**
+   * 커스텀 셀렉터 리스트로 찾기
+   * @param {string[]} selectors - 시도할 셀렉터 배열
+   * @param {Element} parent - 검색 시작 요소
+   * @returns {Element|null}
+   */
+  findWithCustom(selectors, parent = document) {
+    for (const selector of selectors) {
+      try {
+        const element = parent.querySelector(selector);
+        if (element) {
+          console.log(`✅ SafeSelector (custom): Found with selector: ${selector}`);
+          return element;
+        }
+      } catch (error) {
+        console.warn(`⚠️ SafeSelector (custom): Invalid selector "${selector}":`, error.message);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * 특정 타입에 대한 커스텀 셀렉터 추가
+   * @param {string} type - 타입 이름
+   * @param {string} selector - 추가할 셀렉터
+   * @param {number} priority - 우선순위 (0이 가장 높음)
+   */
+  addSelector(type, selector, priority = 999) {
+    if (!this.selectors[type]) {
+      this.selectors[type] = [];
+    }
+
+    // 우선순위에 따라 삽입
+    if (priority === 0) {
+      this.selectors[type].unshift(selector);
+    } else if (priority >= this.selectors[type].length) {
+      this.selectors[type].push(selector);
+    } else {
+      this.selectors[type].splice(priority, 0, selector);
+    }
+
+    console.log(`✅ SafeSelector: Added "${selector}" to "${type}" at priority ${priority}`);
+  }
+}
+
+// SafeSelector 인스턴스 생성 (전역에서 사용)
+const safeSelector = new SafeSelector();
+window.safeSelector = safeSelector; // 디버깅용
+
+// ========================================
 // 1. N8N 페이지 감지
 // ========================================
 function detectN8NPage() {
   console.log('🔍 N8N AI Copilot - Detecting N8N page...');
-  
-  // N8N 특유의 요소 찾기
+
+  // N8N 특유의 요소 찾기 (SafeSelector 사용)
   const indicators = {
-    canvas: document.querySelector('[class*="canvas"]'),
-    nodeView: document.querySelector('[class*="NodeView"]'),
-    workflow: document.querySelector('[class*="workflow"]'),
-    vueApp: document.querySelector('#app')
+    canvas: safeSelector.find('canvas'),
+    workflow: safeSelector.find('workflow'),
+    vueApp: safeSelector.find('app')
   };
-  
+
   const isN8N = Object.values(indicators).some(el => el !== null);
-  
+
   console.log('📊 Detection results:', indicators);
-  
+
   if (isN8N) {
     console.log('✅ N8N page detected!');
     initializeAICopilot();
   } else {
     console.log('❌ Not an N8N page');
   }
-  
+
   return isN8N;
 }
 
@@ -136,8 +326,8 @@ class N8NReader {
   getAllNodes() {
     const nodes = [];
 
-    // N8N 캔버스에서 모든 노드 찾기
-    const nodeElements = document.querySelectorAll('[data-name], [class*="node_"], .node');
+    // N8N 캔버스에서 모든 노드 찾기 (SafeSelector 사용)
+    const nodeElements = safeSelector.findAll('nodes');
 
     nodeElements.forEach(nodeEl => {
       const nodeType = this.getNodeType(nodeEl);
@@ -165,7 +355,7 @@ class N8NReader {
 
   // 현재 선택된 노드 정보 읽기
   getSelectedNode() {
-    const selectedNode = document.querySelector('[class*="selected"]');
+    const selectedNode = safeSelector.find('selectedNode');
 
     if (!selectedNode) {
       return null;
@@ -197,12 +387,10 @@ class N8NReader {
   
   // 노드 설정 패널의 입력 필드 읽기 (토글 포함)
   getNodeSettings() {
-    const settingsPanel = document.querySelector('[class*="NodeSettings"]') ||
-                          document.querySelector('[class*="node-settings"]') ||
-                          document.querySelector('[data-test-id*="node-settings"]') ||
-                          document.querySelector('.ndv-panel');
+    const settingsPanel = safeSelector.find('settingsPanel');
 
     if (!settingsPanel) {
+      console.warn('⚠️ Settings panel not found');
       return { fields: [], toggles: [], options: [] };
     }
 
@@ -291,14 +479,8 @@ class N8NReader {
   detectErrors() {
     const detectedErrors = [];
 
-    // 1. 노드 실행 에러 패널에서 상세 정보 추출
-    const errorPanels = document.querySelectorAll([
-      '[class*="ExecutionError"]',
-      '[class*="execution-error"]',
-      '[data-test-id*="error"]',
-      '[class*="error-message"]',
-      '[class*="RunData"]'
-    ].join(','));
+    // 1. 노드 실행 에러 패널에서 상세 정보 추출 (SafeSelector 사용)
+    const errorPanels = safeSelector.findAll('errorPanel');
 
     errorPanels.forEach(panel => {
       const errorInfo = this.extractDetailedError(panel);
@@ -307,29 +489,37 @@ class N8NReader {
       }
     });
 
-    // 2. 일반 에러 요소에서 추출 (백업)
+    // 2. 일반 에러 요소에서 추출 (백업) - 커스텀 셀렉터 사용
     if (detectedErrors.length === 0) {
-      const generalErrors = document.querySelectorAll([
+      const generalErrorSelectors = [
         '[class*="error"]',
         '[class*="Error"]',
         '[class*="issue"]',
         '.el-message--error'
-      ].join(','));
+      ];
 
-      generalErrors.forEach(errorEl => {
-        const text = errorEl.textContent.trim();
-        if (text && text.length > 0 && text.length < 5000) {
-          detectedErrors.push({
-            element: errorEl,
-            message: text,
-            type: this.getErrorType(text),
-            details: null
+      for (const selector of generalErrorSelectors) {
+        const generalErrors = document.querySelectorAll(selector);
+        if (generalErrors.length > 0) {
+          generalErrors.forEach(errorEl => {
+            const text = errorEl.textContent.trim();
+            if (text && text.length > 0 && text.length < 5000) {
+              detectedErrors.push({
+                element: errorEl,
+                message: text,
+                type: this.getErrorType(text),
+                details: null
+              });
+            }
           });
+          break; // 찾았으면 중단
         }
-      });
+      }
     }
 
-    console.log('⚠️ Found errors:', detectedErrors);
+    if (detectedErrors.length > 0) {
+      console.log(`⚠️ Found ${detectedErrors.length} error(s)`);
+    }
     return detectedErrors;
   }
 
@@ -408,11 +598,160 @@ class N8NReader {
 
     return 'general';
   }
-  
+
+  // 노드의 실행 데이터 읽기 (Input/Output)
+  getNodeExecutionData(nodeName) {
+    console.log('📊 Reading execution data from node:', nodeName);
+
+    const settingsPanel = safeSelector.find('settingsPanel');
+
+    if (!settingsPanel) {
+      console.warn('⚠️ Settings panel not found');
+      return null;
+    }
+
+    const executionData = {
+      nodeName: nodeName,
+      input: null,
+      output: null,
+      inputItems: 0,
+      outputItems: 0,
+      dataLoss: false,
+      dataChange: null
+    };
+
+    // Input/Output 탭 또는 데이터 표시 영역 찾기
+    const tabs = settingsPanel.querySelectorAll('[role="tab"], .tab, [class*="tab"]');
+    const dataDisplays = settingsPanel.querySelectorAll('[class*="data"], [class*="json"], pre, code');
+
+    // JSON 데이터 찾기
+    for (const display of dataDisplays) {
+      const text = display.textContent;
+      if (!text) continue;
+
+      try {
+        // JSON 파싱 시도
+        const jsonMatch = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+        if (jsonMatch) {
+          const data = JSON.parse(jsonMatch[0]);
+
+          // items 배열 찾기
+          if (Array.isArray(data)) {
+            // Output일 가능성
+            if (!executionData.output) {
+              executionData.output = data;
+              executionData.outputItems = data.length;
+            } else if (!executionData.input) {
+              executionData.input = data;
+              executionData.inputItems = data.length;
+            }
+          } else if (data.items && Array.isArray(data.items)) {
+            // items가 있는 객체
+            if (!executionData.output) {
+              executionData.output = data.items;
+              executionData.outputItems = data.items.length;
+            } else if (!executionData.input) {
+              executionData.input = data.items;
+              executionData.inputItems = data.items.length;
+            }
+          }
+        }
+      } catch (e) {
+        // JSON 파싱 실패는 무시
+      }
+    }
+
+    // Items 개수 표시 찾기 (예: "3 items")
+    const itemCountElements = settingsPanel.querySelectorAll('[class*="item"], [class*="count"]');
+    for (const el of itemCountElements) {
+      const text = el.textContent;
+      const match = text.match(/(\d+)\s*items?/i);
+      if (match) {
+        const count = parseInt(match[1]);
+        if (executionData.outputItems === 0) {
+          executionData.outputItems = count;
+        }
+      }
+    }
+
+    // 데이터 손실 감지
+    if (executionData.inputItems > 0 && executionData.outputItems > 0) {
+      if (executionData.outputItems < executionData.inputItems) {
+        executionData.dataLoss = true;
+        executionData.dataChange = `${executionData.inputItems} items → ${executionData.outputItems} items (손실!)`;
+      } else if (executionData.outputItems > executionData.inputItems) {
+        executionData.dataChange = `${executionData.inputItems} items → ${executionData.outputItems} items (증가)`;
+      }
+    }
+
+    console.log('📊 Execution data:', executionData);
+    return executionData;
+  }
+
+  // Code 노드에서 JavaScript 코드 읽기
+  getCodeFromNode(nodeName) {
+    console.log('🔍 Trying to read code from node:', nodeName);
+
+    // 설정 패널이 열려있는지 확인 (SafeSelector 사용)
+    const settingsPanel = safeSelector.find('settingsPanel');
+
+    if (!settingsPanel) {
+      console.warn('⚠️ Settings panel not found - node may not be clicked');
+      return null; // 에러 대신 null 반환
+    }
+
+    // Monaco Editor (N8N이 주로 사용) - SafeSelector 사용
+    const monacoEditors = safeSelector.findAll('codeEditor', settingsPanel);
+    for (const editor of monacoEditors) {
+      // Monaco의 실제 텍스트 영역 찾기
+      const textArea = editor.querySelector('textarea');
+      if (textArea && textArea.value) {
+        console.log('✅ Code found in Monaco Editor (textarea)');
+        return textArea.value;
+      }
+
+      // Monaco의 view-lines에서 코드 읽기
+      const viewLines = editor.querySelector('.view-lines');
+      if (viewLines) {
+        const code = Array.from(viewLines.querySelectorAll('.view-line'))
+          .map(line => line.textContent)
+          .join('\n');
+        if (code.trim()) {
+          console.log('✅ Code found in Monaco Editor (view-lines)');
+          return code;
+        }
+      }
+    }
+
+    // CodeMirror (대체 에디터)
+    const codeMirrors = settingsPanel.querySelectorAll('.CodeMirror, [class*="CodeMirror"]');
+    for (const cm of codeMirrors) {
+      const cmInstance = cm.CodeMirror;
+      if (cmInstance && cmInstance.getValue) {
+        const code = cmInstance.getValue();
+        console.log('✅ Code found in CodeMirror');
+        return code;
+      }
+    }
+
+    // 일반 textarea (백업)
+    const textareas = settingsPanel.querySelectorAll('textarea');
+    for (const textarea of textareas) {
+      // 긴 텍스트가 있는 textarea = 코드일 가능성
+      if (textarea.value && textarea.value.length > 20) {
+        console.log('✅ Code found in textarea');
+        return textarea.value;
+      }
+    }
+
+    console.warn('⚠️ Could not find code in node');
+    return null;
+  }
+
   // 전체 워크플로우 구조 읽기
   getWorkflowStructure() {
     const nodes = document.querySelectorAll('[class*="CanvasNode"], [data-node-type]');
-    
+
     return {
       nodeCount: nodes.length,
       nodes: Array.from(nodes).map(node => ({
@@ -421,6 +760,518 @@ class N8NReader {
         id: this.getNodeId(node)
       }))
     };
+  }
+
+  // 모든 노드의 실행 데이터 수집 (자동으로 각 노드 클릭하며 수집)
+  async getAllNodesExecutionData(onProgress = null) {
+    console.log('🔄 Collecting execution data from all nodes...');
+
+    const nodes = safeSelector.findAll('nodes');
+    const nodesData = [];
+    const total = nodes.length;
+    const startTime = Date.now();
+    const MAX_TOTAL_TIME = 120000; // 2분 최대 타임아웃
+
+    for (let index = 0; index < nodes.length; index++) {
+      const nodeElement = nodes[index];
+      const nodeName = this.getNodeName(nodeElement);
+
+      // 취소 확인 (전역 변수 참조)
+      if (window.currentAnalysisTask && window.currentAnalysisTask.isCancelled()) {
+        console.log(`🛑 Collection cancelled at node ${index + 1}/${total}`);
+        break;
+      }
+
+      // 진행률 업데이트
+      const progress = {
+        current: index + 1,
+        total: total,
+        percentage: Math.round(((index + 1) / total) * 100),
+        nodeName: nodeName
+      };
+
+      if (onProgress) {
+        onProgress(progress);
+      }
+
+      console.log(`📍 [${progress.current}/${progress.total}] Checking node: ${nodeName}`);
+
+      // 전체 시간 초과 체크
+      if (Date.now() - startTime > MAX_TOTAL_TIME) {
+        console.warn(`⏰ Total timeout reached. Processed ${nodesData.length}/${total} nodes`);
+        break;
+      }
+
+      // 노드 클릭하여 설정 패널 열기
+      nodeElement.click();
+
+      // 패널이 실제로 열릴 때까지 대기 (최대 3초)
+      const panel = await waitForPanel(3000);
+
+      if (!panel) {
+        console.warn(`⚠️ Panel failed to open for node: ${nodeName} (skipping)`);
+        // 패널 닫기 시도
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        await new Promise(resolve => setTimeout(resolve, 200));
+        continue;
+      }
+
+      // 실행 데이터 읽기
+      const execData = this.getNodeExecutionData(nodeName);
+      const code = this.getCodeFromNode(nodeName);
+
+      if (execData || code) {
+        nodesData.push({
+          nodeName,
+          nodeType: this.getNodeType(nodeElement),
+          executionData: execData,
+          code: code,
+          hasDataLoss: execData?.dataLoss || false
+        });
+      }
+
+      // ESC 키로 패널 닫기
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+
+    const status = window.currentAnalysisTask && window.currentAnalysisTask.isCancelled() ? 'cancelled' : 'complete';
+    console.log(`✅ Data collection ${status}: ${nodesData.length}/${total} nodes`);
+    return nodesData;
+  }
+
+  // 워크플로우 데이터 흐름 분석
+  analyzeWorkflowDataFlow(nodesData) {
+    console.log('🔍 Analyzing workflow data flow...');
+
+    const analysis = {
+      totalNodes: nodesData.length,
+      nodesWithDataLoss: [],
+      dataFlowIssues: [],
+      recommendations: []
+    };
+
+    // 데이터 손실 노드 찾기
+    nodesData.forEach((nodeData, index) => {
+      if (nodeData.hasDataLoss) {
+        analysis.nodesWithDataLoss.push({
+          nodeName: nodeData.nodeName,
+          issue: nodeData.executionData.dataChange,
+          position: index
+        });
+      }
+
+      // 이전 노드와 데이터 개수 비교
+      if (index > 0) {
+        const prevNode = nodesData[index - 1];
+        const currentNode = nodeData;
+
+        if (prevNode.executionData && currentNode.executionData) {
+          const prevOutput = prevNode.executionData.outputItems;
+          const currentInput = currentNode.executionData.inputItems;
+
+          if (prevOutput !== currentInput && prevOutput > 0 && currentInput > 0) {
+            analysis.dataFlowIssues.push({
+              from: prevNode.nodeName,
+              to: currentNode.nodeName,
+              issue: `${prevOutput} items → ${currentInput} items`,
+              severity: prevOutput > currentInput ? 'high' : 'low'
+            });
+          }
+        }
+      }
+    });
+
+    // 추천 사항 생성
+    if (analysis.nodesWithDataLoss.length > 0) {
+      const firstLoss = analysis.nodesWithDataLoss[0];
+      analysis.recommendations.push({
+        priority: 'high',
+        nodeName: firstLoss.nodeName,
+        message: `"${firstLoss.nodeName}" 노드에서 데이터 손실 발생`,
+        suggestion: '코드 검토 또는 "Run Once for All Items" 설정 확인 필요'
+      });
+    }
+
+    if (analysis.dataFlowIssues.length > 0) {
+      const highSeverityIssues = analysis.dataFlowIssues.filter(i => i.severity === 'high');
+      if (highSeverityIssues.length > 0) {
+        const issue = highSeverityIssues[0];
+        analysis.recommendations.push({
+          priority: 'high',
+          nodeName: issue.from,
+          message: `"${issue.from}" → "${issue.to}" 사이 데이터 손실`,
+          suggestion: `"${issue.from}" 노드 출력 확인 필요`
+        });
+      }
+    }
+
+    console.log('📊 Analysis result:', analysis);
+    return analysis;
+  }
+
+  // 문제의 근원 노드 찾기
+  findIssueSource(nodesData, problemDescription) {
+    console.log('🎯 Finding issue source:', problemDescription);
+
+    const issues = [];
+
+    // 키워드 기반 문제 감지
+    const isItemCountIssue = /\d+.*전송.*\d+.*전송|개수|1개만|하나만/i.test(problemDescription);
+    const isTextTruncated = /짤림|잘림|truncate|substring|짧/i.test(problemDescription);
+
+    nodesData.forEach((nodeData, index) => {
+      // 데이터 손실이 있는 노드
+      if (nodeData.hasDataLoss && isItemCountIssue) {
+        issues.push({
+          priority: 'critical',
+          nodeName: nodeData.nodeName,
+          type: 'data_loss',
+          description: `데이터 개수 감소: ${nodeData.executionData.dataChange}`,
+          codeSnippet: nodeData.code ? nodeData.code.substring(0, 200) : null,
+          suggestion: '코드에서 items[0] 또는 필터링 로직 확인'
+        });
+      }
+
+      // 텍스트 잘림 패턴 감지
+      if (nodeData.code && isTextTruncated) {
+        if (nodeData.code.includes('substring') ||
+            nodeData.code.includes('slice') ||
+            nodeData.code.includes('substr')) {
+          issues.push({
+            priority: 'high',
+            nodeName: nodeData.nodeName,
+            type: 'text_truncation',
+            description: '코드에서 문자열 자르기 사용 중',
+            codeSnippet: nodeData.code,
+            suggestion: 'substring/slice 로직 제거 또는 길이 조정'
+          });
+        }
+      }
+    });
+
+    // 우선순위 정렬
+    issues.sort((a, b) => {
+      const priority = { critical: 3, high: 2, medium: 1, low: 0 };
+      return priority[b.priority] - priority[a.priority];
+    });
+
+    console.log('🎯 Found issues:', issues);
+    return issues;
+  }
+
+  // ========================================
+  // 고급 분석 시스템
+  // ========================================
+
+  // 자동 문제 감지 (사용자 설명 없이도 일반적인 문제 패턴 자동 감지)
+  detectAutomaticIssues(nodesData) {
+    console.log('🔍 Auto-detecting common issues...');
+    const detectedIssues = [];
+
+    nodesData.forEach((nodeData, index) => {
+      const { nodeName, executionData, code, error } = nodeData;
+
+      // 1. 데이터 개수 감소 (items[0] 패턴)
+      if (executionData && executionData.inputItems > executionData.outputItems) {
+        const reduction = executionData.inputItems - executionData.outputItems;
+
+        // 코드에서 원인 찾기
+        let cause = '알 수 없음';
+        let codeSnippet = null;
+
+        if (code) {
+          if (code.match(/items\[0\]|item\[0\]/)) {
+            cause = 'items[0] 사용 - 첫 번째 아이템만 선택';
+            codeSnippet = code.split('\n').find(line => line.includes('items[0]') || line.includes('item[0]'));
+          } else if (code.match(/\.filter\(/)) {
+            cause = 'filter() 사용 - 일부 아이템 필터링';
+            codeSnippet = code.split('\n').find(line => line.includes('.filter('));
+          } else if (code.match(/\.slice\(.*,.*\)/)) {
+            cause = 'slice() 사용 - 배열 일부만 선택';
+            codeSnippet = code.split('\n').find(line => line.includes('.slice('));
+          } else if (code.match(/\.limit\(|\.take\(/)) {
+            cause = 'limit/take 사용 - 개수 제한';
+            codeSnippet = code.split('\n').find(line => line.includes('.limit(') || line.includes('.take('));
+          }
+        }
+
+        detectedIssues.push({
+          priority: 'critical',
+          nodeName: nodeName,
+          nodeIndex: index,
+          type: 'data_count_reduction',
+          description: `데이터 개수 감소: ${executionData.inputItems}개 → ${executionData.outputItems}개 (${reduction}개 손실)`,
+          cause: cause,
+          codeSnippet: codeSnippet,
+          suggestion: cause === 'items[0] 사용 - 첫 번째 아이템만 선택'
+            ? '모든 아이템 처리하려면 items.map() 또는 반복문 사용'
+            : '필터 조건 또는 slice/limit 파라미터 확인'
+        });
+      }
+
+      // 2. 텍스트 잘림 패턴
+      if (code) {
+        const truncationPatterns = [
+          { pattern: /\.substring\((\d+),\s*(\d+)\)/, name: 'substring' },
+          { pattern: /\.slice\((\d+),\s*(\d+)\)/, name: 'slice' },
+          { pattern: /\.substr\((\d+),\s*(\d+)\)/, name: 'substr' }
+        ];
+
+        truncationPatterns.forEach(({ pattern, name }) => {
+          const match = code.match(pattern);
+          if (match) {
+            const startIdx = match[1];
+            const endIdx = match[2];
+            const length = endIdx - startIdx;
+
+            detectedIssues.push({
+              priority: 'high',
+              nodeName: nodeName,
+              nodeIndex: index,
+              type: 'text_truncation',
+              description: `텍스트 잘림 가능성: ${name}(${startIdx}, ${endIdx}) 사용`,
+              cause: `문자열을 ${length}자로 제한`,
+              codeSnippet: code.split('\n').find(line => line.match(pattern)),
+              suggestion: '전체 텍스트가 필요하면 substring/slice 제거, 또는 길이 늘리기'
+            });
+          }
+        });
+      }
+
+      // 3. 인증 에러
+      if (error && (error.includes('401') || error.includes('403') || error.includes('Unauthorized'))) {
+        detectedIssues.push({
+          priority: 'critical',
+          nodeName: nodeName,
+          nodeIndex: index,
+          type: 'authentication_error',
+          description: '인증 실패',
+          cause: error,
+          suggestion: 'Credentials 설정 확인, API 키/토큰 유효성 검사'
+        });
+      }
+
+      // 4. 필수 필드 누락
+      if (executionData && executionData.output) {
+        const outputs = Array.isArray(executionData.output) ? executionData.output : [executionData.output];
+        const missingFields = [];
+
+        outputs.forEach((item, idx) => {
+          if (item && typeof item === 'object') {
+            const values = Object.values(item);
+            const hasUndefined = values.some(v => v === undefined || v === null || v === '');
+            if (hasUndefined) {
+              const undefinedKeys = Object.keys(item).filter(k =>
+                item[k] === undefined || item[k] === null || item[k] === ''
+              );
+              missingFields.push({ itemIndex: idx, fields: undefinedKeys });
+            }
+          }
+        });
+
+        if (missingFields.length > 0) {
+          detectedIssues.push({
+            priority: 'medium',
+            nodeName: nodeName,
+            nodeIndex: index,
+            type: 'missing_fields',
+            description: `일부 아이템에 빈 필드 존재 (${missingFields.length}개 아이템)`,
+            cause: `누락된 필드: ${missingFields[0].fields.join(', ')}`,
+            suggestion: '이전 노드에서 데이터가 제대로 전달되었는지 확인'
+          });
+        }
+      }
+
+      // 5. 반복 실행 실패 (Loop + 일부만 성공)
+      if (executionData && executionData.inputItems > 1 && executionData.outputItems === 1) {
+        // 여러 입력이 있었는데 출력이 1개만 = 반복 실행 실패 의심
+        if (code && code.includes('for') || code.includes('forEach') || code.includes('map')) {
+          detectedIssues.push({
+            priority: 'high',
+            nodeName: nodeName,
+            nodeIndex: index,
+            type: 'loop_partial_failure',
+            description: `반복 실행 실패 의심: ${executionData.inputItems}개 입력 → 1개 출력`,
+            cause: '반복문 안에서 일부만 처리되거나 에러 발생',
+            suggestion: '반복문 로직 확인, try-catch로 에러 처리 추가'
+          });
+        }
+      }
+    });
+
+    // 우선순위 정렬
+    detectedIssues.sort((a, b) => {
+      const priority = { critical: 3, high: 2, medium: 1, low: 0 };
+      return (priority[b.priority] || 0) - (priority[a.priority] || 0);
+    });
+
+    console.log(`✅ Auto-detected ${detectedIssues.length} issues:`, detectedIssues);
+    return detectedIssues;
+  }
+
+  // 노드 체인 역추적 분석 (문제 노드부터 이전 노드까지)
+  analyzeNodeChain(nodesData, problemNodeIndex) {
+    console.log(`🔙 Analyzing node chain from index ${problemNodeIndex} backwards...`);
+
+    const chain = [];
+    const problemNode = nodesData[problemNodeIndex];
+
+    if (!problemNode) {
+      console.warn('⚠️ Problem node not found');
+      return chain;
+    }
+
+    // 문제 노드부터 역순으로 분석
+    for (let i = problemNodeIndex; i >= 0; i--) {
+      const node = nodesData[i];
+      const prevNode = i > 0 ? nodesData[i - 1] : null;
+
+      const analysis = {
+        nodeIndex: i,
+        nodeName: node.nodeName,
+        role: i === problemNodeIndex ? 'problem_node' : 'upstream_node',
+        executionData: node.executionData,
+        code: node.code,
+        error: node.error,
+        issues: []
+      };
+
+      // 데이터 변화 감지
+      if (prevNode && node.executionData && prevNode.executionData) {
+        const prevOutput = prevNode.executionData.outputItems;
+        const currentInput = node.executionData.inputItems;
+        const currentOutput = node.executionData.outputItems;
+
+        // 입력-출력 불일치
+        if (prevOutput !== currentInput && prevOutput > 0 && currentInput > 0) {
+          analysis.issues.push({
+            type: 'data_mismatch',
+            description: `이전 노드 출력(${prevOutput}개)과 현재 입력(${currentInput}개) 불일치`,
+            severity: 'high'
+          });
+        }
+
+        // 데이터 손실
+        if (currentOutput < currentInput) {
+          analysis.issues.push({
+            type: 'data_loss_in_node',
+            description: `노드 내부에서 데이터 감소: ${currentInput}개 → ${currentOutput}개`,
+            severity: 'critical'
+          });
+        }
+      }
+
+      // 코드 패턴 검사
+      if (node.code) {
+        // items[0] 패턴
+        if (node.code.match(/items\[0\]|item\[0\]/)) {
+          analysis.issues.push({
+            type: 'single_item_access',
+            description: 'items[0] 사용 - 첫 번째 아이템만 처리',
+            severity: 'critical',
+            codeSnippet: node.code.split('\n').find(line => line.includes('items[0]'))
+          });
+        }
+
+        // return 문 확인
+        const returnMatch = node.code.match(/return\s+(.+?);/);
+        if (returnMatch) {
+          const returnValue = returnMatch[1].trim();
+          if (!returnValue.includes('items') && !returnValue.includes('[')) {
+            analysis.issues.push({
+              type: 'suspicious_return',
+              description: `return 문이 배열을 반환하지 않을 수 있음: ${returnValue}`,
+              severity: 'high',
+              codeSnippet: returnMatch[0]
+            });
+          }
+        }
+      }
+
+      chain.push(analysis);
+
+      // 문제가 명확히 발견되면 더 이상 역추적하지 않음 (최적화)
+      if (analysis.issues.some(issue => issue.severity === 'critical') && i < problemNodeIndex) {
+        console.log(`✅ Root cause found at node ${i}: ${node.nodeName}`);
+        break;
+      }
+    }
+
+    console.log(`📊 Chain analysis complete: ${chain.length} nodes analyzed`);
+    return chain;
+  }
+
+  // AI 분석을 위한 워크플로우 컨텍스트 구축
+  buildAIContext(nodesData, userIntent = null, errorDescription = null) {
+    console.log('🤖 Building AI analysis context...');
+
+    const context = {
+      summary: {
+        totalNodes: nodesData.length,
+        nodesWithErrors: nodesData.filter(n => n.error).length,
+        nodesWithDataLoss: nodesData.filter(n => n.hasDataLoss).length,
+        userIntent: userIntent,
+        errorDescription: errorDescription
+      },
+      nodes: [],
+      dataFlow: [],
+      detectedIssues: this.detectAutomaticIssues(nodesData)
+    };
+
+    // 각 노드 정보
+    nodesData.forEach((node, index) => {
+      const nodeInfo = {
+        index: index,
+        name: node.nodeName,
+        type: node.nodeType || 'unknown',
+        input: node.executionData ? {
+          itemCount: node.executionData.inputItems,
+          sample: this._getSampleData(node.executionData.input, 2)
+        } : null,
+        output: node.executionData ? {
+          itemCount: node.executionData.outputItems,
+          sample: this._getSampleData(node.executionData.output, 2)
+        } : null,
+        code: node.code ? this._truncateCode(node.code, 50) : null,
+        error: node.error || null,
+        hasDataLoss: node.hasDataLoss || false
+      };
+
+      context.nodes.push(nodeInfo);
+
+      // 데이터 흐름 정보
+      if (index > 0) {
+        const prevNode = nodesData[index - 1];
+        if (prevNode.executionData && node.executionData) {
+          context.dataFlow.push({
+            from: { name: prevNode.nodeName, output: prevNode.executionData.outputItems },
+            to: { name: node.nodeName, input: node.executionData.inputItems },
+            itemsLost: prevNode.executionData.outputItems - node.executionData.inputItems,
+            status: prevNode.executionData.outputItems === node.executionData.inputItems ? 'ok' : 'mismatch'
+          });
+        }
+      }
+    });
+
+    console.log('✅ AI context built:', context);
+    return context;
+  }
+
+  // 헬퍼: 샘플 데이터 추출 (처음 N개 아이템)
+  _getSampleData(data, count = 2) {
+    if (!data) return null;
+    if (Array.isArray(data)) {
+      return data.slice(0, count);
+    }
+    return data;
+  }
+
+  // 헬퍼: 코드 잘라내기 (처음 N줄)
+  _truncateCode(code, lines = 50) {
+    const codeLines = code.split('\n');
+    if (codeLines.length <= lines) return code;
+    return codeLines.slice(0, lines).join('\n') + '\n... (' + (codeLines.length - lines) + ' more lines)';
   }
 }
 
@@ -685,16 +1536,55 @@ function initializeAICopilot() {
     console.error('❌ initializeSidebar function not found!');
   }
 
-  // 에러 자동 감지 (5초마다)
-  setInterval(() => {
-    const errors = window.n8nReader.detectErrors();
-    if (errors.length > 0 && window.sendMessageToSidebar) {
-      window.sendMessageToSidebar({
-        type: 'error-detected',
-        errors: errors
-      });
+  // 에러 자동 감지 (5초마다) - 메모리 누수 방지
+  let errorDetectionInterval = null;
+
+  function startErrorDetection() {
+    // 이미 실행 중이면 중복 방지
+    if (errorDetectionInterval) {
+      console.log('⚠️ Error detection already running');
+      return;
     }
-  }, 5000);
+
+    console.log('🔄 Starting error detection (every 5s)');
+    errorDetectionInterval = setInterval(() => {
+      const errors = window.n8nReader.detectErrors();
+      if (errors.length > 0 && window.sendMessageToSidebar) {
+        window.sendMessageToSidebar({
+          type: 'error-detected',
+          errors: errors
+        });
+      }
+    }, 5000);
+  }
+
+  function stopErrorDetection() {
+    if (errorDetectionInterval) {
+      console.log('🛑 Stopping error detection');
+      clearInterval(errorDetectionInterval);
+      errorDetectionInterval = null;
+    }
+  }
+
+  // 페이지 언로드 시 정리
+  window.addEventListener('beforeunload', () => {
+    console.log('🧹 Cleaning up: page unload');
+    stopErrorDetection();
+  });
+
+  // 사이드바 닫힐 때 정리
+  window.addEventListener('message', (event) => {
+    if (event.data.type === 'sidebar-closed') {
+      console.log('🧹 Cleaning up: sidebar closed');
+      stopErrorDetection();
+    } else if (event.data.type === 'sidebar-opened') {
+      console.log('▶️ Sidebar opened: starting error detection');
+      startErrorDetection();
+    }
+  });
+
+  // 초기 시작
+  startErrorDetection();
 
   console.log('✅ N8N AI Copilot initialized successfully!');
 }
@@ -755,17 +1645,59 @@ if (document.body) {
 // 10. iframe과의 메시지 통신
 // ========================================
 
+// 분석 취소를 위한 전역 변수
+let currentAnalysisTask = null;
+window.currentAnalysisTask = null; // N8NReader에서 접근 가능하도록
+
+class AnalysisTask {
+  constructor(type) {
+    this.type = type;
+    this.cancelled = false;
+    this.startTime = Date.now();
+  }
+
+  cancel() {
+    console.log(`🛑 Cancelling ${this.type} analysis`);
+    this.cancelled = true;
+  }
+
+  isCancelled() {
+    return this.cancelled;
+  }
+
+  getElapsedTime() {
+    return Date.now() - this.startTime;
+  }
+}
+
+window.AnalysisTask = AnalysisTask; // N8NReader에서 사용 가능하도록
+
 // iframe으로부터 메시지 수신
 window.addEventListener('message', async (event) => {
   console.log('📨 Message received in content.js:', event.data);
 
   if (event.data.type === 'send-message') {
     const userMessage = event.data.message;
+    const errorContext = event.data.errorContext; // 에러 분석 컨텍스트
+    const workflowContext = event.data.workflowContext; // 워크플로우 분석 컨텍스트
     console.log('💬 User message:', userMessage);
 
     try {
       // N8N 페이지 컨텍스트 수집
       const context = collectPageContext();
+
+      // 에러 분석 컨텍스트가 있으면 추가
+      if (errorContext) {
+        context.errorAnalysis = errorContext;
+        console.log('📄 Error context included:', errorContext);
+      }
+
+      // 워크플로우 분석 컨텍스트가 있으면 추가
+      if (workflowContext) {
+        context.workflowAnalysis = workflowContext;
+        console.log('📄 Workflow context included:', workflowContext);
+      }
+
       console.log('📄 Page context collected:', context);
 
       // Claude API 호출 (background.js를 통해)
@@ -806,6 +1738,213 @@ window.addEventListener('message', async (event) => {
       });
     }
   }
+
+  if (event.data.type === 'analyze-error') {
+    console.log('⚠️ Error analysis requested');
+
+    try {
+      // async 함수이므로 await 사용
+      (async () => {
+        const errorAnalysis = await analyzeErrorsWithCode();
+        console.log('📊 Error analysis complete:', errorAnalysis);
+
+        sendMessageToIframe({
+          type: 'error-analysis-result',
+          data: errorAnalysis
+        });
+      })();
+    } catch (error) {
+      console.error('❌ Error analyzing errors:', error);
+      sendMessageToIframe({
+        type: 'error',
+        message: '에러 분석 중 오류가 발생했습니다: ' + error.message
+      });
+    }
+  }
+
+  if (event.data.type === 'analyze-workflow') {
+    console.log('🔬 Workflow analysis requested');
+
+    try {
+      // 비동기로 워크플로우 분석 실행
+      (async () => {
+        // 새 분석 태스크 생성
+        currentAnalysisTask = new AnalysisTask('workflow');
+        window.currentAnalysisTask = currentAnalysisTask; // N8NReader에서 접근 가능하도록
+        console.log('🔄 Starting workflow analysis...');
+
+        // 모든 노드의 실행 데이터 수집 (진행률 콜백 포함)
+        const nodesData = await window.n8nReader.getAllNodesExecutionData((progress) => {
+          // 취소되었는지 확인
+          if (currentAnalysisTask && currentAnalysisTask.isCancelled()) {
+            return;
+          }
+
+          // 진행률을 iframe으로 전송
+          sendMessageToIframe({
+            type: 'workflow-analysis-progress',
+            progress: progress
+          });
+        });
+
+        // 취소되었으면 중단
+        if (currentAnalysisTask && currentAnalysisTask.isCancelled()) {
+          console.log('🛑 Workflow analysis cancelled');
+          sendMessageToIframe({
+            type: 'workflow-analysis-cancelled',
+            message: '워크플로우 분석이 취소되었습니다.'
+          });
+          currentAnalysisTask = null;
+          window.currentAnalysisTask = null;
+          return;
+        }
+
+        console.log('📊 Nodes data collected:', nodesData);
+
+        // ========================================
+        // 고급 분석 시스템 실행
+        // ========================================
+
+        // 1. 기본 데이터 흐름 분석
+        const flowAnalysis = window.n8nReader.analyzeWorkflowDataFlow(nodesData);
+        console.log('📊 Flow analysis complete:', flowAnalysis);
+
+        // 2. 자동 문제 감지 (사용자 설명 없이도 일반적인 패턴 자동 감지)
+        const automaticIssues = window.n8nReader.detectAutomaticIssues(nodesData);
+        console.log('🔍 Automatic issues detected:', automaticIssues);
+
+        // 3. 문제 노드 역추적 분석
+        let chainAnalysis = null;
+        if (automaticIssues.length > 0) {
+          // 가장 심각한 문제가 있는 노드부터 역추적
+          const mostCriticalIssue = automaticIssues[0];
+          chainAnalysis = window.n8nReader.analyzeNodeChain(nodesData, mostCriticalIssue.nodeIndex);
+          console.log('🔙 Chain analysis complete:', chainAnalysis);
+        }
+
+        // 4. AI 분석을 위한 전체 컨텍스트 구축
+        const aiContext = window.n8nReader.buildAIContext(nodesData);
+        console.log('🤖 AI context built:', aiContext);
+
+        // ========================================
+        // 사용자 메시지 생성 (개선된 버전)
+        // ========================================
+        let userMessage = '';
+
+        if (automaticIssues.length > 0) {
+          userMessage += `🔍 워크플로우 분석 완료: ${automaticIssues.length}개 문제 발견\n\n`;
+
+          // 자동 감지된 문제들 표시 (상위 5개만)
+          const topIssues = automaticIssues.slice(0, 5);
+          topIssues.forEach((issue, idx) => {
+            const priorityEmoji = {
+              critical: '🔴',
+              high: '🟠',
+              medium: '🟡',
+              low: '⚪'
+            }[issue.priority] || '⚪';
+
+            userMessage += `${priorityEmoji} **${issue.nodeName}** (${issue.type})\n`;
+            userMessage += `   ${issue.description}\n`;
+            if (issue.cause && issue.cause !== '알 수 없음') {
+              userMessage += `   원인: ${issue.cause}\n`;
+            }
+            if (issue.codeSnippet) {
+              userMessage += `   코드: \`${issue.codeSnippet.substring(0, 60)}...\`\n`;
+            }
+            userMessage += `   💡 ${issue.suggestion}\n\n`;
+          });
+
+          if (automaticIssues.length > 5) {
+            userMessage += `... 그 외 ${automaticIssues.length - 5}개 문제 더 있음\n\n`;
+          }
+
+          // 역추적 분석 결과
+          if (chainAnalysis && chainAnalysis.length > 1) {
+            userMessage += `\n🔙 **근본 원인 추적**\n`;
+            userMessage += `문제 노드: ${chainAnalysis[0].nodeName}\n`;
+
+            // 역추적 체인에서 critical 이슈를 가진 노드 찾기
+            const rootCauseNode = chainAnalysis.find(node =>
+              node.issues.some(issue => issue.severity === 'critical')
+            );
+
+            if (rootCauseNode && rootCauseNode.nodeIndex !== chainAnalysis[0].nodeIndex) {
+              userMessage += `진짜 원인 노드: ${rootCauseNode.nodeName}\n`;
+              const criticalIssue = rootCauseNode.issues.find(i => i.severity === 'critical');
+              if (criticalIssue) {
+                userMessage += `   → ${criticalIssue.description}\n`;
+                if (criticalIssue.codeSnippet) {
+                  userMessage += `   → 코드: \`${criticalIssue.codeSnippet}\`\n`;
+                }
+              }
+            }
+          }
+
+        } else if (flowAnalysis.nodesWithDataLoss.length > 0 || flowAnalysis.dataFlowIssues.length > 0) {
+          // 자동 감지는 안됐지만 기본 분석에서 문제 발견
+          userMessage += '워크플로우 분석 완료\n\n';
+
+          if (flowAnalysis.nodesWithDataLoss.length > 0) {
+            userMessage += `⚠️ 데이터 손실 발견: ${flowAnalysis.nodesWithDataLoss.length}개 노드\n`;
+            flowAnalysis.nodesWithDataLoss.forEach(node => {
+              userMessage += `- ${node.nodeName}: ${node.issue}\n`;
+            });
+          }
+
+          if (flowAnalysis.dataFlowIssues.length > 0) {
+            userMessage += `\n⚠️ 데이터 흐름 문제: ${flowAnalysis.dataFlowIssues.length}개\n`;
+            flowAnalysis.dataFlowIssues.forEach(issue => {
+              userMessage += `- ${issue.from} → ${issue.to}: ${issue.issue}\n`;
+            });
+          }
+        } else {
+          userMessage = '✅ 워크플로우 분석 완료: 문제 없음';
+        }
+
+        // iframe으로 결과 전송
+        sendMessageToIframe({
+          type: 'workflow-analysis-result',
+          data: {
+            userMessage: userMessage,
+            nodesData: nodesData,
+            flowAnalysis: flowAnalysis,
+            automaticIssues: automaticIssues,
+            chainAnalysis: chainAnalysis,
+            aiContext: aiContext
+          }
+        });
+
+        // 태스크 완료
+        currentAnalysisTask = null;
+        window.currentAnalysisTask = null;
+      })();
+
+    } catch (error) {
+      console.error('❌ Error analyzing workflow:', error);
+      sendMessageToIframe({
+        type: 'error',
+        message: '워크플로우 분석 중 오류가 발생했습니다: ' + error.message
+      });
+      currentAnalysisTask = null;
+      window.currentAnalysisTask = null;
+    }
+  }
+
+  // 분석 취소 요청
+  if (event.data.type === 'cancel-analysis') {
+    console.log('🛑 Cancel analysis requested');
+
+    if (currentAnalysisTask) {
+      currentAnalysisTask.cancel();
+      sendMessageToIframe({
+        type: 'analysis-cancelled',
+        message: '분석이 취소되었습니다.'
+      });
+    } else {
+      console.warn('⚠️ No analysis running to cancel');
+    }
+  }
 });
 
 // iframe으로 메시지 전송
@@ -835,9 +1974,9 @@ function collectPageContext() {
     workflowNodes: workflowNodes // 워크플로우의 모든 노드
   };
 
-  // 선택된 노드 정보 수집 (가능한 경우)
+  // 선택된 노드 정보 수집 (가능한 경우) - SafeSelector 사용
   try {
-    const selectedNodeElement = document.querySelector('[class*="selected"]');
+    const selectedNodeElement = safeSelector.find('selectedNode');
     if (selectedNodeElement) {
       context.selectedNode = {
         type: selectedNodeElement.getAttribute('data-node-type') || 'unknown',
@@ -937,9 +2076,28 @@ async function callClaudeAPI(userMessage, context) {
     console.log(`📚 Workflow nodes with operations: ${workflowNodeOps.length}/${context.workflowNodes.types.length}`);
   }
 
-  const systemPrompt = `당신은 N8N 워크플로우 자동화 전문가입니다 (2025년 10월 기준 최신 버전).
-사용자의 워크플로우 작성, 에러 해결, JSON 데이터 생성 등을 도와주세요.
+  const systemPrompt = `${context.errorAnalysis ? `
+🚨 에러 진단 형식 🚨
 
+**에러**: [원인을 1-2줄로 간단 명료하게]
+
+**해결**:
+1. [구체적인 수정 단계 1]
+2. [구체적인 수정 단계 2]
+3. [필요시 추가 단계]
+
+예시:
+**에러**: Bearer Auth 값이 비어있어 인증 실패
+
+**해결**:
+1. 카카오톡 노드 → Generic Auth → Bearer Auth 항목 클릭
+2. "Bearer [액세스토큰]" 형식으로 입력 (예: Bearer xxxxxx)
+3. 또는 OAuth2로 되돌리고 Client ID/Secret 입력
+
+원인은 간단히, 해결은 구체적으로!
+` : `당신은 N8N 워크플로우 자동화 전문가입니다.`}
+
+${context.errorAnalysis ? '' : `
 **N8N 최신 정보 (2025년 10월)**:
 - **N8N 버전**: v1.60+ (2025년 10월 최신 릴리스)
 - **주요 노드**:
@@ -972,6 +2130,7 @@ async function callClaudeAPI(userMessage, context) {
   * 토스페이먼츠 (Toss Payments API)
 
 - **OAuth2 지원**: Google, Facebook, Kakao, Naver, GitHub, Microsoft
+`}
 ${nodeContext}
 **현재 페이지 컨텍스트**:
 - URL: ${context.url}
@@ -999,7 +2158,99 @@ ${context.errorPattern && context.errorPattern.likelySettingIssue ? `
 - 제안: ${context.errorPattern.suggestion}
 ` : ''}
 
-${context.errors.length > 0 ? `
+${context.workflowAnalysis ? `
+**🔬 워크플로우 분석 결과 (고급)**:
+- 총 노드 수: ${context.workflowAnalysis.flowAnalysis.totalNodes}개
+${context.workflowAnalysis.automaticIssues && context.workflowAnalysis.automaticIssues.length > 0 ? `
+
+🔍 **자동 감지된 문제들** (사용자 설명 없이도 감지):
+${context.workflowAnalysis.automaticIssues.slice(0, 3).map(issue => `
+  ${issue.priority === 'critical' ? '🔴' : issue.priority === 'high' ? '🟠' : '🟡'} **${issue.nodeName}** - ${issue.type}
+  - 설명: ${issue.description}
+  ${issue.cause ? `- 원인: ${issue.cause}` : ''}
+  ${issue.codeSnippet ? `- 코드: \`${issue.codeSnippet.substring(0, 80)}\`` : ''}
+  - 💡 제안: ${issue.suggestion}
+`).join('\n')}
+${context.workflowAnalysis.automaticIssues.length > 3 ? `  ... 그 외 ${context.workflowAnalysis.automaticIssues.length - 3}개 문제 더 있음\n` : ''}
+` : ''}
+${context.workflowAnalysis.chainAnalysis && context.workflowAnalysis.chainAnalysis.length > 0 ? `
+
+🔙 **근본 원인 역추적 분석**:
+문제 노드: ${context.workflowAnalysis.chainAnalysis[0].nodeName}
+${(() => {
+  const rootCause = context.workflowAnalysis.chainAnalysis.find(node =>
+    node.issues && node.issues.some(issue => issue.severity === 'critical')
+  );
+  if (rootCause && rootCause.nodeIndex !== context.workflowAnalysis.chainAnalysis[0].nodeIndex) {
+    const criticalIssue = rootCause.issues.find(i => i.severity === 'critical');
+    return `진짜 원인 노드: ${rootCause.nodeName}
+  - ${criticalIssue.description}
+  ${criticalIssue.codeSnippet ? `- 코드: \`${criticalIssue.codeSnippet}\`` : ''}`;
+  }
+  return '원인 추적 결과: 현재 노드가 근본 원인';
+})()}
+
+체인 상세:
+${context.workflowAnalysis.chainAnalysis.slice(0, 3).map((node, idx) => `
+  ${idx === 0 ? '🎯' : '⬅️'} ${node.nodeName} (${node.role === 'problem_node' ? '문제 노드' : '이전 노드'})
+  ${node.executionData ? `  Input: ${node.executionData.inputItems}개 → Output: ${node.executionData.outputItems}개` : ''}
+  ${node.issues && node.issues.length > 0 ? `  ⚠️ 이슈: ${node.issues.map(i => i.description).join(', ')}` : '  ✅ 이상 없음'}
+`).join('')}
+` : ''}
+${context.workflowAnalysis.aiContext ? `
+
+🤖 **AI 컨텍스트 요약**:
+- 에러가 있는 노드: ${context.workflowAnalysis.aiContext.summary.nodesWithErrors}개
+- 데이터 손실 노드: ${context.workflowAnalysis.aiContext.summary.nodesWithDataLoss}개
+- 감지된 이슈: ${context.workflowAnalysis.aiContext.detectedIssues.length}개
+
+데이터 흐름:
+${context.workflowAnalysis.aiContext.dataFlow.slice(0, 5).map(flow =>
+  `  ${flow.from.name}(${flow.from.output}개) → ${flow.to.name}(${flow.to.input}개) ${flow.status === 'mismatch' ? `⚠️ ${flow.itemsLost}개 손실` : '✅'}`
+).join('\n')}
+${context.workflowAnalysis.aiContext.dataFlow.length > 5 ? `  ... 그 외 ${context.workflowAnalysis.aiContext.dataFlow.length - 5}개 노드` : ''}
+
+노드별 상세:
+${context.workflowAnalysis.aiContext.nodes.slice(0, 3).map(node => `
+  📦 ${node.name} (${node.type})
+  ${node.input ? `  - Input: ${node.input.itemCount}개 아이템` : ''}
+  ${node.output ? `  - Output: ${node.output.itemCount}개 아이템` : ''}
+  ${node.code ? `  - 코드 있음 (${node.code.split('\\n').length}줄)` : ''}
+  ${node.error ? `  - ❌ 에러: ${node.error}` : ''}
+  ${node.hasDataLoss ? `  - ⚠️ 데이터 손실 발생` : ''}
+`).join('')}
+` : ''}
+${context.workflowAnalysis.flowAnalysis.nodesWithDataLoss.length > 0 ? `
+- ⚠️ 데이터 손실 노드 (기본 분석):
+${context.workflowAnalysis.flowAnalysis.nodesWithDataLoss.map(node => `  * ${node.nodeName}: ${node.issue}`).join('\n')}
+` : ''}
+${context.workflowAnalysis.flowAnalysis.dataFlowIssues.length > 0 ? `
+- ⚠️ 데이터 흐름 문제:
+${context.workflowAnalysis.flowAnalysis.dataFlowIssues.map(issue => `  * ${issue.from} → ${issue.to}: ${issue.issue}`).join('\n')}
+` : ''}
+${context.workflowAnalysis.flowAnalysis.recommendations.length > 0 ? `
+- 💡 추천 사항:
+${context.workflowAnalysis.flowAnalysis.recommendations.map(rec => `  * [${rec.priority}] ${rec.nodeName}: ${rec.message} - ${rec.suggestion}`).join('\n')}
+` : ''}
+
+**🎯 사용자 의도 vs 실제 결과 분석**:
+위의 자동 감지 결과를 바탕으로:
+1. 사용자가 원했던 결과는 무엇인가? (예: 카톡 3개 전송)
+2. 실제 결과는 무엇인가? (예: 1개만 전송됨)
+3. 차이가 발생한 정확한 원인은?
+4. 어느 노드에서 문제가 시작되었는가?
+
+이 질문들에 답하면서 근본 원인을 찾아주세요.
+` : ''}
+
+${context.errorAnalysis ? `
+**에러 메시지**: ${context.errorAnalysis.errors.map((err) => `${err.message}`).join(', ')}
+${context.errorAnalysis.errors.some(e => e.autoFix) ? `
+**자동 진단**: ${context.errorAnalysis.errors.find(e => e.autoFix).autoFix}
+→ 이 진단을 바탕으로 구체적인 수정 단계를 제시해주세요.` : ''}
+
+위 형식(에러 + 해결 단계)으로 답변해주세요!
+` : context.errors.length > 0 ? `
 **⚠️ 감지된 에러 상세 정보**:
 ${context.errors.slice(0, 3).map((err, idx) => `
 에러 ${idx + 1}:
@@ -1012,76 +2263,12 @@ ${err.details.stackTrace ? `- 스택 트레이스:\n  ${err.details.stackTrace.j
 ${context.errors.length > 3 ? `\n... 외 ${context.errors.length - 3}개 에러` : ''}
 ` : ''}
 
-**에러 분석 전략 (매우 중요!)**:
-🚨 에러 진단 우선순위 (반드시 이 순서로!):
-
-**1순위: 노드 설정 확인 (가장 중요!)**
-   ⚠️ 코드를 보기 전에 먼저 설정을 확인하세요!
-
-   특히 확인해야 할 것:
-   - **Run once for all items** vs **Run once for each item**
-     * all items: 전체 items 배열을 한 번에 처리 (items.map, items.filter 등 사용)
-     * each item: 각 item을 개별로 처리 (item 하나만 접근)
-     * ⚠️ 동일한 에러가 여러 번 반복되면 이 설정이 잘못되었을 가능성 높음!
-
-   - **Always Output Data** (항상 데이터 출력)
-   - **Continue On Fail** (실패 시 계속)
-   - 기타 토글 설정들
-
-**2순위: 에러 패턴 분석**
-   - 에러 개수 = 아이템 개수? → 거의 확실히 설정 문제!
-   - 동일한 에러가 N번 반복? → 설정 또는 입력 데이터 문제
-   - 각기 다른 에러? → 코드 로직 문제일 가능성
-
-**3순위: 코드 검토**
-   - 설정과 패턴을 먼저 확인한 후에만 코드를 분석하세요
-
-**에러 분석 답변 예시**:
-
-✅ **올바른 예시** (설정 문제):
-\`\`\`
-⚠️ **설정 문제 발견!**
-
-**현재 상태**: 동일한 에러가 39번 반복
-**원인**: "Run once for each item" 모드로 설정되어 있음
-
-**문제**:
-코드가 전체 items 배열을 처리하도록 작성되었지만
-(items.map, items.filter 등 사용)
-노드는 각 item마다 개별 실행 중
-
-**해결 방법**:
-1. 노드 설정 열기
-2. "Run once for all items"로 토글 변경
-3. 저장 후 재실행
-
-또는 코드를 "each item" 모드에 맞게 수정:
-- \`items[0]\` 대신 \`item\` 사용
-- \`items.map()\` 제거하고 단일 item 처리
-\`\`\`
-
-✅ **올바른 예시** (코드 문제):
-\`\`\`
-**에러 타입**: ReferenceError
-**에러 메시지**: sortedNews is not defined
-**발생 위치**: 15번째 줄
-
-**원인**: sortedNews 변수 선언 없음
-
-**해결 방법**:
-15번째 줄 앞에 추가:
-\`\`\`javascript
-const sortedNews = items[0].json.news.sort(...);
-\`\`\`
-\`\`\`
-
-❌ **잘못된 예시** (절대 이렇게 답변하지 마세요):
-\`\`\`
-39개의 에러가 발생했습니다.
-코드 문법 오류일 수 있습니다.
-입력 데이터 형식을 확인하세요.
-console.log()로 디버깅하세요.
-\`\`\`
+${context.errorAnalysis ? '' : `
+**에러 진단 우선순위**:
+1. 노드 설정 ("Run once for all items" vs "each item")
+2. 에러 패턴 (반복되면 설정 문제)
+3. 코드 검토
+`}
 
 **최신 정보 우선 원칙**:
 ⚠️ 당신이 가진 지식(2025년 1월)이 오래되었을 수 있습니다.
@@ -1102,6 +2289,7 @@ console.log()로 디버깅하세요.
    \`\`\`
 3. \`\`\`json-autofill 코드 블록을 사용하면 자동으로 N8N 노드에 입력됩니다!
 
+${context.errorAnalysis ? '' : `
 **답변 전략 (매우 중요)**:
 🎯 **기본 원칙: 토큰 절약 + N8N 전문성**
 
@@ -1156,8 +2344,10 @@ console.log()로 디버깅하세요.
 - ❌ 처음부터 모든 설정 상세 설명
 - ❌ 긴 서론이나 배경 설명
 
-짧고 명확하게, N8N 워크플로우만 답변하세요.`;
+짧고 명확하게, N8N 워크플로우만 답변하세요.
+`}${context.errorAnalysis ? `
 
+🚨 다시: 반드시 2줄만! 🚨` : ''}`;
   // background.js로 메시지 전송
   return new Promise((resolve, reject) => {
     try {
@@ -1424,7 +2614,258 @@ window.addEventListener('message', (event) => {
 
 
 // ========================================
-// 8. N8N 페이지 상세 분석
+// 8. 에러 분석 with 코드 읽기
+// ========================================
+
+// 노드 이름으로 DOM 요소 찾기 (중복 노드 지원)
+function findNodeElementByName(nodeName, options = {}) {
+  const { index = 0, exactMatch = false } = options;
+
+  console.log(`🔍 Finding node element: "${nodeName}" (index: ${index}, exactMatch: ${exactMatch})`);
+
+  const allNodes = safeSelector.findAll('nodes');
+  const matches = [];
+
+  // 모든 노드를 순회하며 일치하는 것 찾기
+  for (const node of allNodes) {
+    const nodeText = (node.textContent || '').trim();
+    const dataName = (node.getAttribute('data-name') || '').trim();
+    const title = (node.getAttribute('title') || '').trim();
+
+    // 정확히 일치하는지 또는 포함하는지 체크
+    let isMatch = false;
+
+    if (exactMatch) {
+      // 완전 일치 (중복 노드 이름 구분)
+      isMatch = nodeText === nodeName || dataName === nodeName || title === nodeName;
+    } else {
+      // 부분 일치
+      isMatch = nodeText.includes(nodeName) || dataName.includes(nodeName) || title.includes(nodeName);
+    }
+
+    if (isMatch) {
+      matches.push({
+        element: node,
+        text: nodeText,
+        dataName: dataName,
+        title: title
+      });
+    }
+  }
+
+  // 결과 확인
+  if (matches.length === 0) {
+    console.warn(`⚠️ No node found with name: "${nodeName}"`);
+    return null;
+  }
+
+  if (matches.length > 1) {
+    console.warn(`⚠️ Found ${matches.length} nodes with name "${nodeName}". Using index ${index}`);
+    matches.forEach((match, idx) => {
+      console.log(`  [${idx}] ${match.text || match.dataName || match.title}`);
+    });
+  }
+
+  // 지정된 인덱스의 노드 반환
+  const selectedMatch = matches[index] || matches[0];
+  console.log(`✅ Selected node [${index}]: ${selectedMatch.text || selectedMatch.dataName}`);
+
+  return selectedMatch.element;
+}
+
+// 모든 일치하는 노드 찾기 (디버깅용)
+function findAllNodeElementsByName(nodeName) {
+  const allNodes = document.querySelectorAll('[class*="CanvasNode"], [data-node-type]');
+  const matches = [];
+
+  for (const node of allNodes) {
+    const nodeText = (node.textContent || '').trim();
+    if (nodeText.includes(nodeName)) {
+      matches.push({
+        element: node,
+        text: nodeText
+      });
+    }
+  }
+
+  return matches;
+}
+
+// 패널이 열릴 때까지 대기
+async function waitForPanel(maxWaitMs = 2000) {
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < maxWaitMs) {
+    const panel = safeSelector.find('settingsPanel');
+
+    if (panel) {
+      console.log('✅ Panel opened');
+      return panel;
+    }
+
+    // 100ms 대기
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  console.warn('⚠️ Panel wait timeout');
+  return null;
+}
+
+async function analyzeErrorsWithCode() {
+  console.log('⚠️ Analyzing errors with code...');
+
+  const errors = window.n8nReader.detectErrors();
+
+  if (errors.length === 0) {
+    return {
+      errorCount: 0,
+      errors: [],
+      hasCode: false,
+      message: '현재 감지된 에러가 없습니다.'
+    };
+  }
+
+  const errorDetails = [];
+  let codeFound = false;
+
+  // 에러를 순회하며 분석
+  for (let index = 0; index < errors.length; index++) {
+    const error = errors[index];
+    const errorDetail = {
+      index: index + 1,
+      type: error.type,
+      message: error.message,
+      nodeName: error.details?.nodeName || 'Unknown',
+      lineNumber: error.details?.lineNumber || null,
+      code: null,
+      autoFix: null // 자동 진단
+    };
+
+    // 1. 에러 메시지에서 직접적인 힌트 찾기
+    const msgLower = error.message.toLowerCase();
+    const nodeNameLower = errorDetail.nodeName.toLowerCase();
+
+    // Run Once for All Items 패턴
+    if (msgLower.includes('run once for all items') ||
+        msgLower.includes('.all()') ||
+        msgLower.includes("can't use .all") ||
+        msgLower.includes('only available in')) {
+      errorDetail.autoFix = '"Run Once for All Items" 모드로 변경';
+    }
+
+    // 인증 관련 에러 패턴 + API별 올바른 인증 방식 제안
+    if (msgLower.includes('authentication') ||
+        msgLower.includes('credentials') ||
+        msgLower.includes('unauthorized') ||
+        msgLower.includes('401') ||
+        msgLower.includes('자격 증명')) {
+
+      // 카카오톡 API - OAuth2 사용
+      if (nodeNameLower.includes('카카오') || nodeNameLower.includes('kakao')) {
+        errorDetail.autoFix = 'OAuth2 인증 설정 (카카오톡은 OAuth2 사용)\n' +
+          '1. Authentication 토글 ON\n' +
+          '2. Auth Type: OAuth2\n' +
+          '3. Client ID: 카카오 REST API 키 입력\n' +
+          '4. Authorization URL: https://kauth.kakao.com/oauth/authorize\n' +
+          '5. Access Token URL: https://kauth.kakao.com/oauth/token';
+      }
+      // 네이버 API - OAuth2 사용
+      else if (nodeNameLower.includes('네이버') || nodeNameLower.includes('naver')) {
+        errorDetail.autoFix = 'OAuth2 인증 설정 (네이버는 OAuth2 사용)\n' +
+          '1. Authentication 토글 ON\n' +
+          '2. Auth Type: OAuth2\n' +
+          '3. Client ID: 네이버 Application Client ID\n' +
+          '4. Client Secret: 네이버 Application Client Secret';
+      }
+      // Google API - OAuth2 사용
+      else if (nodeNameLower.includes('구글') || nodeNameLower.includes('google')) {
+        errorDetail.autoFix = 'OAuth2 인증 설정 (구글은 OAuth2 사용)\n' +
+          '1. Authentication 토글 ON\n' +
+          '2. Auth Type: OAuth2\n' +
+          '3. Google Cloud Console에서 OAuth2 Client ID/Secret 발급\n' +
+          '4. N8N에서 Google OAuth2 Credential 생성';
+      }
+      // 일반 HTTP Request - 인증 활성화 필요
+      else if (nodeNameLower.includes('http') || nodeNameLower.includes('request')) {
+        errorDetail.autoFix = '인증 설정 활성화 필요\n' +
+          '1. Authentication 토글 ON\n' +
+          '2. Auth Type 선택 (API 문서 확인)\n' +
+          '3. OAuth2 (권장) 또는 Bearer Auth 또는 Basic Auth';
+      }
+      // 기타
+      else {
+        errorDetail.autoFix = '인증 설정 확인 필요\n' +
+          '1. Authentication 토글이 ON인지 확인\n' +
+          '2. API 공식 문서에서 올바른 인증 방식 확인\n' +
+          '3. 자격 증명(Credential) 올바르게 입력했는지 확인';
+      }
+    }
+
+    // 2. Code 노드인 경우 코드 읽기 시도
+    const isCodeError = error.type === 'ReferenceError' ||
+                        error.type === 'SyntaxError' ||
+                        error.type === 'TypeError' ||
+                        error.message.toLowerCase().includes('code') ||
+                        error.message.toLowerCase().includes('javascript');
+
+    if (isCodeError && errorDetail.nodeName !== 'Unknown') {
+      console.log(`🔍 Attempting to read code for error ${index + 1} (${errorDetail.nodeName})`);
+
+      // 노드 찾기
+      const nodeElement = findNodeElementByName(errorDetail.nodeName);
+
+      if (nodeElement) {
+        try {
+          // 노드 클릭
+          console.log('🖱️ Clicking node:', errorDetail.nodeName);
+          nodeElement.click();
+
+          // 패널이 열릴 때까지 대기
+          await waitForPanel(2000);
+
+          // 코드 읽기 시도
+          const code = window.n8nReader.getCodeFromNode(errorDetail.nodeName);
+
+          if (code) {
+            errorDetail.code = code;
+            codeFound = true;
+            console.log(`✅ Code found for error ${index + 1}`, code.substring(0, 100));
+
+            // 3. 코드 패턴 분석 (자동 진단이 없을 때만)
+            if (!errorDetail.autoFix) {
+              if (code.includes('items.map') || code.includes('items.filter') ||
+                  code.includes('items.forEach') || code.includes('.all()') ||
+                  code.includes('$input.all()')) {
+                errorDetail.autoFix = '"Run Once for All Items" 모드로 변경 (코드가 items 배열 전체 처리)';
+              }
+            }
+          }
+
+          // 패널 닫기 (ESC)
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+          await new Promise(resolve => setTimeout(resolve, 200));
+
+        } catch (err) {
+          console.error(`❌ Error processing node ${errorDetail.nodeName}:`, err);
+        }
+      } else {
+        console.warn(`⚠️ Could not find node element for: ${errorDetail.nodeName}`);
+      }
+    }
+
+    errorDetails.push(errorDetail);
+  }
+
+  return {
+    errorCount: errors.length,
+    errors: errorDetails,
+    hasCode: codeFound,
+    message: `${errors.length}개의 에러 발견${codeFound ? ' (코드 포함)' : ''}`
+  };
+}
+
+// ========================================
+// 9. N8N 페이지 상세 분석
 // ========================================
 function analyzeN8NPage() {
   console.log('🔍 Analyzing N8N page...');
