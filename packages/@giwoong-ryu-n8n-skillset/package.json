@@ -1,0 +1,48 @@
+{
+  "name": "@giwoong-ryu/n8n-skillset",
+  "version": "1.0.0",
+  "description": "Comprehensive n8n workflow development skills for Claude Code - 6 essential skills covering workflow patterns, node configuration, validation, JavaScript coding, expressions, and MCP tools",
+  "keywords": [
+    "claude-code",
+    "n8n",
+    "workflow",
+    "automation",
+    "no-code",
+    "low-code",
+    "integration",
+    "n8n-skills"
+  ],
+  "author": {
+    "name": "Giwoong Ryu",
+    "email": "your.email@example.com",
+    "url": "https://github.com/Giwoong-ryu"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Giwoong-ryu/n8n-copilot.git",
+    "directory": "packages/@giwoong-ryu-n8n-skillset"
+  },
+  "homepage": "https://giwoong-ryu.github.io/n8n-copilot/",
+  "bugs": {
+    "url": "https://github.com/Giwoong-ryu/n8n-copilot/issues"
+  },
+  "claudeCode": {
+    "skills": [
+      "skills/n8n-workflow-patterns",
+      "skills/n8n-node-configuration",
+      "skills/n8n-validation-expert",
+      "skills/n8n-code-javascript",
+      "skills/n8n-expression-syntax",
+      "skills/n8n-mcp-tools-expert"
+    ]
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "files": [
+    "skills/",
+    "README.md",
+    "LICENSE"
+  ]
+}
