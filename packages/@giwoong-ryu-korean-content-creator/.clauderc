@@ -1,0 +1,49 @@
+{
+  "skills": [
+    {
+      "name": "korean-proofreading",
+      "description": "Professional Korean text proofreading with comprehensive error detection",
+      "path": "skills/korean-proofreading/SKILL.md",
+      "tags": ["proofreading", "korean", "editing", "quality-control", "error-detection"],
+      "version": "1.0.0",
+      "estimatedTokens": 7782
+    },
+    {
+      "name": "content-tone-adapter",
+      "description": "Advanced tone and style adaptation for Korean content",
+      "path": "skills/content-tone-adapter/SKILL.md",
+      "tags": ["tone", "style", "adaptation", "korean", "content-transformation"],
+      "version": "1.0.0",
+      "estimatedTokens": 3764
+    },
+    {
+      "name": "thumbnail-copywriting",
+      "description": "High-converting Korean thumbnail copywriting for video content",
+      "path": "skills/thumbnail-copywriting/SKILL.md",
+      "tags": ["copywriting", "thumbnail", "video", "engagement", "click-through"],
+      "version": "1.0.0",
+      "estimatedTokens": 3125
+    },
+    {
+      "name": "korean-grammar-checker",
+      "description": "Comprehensive Korean grammar and syntax verification",
+      "path": "skills/korean-grammar-checker/SKILL.md",
+      "tags": ["grammar", "syntax", "korean", "validation", "language-rules"],
+      "version": "1.0.0",
+      "estimatedTokens": 1412
+    }
+  ],
+  "metadata": {
+    "totalTokens": 16083,
+    "skillCount": 4,
+    "targetAudience": "Korean content creators, professional writers, and editors",
+    "mainFeatures": [
+      "Professional proofreading with 6-step verification",
+      "Tone adaptation across 5 spectrum levels",
+      "Thumbnail copywriting with proven templates",
+      "Comprehensive grammar checking system"
+    ],
+    "created": "2025-11-06",
+    "lastUpdated": "2025-11-06"
+  }
+}

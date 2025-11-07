@@ -1,0 +1,67 @@
+{
+  "skills": [
+    {
+      "name": "git-workflow-korean",
+      "description": "Professional Git workflow and best practices for Korean development teams",
+      "path": "skills/git-workflow-korean/SKILL.md",
+      "tags": ["git", "workflow", "version-control", "korean", "collaboration"],
+      "version": "1.0.0",
+      "estimatedTokens": 4237
+    },
+    {
+      "name": "code-review-guidelines",
+      "description": "Comprehensive code review guidelines for effective collaboration",
+      "path": "skills/code-review-guidelines/SKILL.md",
+      "tags": ["code-review", "collaboration", "quality", "best-practices", "feedback"],
+      "version": "1.0.0",
+      "estimatedTokens": 4562
+    },
+    {
+      "name": "api-design-patterns",
+      "description": "RESTful API design patterns and best practices",
+      "path": "skills/api-design-patterns/SKILL.md",
+      "tags": ["api", "rest", "design-patterns", "architecture", "web-development"],
+      "version": "1.0.0",
+      "estimatedTokens": 4128
+    },
+    {
+      "name": "error-handling-strategies",
+      "description": "Robust error handling and exception management strategies",
+      "path": "skills/error-handling-strategies/SKILL.md",
+      "tags": ["error-handling", "exceptions", "reliability", "debugging", "resilience"],
+      "version": "1.0.0",
+      "estimatedTokens": 3891
+    },
+    {
+      "name": "testing-best-practices",
+      "description": "Comprehensive testing strategies and best practices",
+      "path": "skills/testing-best-practices/SKILL.md",
+      "tags": ["testing", "unit-tests", "integration-tests", "tdd", "quality-assurance"],
+      "version": "1.0.0",
+      "estimatedTokens": 3456
+    },
+    {
+      "name": "documentation-writer",
+      "description": "Technical documentation writing with best practices",
+      "path": "skills/documentation-writer/SKILL.md",
+      "tags": ["documentation", "technical-writing", "readme", "api-docs", "knowledge-sharing"],
+      "version": "1.0.0",
+      "estimatedTokens": 2510
+    }
+  ],
+  "metadata": {
+    "totalTokens": 22784,
+    "skillCount": 6,
+    "targetAudience": "Software developers, tech leads, and engineering teams",
+    "mainFeatures": [
+      "Professional Git workflow with Korean best practices",
+      "Comprehensive code review guidelines",
+      "RESTful API design patterns and standards",
+      "Robust error handling strategies",
+      "Complete testing methodology (Unit, Integration, E2E)",
+      "Technical documentation writing framework"
+    ],
+    "created": "2025-11-06",
+    "lastUpdated": "2025-11-06"
+  }
+}
