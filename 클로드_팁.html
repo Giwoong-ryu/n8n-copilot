@@ -573,78 +573,96 @@
         <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
           <thead>
             <tr style="background: var(--bg-tertiary);">
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600;">커맨드</th>
-              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600;">용도</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600; width: 15%;">커맨드</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600; width: 20%;">용도</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600; width: 65%;">상세 설명</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/analyze</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드/시스템 분석</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">코드베이스 전체를 분석하여 아키텍처 패턴, 의존성, 잠재적 문제점 탐지. 복잡도 분석 및 리팩토링 제안 제공</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/build</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">빌드/컴파일 실행</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">프로젝트 빌드 자동화. 빌드 에러 발견 시 자동 진단 및 수정 제안. npm build, cargo build 등 자동 감지</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/cleanup</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드 정리/포맷팅</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">불필요한 코드 제거, 포맷 자동 정리, import 최적화, 주석 정리. Prettier/ESLint 자동 실행</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/design</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">아키텍처/시스템 설계</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">새 기능 또는 시스템 설계. 아키텍처 다이어그램 생성, 컴포넌트 구조 제안, DB 스키마 설계</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/document</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">문서 자동 생성</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">README, API 문서, JSDoc/Docstring 자동 생성. 코드 분석 후 사용법, 예제 코드 포함</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/estimate</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">작업 추정 및 계획</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">기능 개발 시간 추정, 작업 분해, 우선순위 제안. 스토리 포인트 및 리스크 분석 포함</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/explain</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드/개념 설명</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">복잡한 코드 로직을 쉬운 언어로 설명. 알고리즘, 디자인 패턴, 라이브러리 사용법 상세 해설</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/git</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">Git 작업 자동화</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">커밋 메시지 자동 생성, 브랜치 관리, 충돌 해결 지원. Conventional Commits 형식 자동 준수</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/implement</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">기능 구현</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">요구사항 기반 기능 코드 작성. 베스트 프랙티스 적용, 타입 안전성 보장, 에러 핸들링 포함</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/improve</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드 개선 제안</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">성능 최적화, 가독성 향상, 보안 강화 제안. SOLID 원칙 적용 및 코드 스멜 제거</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/index</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">프로젝트 인덱싱</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">코드베이스 전체 구조 파악, 파일 관계 맵핑, 주요 엔트리 포인트 식별. 빠른 컨텍스트 로딩</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/load</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">컨텍스트 로드</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">특정 파일/폴더를 작업 컨텍스트에 로드. 관련 파일 자동 탐지 및 함께 로드</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/spawn</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">작업 생성/관리</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">새 파일/컴포넌트 스캐폴딩, 보일러플레이트 자동 생성. 템플릿 기반 코드 생성</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/task</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">작업 실행</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">복잡한 멀티스텝 작업 자동 수행. Agent 시스템과 연동하여 자율적 작업 처리</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/test</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">테스트 생성/실행</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">유닛/통합 테스트 자동 생성. Jest, Pytest 등 자동 감지. 테스트 커버리지 향상 제안</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/troubleshoot</code></td>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);">문제 진단 및 해결</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">버그 자동 진단, 로그 분석, 에러 트레이스 추적. 수정 방법 제안 및 즉시 적용 가능</td>
             </tr>
             <tr>
               <td style="padding: 12px;"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/workflow</code></td>
               <td style="padding: 12px;">워크플로우 자동화</td>
+              <td style="padding: 12px; color: var(--text-secondary); font-size: 13px;">CI/CD 파이프라인 생성, GitHub Actions 설정, 배포 자동화. 개발 워크플로우 전체 자동화</td>
             </tr>
           </tbody>
         </table>
@@ -662,7 +680,10 @@
       <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">🤖 전문 AI 에이전트 (60개)</h3>
 
       <div style="margin-bottom: 32px;">
-        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💻 언어 전문가 (16개)</h4>
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 12px;">💻 언어 전문가 (16개)</h4>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; padding-left: 4px;">
+          <strong style="color: var(--text-primary);">언제 사용:</strong> 특정 프로그래밍 언어의 전문 지식이 필요할 때. 각 언어의 베스트 프랙티스, 최신 문법, 성능 최적화, 생태계 라이브러리 선택이 필요한 경우
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">c-pro</span>
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">cpp-pro</span>
@@ -684,7 +705,10 @@
       </div>
 
       <div style="margin-bottom: 32px;">
-        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🏗️ 아키텍처 (8개)</h4>
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 12px;">🏗️ 아키텍처 (8개)</h4>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; padding-left: 4px;">
+          <strong style="color: var(--text-primary);">언제 사용:</strong> 시스템 설계, 컴포넌트 구조 설정, API 설계, DB 스키마 모델링 등 고수준 아키텍처 결정이 필요할 때. 확장 가능하고 유지보수 용이한 구조 설계
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">architect-review</span>
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">backend-architect</span>
@@ -698,7 +722,10 @@
       </div>
 
       <div style="margin-bottom: 32px;">
-        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🔧 DevOps & 배포 (6개)</h4>
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 12px;">🔧 DevOps & 배포 (6개)</h4>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; padding-left: 4px;">
+          <strong style="color: var(--text-primary);">언제 사용:</strong> CI/CD 파이프라인 구축, Docker/Kubernetes 설정, 클라우드 배포 자동화, 인프라 코드화(IaC) 작업. 배포 전략 및 모니터링 설정
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">devops-engineer</span>
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ci-cd-specialist</span>
@@ -710,7 +737,10 @@
       </div>
 
       <div style="margin-bottom: 32px;">
-        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🐛 디버깅 & 테스트 (5개)</h4>
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 12px;">🐛 디버깅 & 테스트 (5개)</h4>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; padding-left: 4px;">
+          <strong style="color: var(--text-primary);">언제 사용:</strong> 버그 진단, 테스트 코드 작성, 성능 병목 분석, 보안 취약점 검사. 유닛/통합 테스트 자동화 및 QA 프로세스 개선
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">debugger</span>
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">test-engineer</span>
@@ -721,7 +751,10 @@
       </div>
 
       <div style="margin-bottom: 32px;">
-        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">📊 데이터 & AI/ML (4개)</h4>
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 12px;">📊 데이터 & AI/ML (4개)</h4>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; padding-left: 4px;">
+          <strong style="color: var(--text-primary);">언제 사용:</strong> 데이터 파이프라인 구축, 머신러닝 모델 설계/학습, 데이터 분석, ETL 작업. AI 기반 기능 개발 및 데이터 사이언스 프로젝트
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">data-engineer</span>
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ml-engineer</span>
@@ -731,7 +764,10 @@
       </div>
 
       <div style="margin-bottom: 32px;">
-        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🎨 디자인 & UX (3개)</h4>
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 12px;">🎨 디자인 & UX (3개)</h4>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; padding-left: 4px;">
+          <strong style="color: var(--text-primary);">언제 사용:</strong> UI/UX 개선, 디자인 시스템 구축, 사용자 경험 최적화, 접근성 향상. 프론트엔드 컴포넌트 디자인 패턴 적용
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ux-designer</span>
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ui-designer</span>
@@ -740,7 +776,10 @@
       </div>
 
       <div style="margin-bottom: 32px;">
-        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">📝 문서화 (5개)</h4>
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 12px;">📝 문서화 (5개)</h4>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; padding-left: 4px;">
+          <strong style="color: var(--text-primary);">언제 사용:</strong> API 문서, README, 기술 문서, 튜토리얼 작성. 코드 주석 자동 생성, Changelog 관리, 개발자 가이드 작성
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">technical-writer</span>
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">api-documenter</span>
@@ -751,7 +790,10 @@
       </div>
 
       <div style="margin-bottom: 32px;">
-        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🔍 코드 품질 (4개)</h4>
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 12px;">🔍 코드 품질 (4개)</h4>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; padding-left: 4px;">
+          <strong style="color: var(--text-primary);">언제 사용:</strong> 코드 리뷰, 리팩토링, 코딩 표준 검증, 베스트 프랙티스 적용. PR 리뷰 자동화 및 코드 품질 개선
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">code-reviewer</span>
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">refactoring-expert</span>
@@ -761,7 +803,10 @@
       </div>
 
       <div style="margin-bottom: 32px;">
-        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💼 비즈니스 (7개)</h4>
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 12px;">💼 비즈니스 (7개)</h4>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; padding-left: 4px;">
+          <strong style="color: var(--text-primary);">언제 사용:</strong> 요구사항 분석, 프로젝트 계획, 비즈니스 로직 설계, 이해관계자 소통. 제품 로드맵 작성 및 스프린트 계획
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">product-manager</span>
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">business-analyst</span>
@@ -774,7 +819,10 @@
       </div>
 
       <div style="margin-bottom: 32px;">
-        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">⚙️ 기타 (6개)</h4>
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 12px;">⚙️ 기타 (6개)</h4>
+        <p style="font-size: 14px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px; padding-left: 4px;">
+          <strong style="color: var(--text-primary);">언제 사용:</strong> 범용 개발 작업, 레거시 코드 현대화, 시스템 마이그레이션, 통합 작업. 특정 카테고리에 속하지 않는 다양한 개발 과제
+        </p>
         <div style="display: flex; flex-wrap: wrap; gap: 8px;">
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">general-assistant</span>
           <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">problem-solver</span>
