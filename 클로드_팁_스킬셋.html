@@ -359,92 +359,277 @@
       </a>
 
       <h1>🎯 Claude Code 스킬셋</h1>
-      <p class="subtitle">11개의 강력한 AI 자동화 도구</p>
+      <p class="subtitle">37개의 강력한 AI 자동화 도구 (서버 27개 + Windows 10개)</p>
     </div>
   </div>
 
   <div class="container">
     <!-- 스킬셋 개요 -->
     <div class="content-section">
-      <h2>📦 설치된 스킬 (총 11개)</h2>
-      <p>Claude Code를 더욱 강력하게 만들어주는 AI 자동화 스킬셋 모음입니다. 개발 자동화부터 프로젝트 초기화, 콘텐츠 생성까지 다양한 작업을 자동화할 수 있습니다.</p>
+      <h2>📦 설치된 스킬 (총 37개 • ~81,891 토큰)</h2>
+      <p>Claude Code를 더욱 강력하게 만들어주는 AI 자동화 스킬셋 모음입니다. n8n 워크플로우부터 디자인, 문서처리, 마케팅, 개발도구까지 다양한 작업을 자동화할 수 있습니다.</p>
 
-      <h3>개발 자동화 스킬 (5개)</h3>
+      <h3>🔧 n8n 워크플로우 (6개 • ~20,408 토큰)</h3>
       <table class="skill-table">
         <thead>
           <tr>
-            <th style="width: 30%;">스킬명</th>
-            <th style="width: 70%;">얻을 수 있는 결과물</th>
+            <th style="width: 35%;">스킬명</th>
+            <th style="width: 50%;">기능</th>
+            <th style="width: 15%;">토큰</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><a href="#code-changelog" style="color: var(--accent); text-decoration: none; font-weight: 700;">code-changelog</a></td>
-            <td>AI가 생성한 모든 코드 변경사항을 자동으로 문서화하고 웹 브라우저에서 실시간으로 확인할 수 있습니다</td>
+            <td><strong>n8n-workflow-patterns</strong></td>
+            <td>5가지 핵심 워크플로우 패턴 (Webhook, HTTP API, Database, AI Agent, Scheduled Tasks)</td>
+            <td>~2,871</td>
           </tr>
           <tr>
-            <td><a href="#meta-prompt-generator" style="color: var(--accent); text-decoration: none; font-weight: 700;">meta-prompt-generator</a></td>
-            <td>간단한 설명을 받아 단계별 병렬 처리가 가능한 구조화된 커스텀 슬래시 커맨드를 자동으로 생성합니다</td>
+            <td><strong>n8n-node-configuration</strong></td>
+            <td>노드 설정 가이드 및 Operation별 속성 의존성 이해</td>
+            <td>~4,258</td>
           </tr>
           <tr>
-            <td><a href="#prompt-enhancer" style="color: var(--accent); text-decoration: none; font-weight: 700;">prompt-enhancer</a></td>
-            <td>프로젝트 컨텍스트를 분석하여 간단한 개발 요청을 명확하고 상세한 요구사항으로 변환합니다</td>
+            <td><strong>n8n-validation-expert</strong></td>
+            <td>검증 오류 해석 및 수정, Validation profiles, error types</td>
+            <td>~3,664</td>
           </tr>
           <tr>
-            <td><a href="#codex-claude-loop" style="color: var(--accent); text-decoration: none; font-weight: 700;">codex-claude-loop</a></td>
-            <td>Claude와 OpenAI Codex가 서로 코드를 검증하고 개선하는 이중 AI 검증 시스템입니다</td>
+            <td><strong>n8n-code-javascript</strong></td>
+            <td>n8n Code 노드 JavaScript 작성, $input, $json, $node, $helpers 사용법</td>
+            <td>~4,027</td>
           </tr>
           <tr>
-            <td><a href="#codex" style="color: var(--accent); text-decoration: none; font-weight: 700;">codex</a></td>
-            <td>OpenAI Codex를 CLI에서 직접 호출하여 코드 분석, 리팩토링, 버그 수정을 수행합니다</td>
+            <td><strong>n8n-expression-syntax</strong></td>
+            <td>{{ }} 표현식 문법 및 오류 수정, Webhook 데이터 접근</td>
+            <td>~2,400</td>
+          </tr>
+          <tr>
+            <td><strong>n8n-mcp-tools-expert</strong></td>
+            <td>n8n MCP 도구 사용법, search_nodes, validate, create 활용</td>
+            <td>~3,188</td>
           </tr>
         </tbody>
       </table>
 
-      <h3>프로젝트 초기화 스킬 (2개)</h3>
+      <h3>🎨 디자인 & 프론트엔드 (5개)</h3>
       <table class="skill-table">
         <thead>
           <tr>
-            <th style="width: 30%;">스킬명</th>
-            <th style="width: 70%;">얻을 수 있는 결과물</th>
+            <th style="width: 35%;">스킬명</th>
+            <th style="width: 50%;">기능</th>
+            <th style="width: 15%;">토큰</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><a href="#flutter-init" style="color: var(--accent); text-decoration: none; font-weight: 700;">flutter-init</a></td>
-            <td>Clean Architecture 기반 Flutter 프로젝트를 완전히 구조화된 상태로 자동 생성합니다</td>
+            <td><strong>canvas-design</strong></td>
+            <td>비주얼 아트 생성, PNG/PDF 디자인</td>
+            <td>~2,984</td>
           </tr>
           <tr>
-            <td><a href="#nextjs15-init" style="color: var(--accent); text-decoration: none; font-weight: 700;">nextjs15-init</a></td>
-            <td>Next.js 15 App Router 기반 프로젝트를 최신 베스트 프랙티스로 자동 구성합니다</td>
+            <td><strong>nextjs</strong></td>
+            <td>Next.js App Router, RSC, PPR, Turborepo 모노레포 관리</td>
+            <td>~2,344</td>
+          </tr>
+          <tr>
+            <td><strong>tailwindcss</strong></td>
+            <td>Tailwind CSS + ShadCN UI, 반응형 디자인 패턴</td>
+            <td>~2,493</td>
+          </tr>
+          <tr>
+            <td><a href="#landing-page-guide" style="color: var(--accent); text-decoration: none;"><strong>landing-page-guide</strong></a></td>
+            <td>랜딩 페이지 11가지 필수 요소, 전환율 최적화</td>
+            <td>~2,417</td>
+          </tr>
+          <tr>
+            <td><strong>theme-factory</strong></td>
+            <td>10가지 사전 설정 테마, 슬라이드/문서/HTML 스타일링</td>
+            <td>~781</td>
           </tr>
         </tbody>
       </table>
 
-      <h3>콘텐츠 생성 스킬 (4개)</h3>
+      <h3>📄 문서 처리 (4개)</h3>
       <table class="skill-table">
         <thead>
           <tr>
-            <th style="width: 30%;">스킬명</th>
-            <th style="width: 70%;">얻을 수 있는 결과물</th>
+            <th style="width: 35%;">스킬명</th>
+            <th style="width: 50%;">기능</th>
+            <th style="width: 15%;">토큰</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><a href="#landing-page-guide" style="color: var(--accent); text-decoration: none; font-weight: 700;">landing-page-guide</a></td>
-            <td>마케팅 전환율을 극대화하는 랜딩페이지 구조와 카피를 단계별로 생성합니다</td>
+            <td><strong>pptx</strong></td>
+            <td>PowerPoint 생성/편집, 프레젠테이션 자동화</td>
+            <td>~6,387</td>
           </tr>
           <tr>
-            <td><a href="#card-news-generator" style="color: var(--accent); text-decoration: none; font-weight: 700;">card-news-generator</a></td>
-            <td>긴 텍스트를 인스타그램 카드 뉴스 형태로 자동 변환하여 SNS 콘텐츠를 빠르게 제작합니다</td>
+            <td><strong>xlsx</strong></td>
+            <td>Excel 파일 생성/편집, 데이터 분석</td>
+            <td>~1,322</td>
           </tr>
           <tr>
-            <td><a href="#card-news-generator-v2" style="color: var(--accent); text-decoration: none; font-weight: 700;">card-news-generator-v2</a></td>
-            <td>커스텀 배경 이미지를 지원하는 고급 버전 카드 뉴스 생성기입니다</td>
+            <td><strong>docx</strong></td>
+            <td>Word 문서 생성/편집</td>
+            <td>~1,345</td>
           </tr>
           <tr>
-            <td><a href="#midjourney-cardnews-bg" style="color: var(--accent); text-decoration: none; font-weight: 700;">midjourney-cardnews-bg</a></td>
-            <td>카드 뉴스 주제에 맞는 Midjourney AI 이미지 생성 프롬프트를 자동으로 만들어줍니다</td>
+            <td><strong>pdf</strong></td>
+            <td>PDF 문서 처리 및 변환</td>
+            <td>~1,288</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>🚀 마케팅 (2개)</h3>
+      <table class="skill-table">
+        <thead>
+          <tr>
+            <th style="width: 35%;">스킬명</th>
+            <th style="width: 50%;">기능</th>
+            <th style="width: 15%;">토큰</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>viral-marketing-mastery</strong></td>
+            <td>바이럴 마케팅 전략, STEPPS 프레임워크, 소셜 미디어 최적화</td>
+            <td>~14,303 ⭐</td>
+          </tr>
+          <tr>
+            <td><strong>seo</strong></td>
+            <td>검색 엔진 최적화 전략</td>
+            <td>~1,891</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>💡 생산성 (4개)</h3>
+      <table class="skill-table">
+        <thead>
+          <tr>
+            <th style="width: 35%;">스킬명</th>
+            <th style="width: 50%;">기능</th>
+            <th style="width: 15%;">토큰</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>systematic-debugging</strong></td>
+            <td>4단계 디버깅 프레임워크, Root cause investigation</td>
+            <td>~2,497</td>
+          </tr>
+          <tr>
+            <td><strong>writing-plans</strong></td>
+            <td>상세한 구현 계획 작성, 엔지니어를 위한 단계별 가이드</td>
+            <td>~863</td>
+          </tr>
+          <tr>
+            <td><strong>subagent-driven-development</strong></td>
+            <td>독립적 태스크 병렬 실행, 코드 리뷰 통합</td>
+            <td>~1,268</td>
+          </tr>
+          <tr>
+            <td><strong>prompt-engineering-patterns</strong></td>
+            <td>고급 프롬프트 엔지니어링, LLM 성능 최적화</td>
+            <td>~1,745</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>🛠️ 개발 도구 (6개)</h3>
+      <table class="skill-table">
+        <thead>
+          <tr>
+            <th style="width: 35%;">스킬명</th>
+            <th style="width: 50%;">기능</th>
+            <th style="width: 15%;">토큰</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>skill-creator</strong></td>
+            <td>새로운 스킬 생성 가이드, 스킬 구조 설계</td>
+            <td>~2,886</td>
+          </tr>
+          <tr>
+            <td><strong>claude-code-analyzer</strong></td>
+            <td>Claude Code 사용 패턴 분석, CLAUDE.md 개선 제안</td>
+            <td>~2,342</td>
+          </tr>
+          <tr>
+            <td><strong>research</strong></td>
+            <td>멀티소스 리서치 에이전트, Quick/Standard/Extensive 모드</td>
+            <td>~1,447</td>
+          </tr>
+          <tr>
+            <td><strong>git-pro</strong></td>
+            <td>고급 Git 작업 자동화</td>
+            <td>~2,190</td>
+          </tr>
+          <tr>
+            <td><strong>testing-expert</strong></td>
+            <td>테스트 작성 및 자동화 전문가</td>
+            <td>~2,645</td>
+          </tr>
+          <tr>
+            <td><strong>api-integration</strong></td>
+            <td>API 통합 및 연동 가이드</td>
+            <td>~2,134</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>🪟 Windows 전용 (10개)</h3>
+      <table class="skill-table">
+        <thead>
+          <tr>
+            <th style="width: 35%;">스킬명</th>
+            <th style="width: 65%;">기능</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="#card-news-generator" style="color: var(--accent); text-decoration: none;"><strong>card-news-generator</strong></a></td>
+            <td>카드뉴스 자동 생성, 한국어 콘텐츠 최적화</td>
+          </tr>
+          <tr>
+            <td><a href="#card-news-generator-v2" style="color: var(--accent); text-decoration: none;"><strong>card-news-generator-v2</strong></a></td>
+            <td>개선된 카드뉴스 생성, 더 많은 템플릿 지원</td>
+          </tr>
+          <tr>
+            <td><a href="#midjourney-cardnews-bg" style="color: var(--accent); text-decoration: none;"><strong>midjourney-cardnews-bg</strong></a></td>
+            <td>Midjourney 배경 이미지 생성, 카드뉴스 배경 자동화</td>
+          </tr>
+          <tr>
+            <td><a href="#nextjs15-init" style="color: var(--accent); text-decoration: none;"><strong>nextjs15-init</strong></a></td>
+            <td>Next.js 15 프로젝트 초기화</td>
+          </tr>
+          <tr>
+            <td><a href="#flutter-init" style="color: var(--accent); text-decoration: none;"><strong>flutter-init</strong></a></td>
+            <td>Flutter 프로젝트 초기화</td>
+          </tr>
+          <tr>
+            <td><a href="#codex" style="color: var(--accent); text-decoration: none;"><strong>codex</strong></a></td>
+            <td>OpenAI Codex CLI 코드 분석/리팩토링</td>
+          </tr>
+          <tr>
+            <td><a href="#codex-claude-loop" style="color: var(--accent); text-decoration: none;"><strong>codex-claude-loop</strong></a></td>
+            <td>Claude + Codex 이중 AI 검증 루프</td>
+          </tr>
+          <tr>
+            <td><a href="#meta-prompt-generator" style="color: var(--accent); text-decoration: none;"><strong>meta-prompt-generator</strong></a></td>
+            <td>메타 프롬프트 생성, 커스텀 슬래시 커맨드 자동 생성</td>
+          </tr>
+          <tr>
+            <td><a href="#prompt-enhancer" style="color: var(--accent); text-decoration: none;"><strong>prompt-enhancer</strong></a></td>
+            <td>프롬프트 개선, 간단한 요청을 상세 요구사항으로 변환</td>
+          </tr>
+          <tr>
+            <td><a href="#code-changelog" style="color: var(--accent); text-decoration: none;"><strong>code-changelog</strong></a></td>
+            <td>자동 변경사항 문서화, Git 커밋 히스토리 분석</td>
           </tr>
         </tbody>
       </table>

@@ -503,12 +503,12 @@
       <div class="header-content">
         <div>
           <h1>N8N AI Copilot - 작업 리포트</h1>
-          <p class="subtitle">스킬과 자동화를 포함한 개발 세션 문서 (실제 테스트 필요)</p>
+          <p class="subtitle">스킬과 자동화를 포함한 개발 세션 문서</p>
         </div>
         <div class="meta">
-          <span class="badge">기본 패턴 구현</span>
-          <span class="badge info">7개 커밋</span>
-          <span class="badge">2025-11-02</span>
+          <span class="badge" id="date-badge" style="cursor: default;">날짜 선택:</span>
+          <button class="badge info" onclick="loadReport('2025-11-02')" style="cursor: pointer; border: none; background: var(--success);">2025-11-02</button>
+          <button class="badge success" onclick="loadReport('2025-11-06')" style="cursor: pointer; border: none;">2025-11-06</button>
         </div>
       </div>
     </div>
@@ -585,10 +585,11 @@
   <!-- Marked.js for Markdown rendering -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
-    // Load and render TODAY_WORK_REPORT.md
-    async function loadReport() {
+    // Load and render work report by date
+    async function loadReport(date = '2025-11-06') {
       try {
-        const response = await fetch('TODAY_WORK_REPORT.md');
+        const filename = date ? `WORK_REPORT_${date}.md` : 'TODAY_WORK_REPORT.md';
+        const response = await fetch(filename);
         const markdown = await response.text();
 
         // Configure marked
@@ -624,7 +625,7 @@
         document.getElementById('report-content').innerHTML = `
           <div class="danger-box">
             <h3>작업 리포트 로딩 오류</h3>
-            <p>TODAY_WORK_REPORT.md를 로드할 수 없습니다. 로컬 서버가 실행 중인지 확인하세요.</p>
+            <p>작업 리포트 파일을 로드할 수 없습니다. 로컬 서버가 실행 중인지 확인하세요.</p>
             <p><strong>시도해보세요:</strong></p>
             <pre><code>python3 -m http.server 4000</code></pre>
             <p>그 다음: <a href="http://localhost:4000/work-report-viewer.html">http://localhost:4000/work-report-viewer.html</a></p>
