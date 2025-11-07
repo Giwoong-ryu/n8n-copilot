@@ -1,0 +1,43 @@
+{
+  "name": "@giwoong-ryu/viral-marketing",
+  "version": "1.0.0",
+  "description": "Viral marketing and SEO optimization skills for Korean content creators - 4 essential skills covering viral strategies, Naver blog SEO, SNS content creation, and hashtag generation",
+  "author": {
+    "name": "Giwoong Ryu",
+    "email": "your.email@example.com",
+    "url": "https://github.com/Giwoong-ryu"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Giwoong-ryu/n8n-copilot.git",
+    "directory": "packages/@giwoong-ryu-viral-marketing"
+  },
+  "homepage": "https://giwoong-ryu.github.io/n8n-copilot/",
+  "bugs": {
+    "url": "https://github.com/Giwoong-ryu/n8n-copilot/issues"
+  },
+  "skills": [
+    "skills/viral-marketing-strategy",
+    "skills/korean-blog-seo",
+    "skills/korean-sns-content",
+    "skills/hashtag-generator"
+  ],
+  "keywords": [
+    "claude-code",
+    "viral-marketing",
+    "seo",
+    "korean",
+    "marketing",
+    "content-strategy",
+    "social-media-marketing",
+    "naver-blog",
+    "instagram-marketing",
+    "sns-content"
+  ],
+  "categories": [
+    "marketing",
+    "content-creation",
+    "seo"
+  ]
+}
