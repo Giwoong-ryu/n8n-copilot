@@ -597,7 +597,7 @@
           </div>
           <div style="margin-bottom: 16px;">
             <strong style="color: var(--text-primary);">⚡ Commands로 즉시 실행</strong><br>
-            <code>/git</code> 한 번이면 → 커밋 메시지 작성부터 푸시까지 자동
+            <code>/save-work</code> 한 번이면 → 작업 내용 정리부터 저장까지 자동
           </div>
           <div>
             <strong style="color: var(--text-primary);">🎓 Skills로 전문가 되기</strong><br>
@@ -712,8 +712,8 @@
             </div>
             <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #10B981;">
               <strong style="color: var(--text-primary);">구체적 예시:</strong><br>
-              "이 코드 리뷰해줘"라고 요청 → <code style="background: #F5F5F5; padding: 3px 8px; border-radius: 4px;">code-reviewer</code> 에이전트가 자동으로:<br>
-              ① 코드 전체 분석 → ② 버그/성능 문제 탐지 → ③ 개선 제안 작성 → ④ 리뷰 보고서 생성까지 완료
+              "이 문서 검토해줘"라고 요청 → <code style="background: #F5F5F5; padding: 3px 8px; border-radius: 4px;">document-reviewer</code> 에이전트가 자동으로:<br>
+              ① 문서 전체 분석 → ② 오류/개선점 탐지 → ③ 수정 제안 작성 → ④ 검토 보고서 생성까지 완료
             </div>
             <div style="margin-top: 10px; font-size: 13px; opacity: 0.8;">
               <strong style="color: var(--text-primary);">💡 비유:</strong> 로봇 청소기 - 시작만 시키면 알아서 방 구석구석 청소
@@ -762,11 +762,11 @@
             </div>
             <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #F59E0B;">
               <strong style="color: var(--text-primary);">구체적 예시:</strong><br>
-              <code style="background: #F5F5F5; padding: 3px 8px; border-radius: 4px;">frontend-excellence</code> 플러그인 설치 시 포함되는 것:<br>
-              • React/Vue Skill (컴포넌트 지식)<br>
-              • <code style="background: #F5F5F5; padding: 3px 8px; border-radius: 4px;">/component</code> Command (컴포넌트 생성)<br>
-              • UI-reviewer Agent (UI 코드 리뷰)<br>
-              → 프론트엔드 개발에 필요한 모든 도구를 한 번에 사용 가능
+              <code style="background: #F5F5F5; padding: 3px 8px; border-radius: 4px;">business-suite</code> 플러그인 설치 시 포함되는 것:<br>
+              • Business Writing Skill (보고서 작성 지식)<br>
+              • <code style="background: #F5F5F5; padding: 3px 8px; border-radius: 4px;">/weekly-report</code> Command (주간 보고서 생성)<br>
+              • Document-reviewer Agent (문서 검토)<br>
+              → 업무 문서 작성에 필요한 모든 도구를 한 번에 사용 가능
             </div>
             <div style="margin-top: 10px; font-size: 13px; opacity: 0.8;">
               <strong style="color: var(--text-primary);">💡 비유:</strong> 툴박스 세트 - 드라이버, 망치, 렌치를 따로 사지 않고 세트로 구매
@@ -823,31 +823,31 @@
         </div>
 
         <div style="border: 2px solid var(--success); border-radius: 12px; padding: 24px; background: rgba(5, 150, 105, 0.02);">
-          <h4 style="font-size: 17px; font-weight: 600; color: var(--success); margin-bottom: 16px;">🔧 Git 커밋 자동화</h4>
+          <h4 style="font-size: 17px; font-weight: 600; color: var(--success); margin-bottom: 16px;">🔧 작업 내용 자동 저장</h4>
           <div style="font-size: 14px; line-height: 1.9; color: var(--text-primary);">
-            <strong style="color: var(--success);">상황:</strong> 코드 수정 후 커밋 메시지 작성이 번거로움<br><br>
+            <strong style="color: var(--success);">상황:</strong> 하루 작업 내용을 정리해서 저장하는 게 번거로움<br><br>
             <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid var(--success); margin-bottom: 12px;">
               <strong>방법 1 - Command로 간단히:</strong><br>
-              <code style="background: #F5F5F5; padding: 3px 8px; border-radius: 4px;">/git</code> 입력 → Claude가 변경사항 분석하여 커밋 메시지 자동 작성 및 커밋
+              <code style="background: #F5F5F5; padding: 3px 8px; border-radius: 4px;">/save-work</code> 입력 → Claude가 작업 내용 분석하여 정리 및 저장
             </div>
             <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid var(--success);">
               <strong>방법 2 - 상세 지시:</strong><br>
-              "이번 변경사항 커밋해줘. 커밋 메시지는 conventional commits 형식으로" 입력
+              "오늘 작업한 내용 정리해서 저장해줘. 형식은 날짜-제목-내용 순서로" 입력
             </div>
           </div>
         </div>
 
         <div style="border: 2px solid #F59E0B; border-radius: 12px; padding: 24px; background: rgba(245, 158, 11, 0.02);">
-          <h4 style="font-size: 17px; font-weight: 600; color: #F59E0B; margin-bottom: 16px;">🎨 React 컴포넌트 생성</h4>
+          <h4 style="font-size: 17px; font-weight: 600; color: #F59E0B; margin-bottom: 16px;">🎨 발표 자료 템플릿 생성</h4>
           <div style="font-size: 14px; line-height: 1.9; color: var(--text-primary);">
-            <strong style="color: #F59E0B;">상황:</strong> 새로운 버튼 컴포넌트가 필요함 (React 프로젝트)<br><br>
+            <strong style="color: #F59E0B;">상황:</strong> 매주 사용할 회의 발표 자료 템플릿이 필요함<br><br>
             <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #F59E0B; margin-bottom: 8px;">
-              <strong>사전 준비:</strong> React Skill 설치 (한 번만)
+              <strong>사전 준비:</strong> Presentation Skill 설치 (한 번만)
             </div>
             <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #F59E0B;">
               <strong>실행:</strong><br>
-              "primary, secondary variant가 있는 Button 컴포넌트 만들어줘. TypeScript로 작성하고 styled-components 사용" 입력<br>
-              → React Skill이 자동 활용되어 정확한 컴포넌트 생성
+              "주간 회의용 발표 자료 템플릿 만들어줘. 표지, 주요 성과, 이슈, 계획 슬라이드 포함" 입력<br>
+              → Presentation Skill이 자동 활용되어 정확한 템플릿 생성
             </div>
           </div>
         </div>
@@ -860,18 +860,7 @@
 
       <div style="display: grid; gap: 20px;">
         <div style="border-left: 4px solid #EF4444; padding: 20px; background: rgba(239, 68, 68, 0.05); border-radius: 8px;">
-          <h4 style="font-size: 16px; font-weight: 600; color: #EF4444; margin-bottom: 12px;">❌ 실수 1: Skills 설치를 너무 많이</h4>
-          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px;">
-            <strong>문제:</strong> 관련 없는 Skills 37개 전부 설치 → 느려짐, 관리 어려움
-          </div>
-          <div style="font-size: 14px; color: var(--success); line-height: 1.8;">
-            <strong>✅ 해결:</strong> 실제 사용하는 분야 Skills만 설치 (예: n8n 개발자는 n8n 관련 6개만)<br>
-            <span style="font-size: 13px; opacity: 0.8;">※ 2025년 최신: Claude가 필요할 때만 자동으로 사용하므로 토큰 걱정 없음!</span>
-          </div>
-        </div>
-
-        <div style="border-left: 4px solid #EF4444; padding: 20px; background: rgba(239, 68, 68, 0.05); border-radius: 8px;">
-          <h4 style="font-size: 16px; font-weight: 600; color: #EF4444; margin-bottom: 12px;">❌ 실수 2: 긴 대화 세션 계속 사용</h4>
+          <h4 style="font-size: 16px; font-weight: 600; color: #EF4444; margin-bottom: 12px;">❌ 실수 1: 긴 대화 세션 계속 사용</h4>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px;">
             <strong>문제:</strong> 컨텍스트가 계속 누적 → 토큰 소비 증가 → 응답 느려짐
           </div>
@@ -881,7 +870,7 @@
         </div>
 
         <div style="border-left: 4px solid #EF4444; padding: 20px; background: rgba(239, 68, 68, 0.05); border-radius: 8px;">
-          <h4 style="font-size: 16px; font-weight: 600; color: #EF4444; margin-bottom: 12px;">❌ 실수 3: MCP 없이 반복 데이터 조회</h4>
+          <h4 style="font-size: 16px; font-weight: 600; color: #EF4444; margin-bottom: 12px;">❌ 실수 2: MCP 없이 반복 데이터 조회</h4>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px;">
             <strong>문제:</strong> 매일 같은 파일 내용 복사 붙여넣기 → 매일 30K 토큰 낭비
           </div>
@@ -891,12 +880,12 @@
         </div>
 
         <div style="border-left: 4px solid #EF4444; padding: 20px; background: rgba(239, 68, 68, 0.05); border-radius: 8px;">
-          <h4 style="font-size: 16px; font-weight: 600; color: #EF4444; margin-bottom: 12px;">❌ 실수 4: 같은 질문 반복</h4>
+          <h4 style="font-size: 16px; font-weight: 600; color: #EF4444; margin-bottom: 12px;">❌ 실수 3: 같은 질문 반복</h4>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px;">
-            <strong>문제:</strong> "커밋 메시지 작성해줘"를 하루에 20번 → 40K 토큰 낭비
+            <strong>문제:</strong> "주간 보고서 작성해줘"를 하루에 20번 → 40K 토큰 낭비
           </div>
           <div style="font-size: 14px; color: var(--success); line-height: 1.8;">
-            <strong>✅ 해결:</strong> <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">/git</code> Commands 만들기 → 10K 토큰으로 감소 (75% 절약)
+            <strong>✅ 해결:</strong> <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">/weekly-report</code> Commands 만들기 → 10K 토큰으로 감소 (75% 절약)
           </div>
         </div>
       </div>
@@ -1376,9 +1365,9 @@
               <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">복잡한 코드 로직을 쉬운 언어로 설명. 알고리즘, 디자인 패턴, 라이브러리 사용법 상세 해설</td>
             </tr>
             <tr>
-              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/git</code></td>
-              <td style="padding: 12px; border-bottom: 1px solid var(--border);">Git 작업 자동화</td>
-              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">커밋 메시지 자동 생성, 브랜치 관리, 충돌 해결 지원. Conventional Commits 형식 자동 준수</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/save-work</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">작업 내용 자동 저장</td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">하루 작업 내용 자동 정리 및 요약, 주요 변경사항 기록, 날짜별 히스토리 관리</td>
             </tr>
             <tr>
               <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/implement</code></td>
@@ -1621,7 +1610,7 @@
             <strong>debugging-toolkit</strong> - 인터랙티브 디버깅, DX 최적화
           </div>
           <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
-            <strong>git-pr-workflows</strong> - Git 자동화, PR 향상, 팀 온보딩
+            <strong>work-history-manager</strong> - 작업 히스토리 자동 관리, 변경사항 추적
           </div>
         </div>
       </div>
@@ -1630,7 +1619,7 @@
         <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">기타 플러그인 (5개)</h4>
         <div style="display: grid; gap: 12px;">
           <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
-            <strong>dotclaude/frontend-excellence</strong> - React 19, Next.js 15, 컴포넌트 아키텍처
+            <strong>dotclaude/business-document-suite</strong> - 업무 보고서, 발표 자료, 문서 템플릿
           </div>
           <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
             <strong>anthropic/document-skills</strong> - Excel, Word, PowerPoint, PDF 처리
@@ -1639,10 +1628,10 @@
             <strong>fcakyon/code-quality-hooks</strong> - 8개 언어 자동 포맷팅
           </div>
           <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
-            <strong>anthropic/pr-review-toolkit</strong> - 전문 에이전트를 활용한 자동 PR 리뷰
+            <strong>anthropic/document-review-toolkit</strong> - 전문 에이전트를 활용한 자동 문서 검토
           </div>
           <div style="padding: 16px; background: var(--bg-tertiary); border-radius: 8px;">
-            <strong>anthropic/commit-commands</strong> - Git 커밋/푸시/PR 생성 자동화
+            <strong>anthropic/work-save-commands</strong> - 작업 내용 저장/정리/히스토리 관리 자동화
           </div>
         </div>
       </div>
