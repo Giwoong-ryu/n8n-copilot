@@ -317,8 +317,29 @@
               <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <h2>스킬셋</h2>
-            <p>Claude Code를 위한 11개의 강력한 AI 자동화 스킬. 개발 자동화, 프로젝트 초기화, 콘텐츠 생성까지!</p>
-            <span class="card-badge new">11개 스킬</span>
+            <p>Claude Code를 위한 37개의 강력한 AI 자동화 스킬. n8n, 디자인, 문서처리, 마케팅, 개발도구까지!</p>
+            <span class="card-badge new">37개 스킬</span>
+          </a>
+
+          <!-- Commands 카드 -->
+          <a href="#commands-section" class="card" onclick="event.preventDefault(); document.querySelector('#commands-section').scrollIntoView({behavior: 'smooth'});">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 17l6-6-6-6M12 19h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2>Commands</h2>
+            <p>슬래시 커맨드로 빠르게 실행하는 17가지 자동화 작업</p>
+            <span class="card-badge new">17개 커맨드</span>
+          </a>
+
+          <!-- Agents 카드 -->
+          <a href="https://github.com/Giwoong-ryu/n8n-copilot/tree/main/클로드_팁/Agent" class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2a3 3 0 0 0-3 3v4a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" stroke="currentColor" stroke-width="2"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h2>Agents</h2>
+            <p>전문 분야별 AI 페르소나 - 언어, 아키텍처, DevOps, 테스트, 문서화 등</p>
+            <span class="card-badge new">60개 Agent</span>
           </a>
 
           <!-- MCP 카드 -->
@@ -330,18 +351,17 @@
             </svg>
             <h2>MCP</h2>
             <p>Model Context Protocol - Claude의 외부 시스템 연동 프로토콜 가이드</p>
-            <span class="card-badge">준비 중</span>
+            <span class="card-badge">완료</span>
           </a>
 
-          <!-- Agent 카드 -->
-          <a href="https://github.com/Giwoong-ryu/n8n-copilot/tree/main/클로드_팁/Agent" class="card">
+          <!-- Plugins 카드 -->
+          <a href="#plugins-section" class="card" onclick="event.preventDefault(); document.querySelector('#plugins-section').scrollIntoView({behavior: 'smooth'});">
             <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2a3 3 0 0 0-3 3v4a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" stroke="currentColor" stroke-width="2"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <h2>Agent</h2>
-            <p>Claude Agent 활용법 - 복잡한 작업을 자동화하는 자율 AI 시스템</p>
-            <span class="card-badge">준비 중</span>
+            <h2>Plugins</h2>
+            <p>claude-plugins.dev에서 설치한 10개의 공식 플러그인 패키지</p>
+            <span class="card-badge new">10개 플러그인</span>
           </a>
 
           <!-- 기타 팁 카드 -->
@@ -377,7 +397,7 @@
         <div style="font-size: 13px; color: var(--text-secondary);">전문화된 AI 페르소나</div>
       </div>
 
-      <div style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; padding: 32px; text-align: center;">
+      <div id="commands-section" style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; padding: 32px; text-align: center;">
         <div style="font-size: 48px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">17</div>
         <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Commands</div>
         <div style="font-size: 13px; color: var(--text-secondary);">슬래시 커맨드</div>
@@ -426,7 +446,99 @@
       </div>
     </div>
 
+    <!-- Commands 상세 섹션 -->
     <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 60px;">
+      <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">⌨️ 슬래시 커맨드 (17개)</h3>
+
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background: var(--bg-tertiary);">
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600;">커맨드</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600;">용도</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/analyze</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드/시스템 분석</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/build</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">빌드/컴파일 실행</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/cleanup</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드 정리/포맷팅</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/design</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">아키텍처/시스템 설계</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/document</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">문서 자동 생성</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/estimate</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">작업 추정 및 계획</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/explain</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드/개념 설명</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/git</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">Git 작업 자동화</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/implement</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">기능 구현</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/improve</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드 개선 제안</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/index</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">프로젝트 인덱싱</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/load</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">컨텍스트 로드</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/spawn</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">작업 생성/관리</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/task</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">작업 실행</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/test</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">테스트 생성/실행</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/troubleshoot</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">문제 진단 및 해결</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px;"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/workflow</code></td>
+              <td style="padding: 12px;">워크플로우 자동화</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background: rgba(124, 58, 237, 0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin-top: 24px;">
+        <p style="font-size: 14px; color: var(--text-primary); line-height: 1.8; margin: 0;">
+          <strong>💡 사용법:</strong> 슬래시 커맨드는 채팅창에 <code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px;">/커맨드명</code> 형태로 입력하여 특정 작업을 빠르게 실행할 수 있습니다.
+        </p>
+      </div>
+    </div>
+
+    <div id="plugins-section" style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 60px;">
       <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">📦 설치된 플러그인 (10개)</h3>
 
       <div style="margin-bottom: 32px;">
