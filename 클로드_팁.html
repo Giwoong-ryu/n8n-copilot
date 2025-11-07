@@ -478,74 +478,443 @@
         </p>
       </div>
     </div>
+
+    <!-- Commands 섹션 -->
+    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 60px;">
+      <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">⌨️ 슬래시 커맨드 (17개)</h3>
+
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background: var(--bg-tertiary);">
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600;">커맨드</th>
+              <th style="padding: 12px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600;">용도</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/analyze</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드/시스템 분석</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/build</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">빌드/컴파일 실행</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/cleanup</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드 정리/포맷팅</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/design</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">아키텍처/시스템 설계</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/document</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">문서 자동 생성</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/estimate</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">작업 추정 및 계획</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/explain</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드/개념 설명</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/git</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">Git 작업 자동화</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/implement</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">기능 구현</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/improve</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">코드 개선 제안</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/index</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">프로젝트 인덱싱</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/load</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">컨텍스트 로드</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/spawn</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">작업 생성/관리</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/task</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">작업 실행</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/test</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">테스트 생성/실행</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/troubleshoot</code></td>
+              <td style="padding: 12px; border-bottom: 1px solid var(--border);">문제 진단 및 해결</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px;"><code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px; color: var(--accent);">/workflow</code></td>
+              <td style="padding: 12px;">워크플로우 자동화</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background: rgba(124, 58, 237, 0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin-top: 24px;">
+        <p style="font-size: 14px; color: var(--text-primary); line-height: 1.8; margin: 0;">
+          <strong>💡 사용법:</strong> 슬래시 커맨드는 채팅창에 <code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px;">/커맨드명</code> 형태로 입력하여 특정 작업을 빠르게 실행할 수 있습니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- Agents 섹션 -->
+    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 60px;">
+      <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">🤖 전문 AI 에이전트 (60개)</h3>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💻 언어 전문가 (16개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">c-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">cpp-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">csharp-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">dart-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">go-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">java-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">javascript-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">kotlin-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">php-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">python-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ruby-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">rust-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">scala-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">swift-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">typescript-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">zig-pro</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🏗️ 아키텍처 (8개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">architect-review</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">backend-architect</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">frontend-architect</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">mobile-architect</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">system-design</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">api-design</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">microservices-expert</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">database-design</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🔧 DevOps & 배포 (6개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">devops-engineer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ci-cd-specialist</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">docker-expert</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">kubernetes-expert</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">cloud-architect</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">infrastructure-specialist</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🐛 디버깅 & 테스트 (5개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">debugger</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">test-engineer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">qa-specialist</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">performance-optimizer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">security-auditor</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">📊 데이터 & AI/ML (4개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">data-engineer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ml-engineer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ai-researcher</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">data-scientist</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🎨 디자인 & UX (3개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ux-designer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ui-designer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">design-system-architect</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">📝 문서화 (5개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">technical-writer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">api-documenter</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">readme-generator</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">changelog-writer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">tutorial-creator</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🔍 코드 품질 (4개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">code-reviewer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">refactoring-expert</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">code-standards</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">best-practices</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💼 비즈니스 (7개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">product-manager</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">business-analyst</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">requirements-engineer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">scrum-master</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">project-planner</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">stakeholder-communicator</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">business-case-analyst</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">⚙️ 기타 (6개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">general-assistant</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">problem-solver</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">research-assistant</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">integration-specialist</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">migration-expert</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">legacy-modernizer</span>
+        </div>
+      </div>
+
+      <div style="background: rgba(124, 58, 237, 0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px;">
+        <p style="font-size: 14px; color: var(--text-primary); line-height: 1.8; margin: 0;">
+          <strong>💡 사용법:</strong> Agent는 Task tool을 통해 호출되며, 각 전문 분야에 특화된 AI 페르소나로 복잡한 작업을 자율적으로 수행합니다.
+        </p>
+      </div>
+    </div>
   </div>
 
   <!-- 스킬셋 상세 -->
   <div class="container section">
-    <h2>🎯 11개 Claude Code 스킬셋</h2>
-    <p class="section-subtitle">개발 자동화부터 콘텐츠 생성까지</p>
+    <h2>🎯 37개 Claude Code 스킬셋</h2>
+    <p class="section-subtitle">총 ~81,891 토큰 • 서버 27개 + Windows 10개</p>
 
-    <h3 style="font-size: 24px; margin: 40px 0 24px 0; color: var(--accent);">개발 자동화 (5개)</h3>
+    <h3 style="font-size: 24px; margin: 40px 0 24px 0; color: var(--accent);">🔧 n8n 워크플로우 (6개)</h3>
     <div class="skills-grid">
       <div class="skill-item">
-        <h3><span class="skill-number">1</span>code-changelog</h3>
-        <p>AI 코드 변경사항 자동 문서화 + HTML 뷰어. Git 커밋 히스토리를 분석하여 변경사항을 구조화된 문서로 변환합니다.</p>
+        <h3><span class="skill-number">1</span>n8n-workflow-patterns</h3>
+        <p>5가지 핵심 워크플로우 패턴 (Webhook, HTTP API, Database, AI Agent, Scheduled Tasks) • ~2,871 토큰</p>
       </div>
 
       <div class="skill-item">
-        <h3><span class="skill-number">2</span>meta-prompt-generator</h3>
-        <p>커스텀 슬래시 커맨드 자동 생성. 반복적인 작업을 슬래시 커맨드로 만들어 생산성을 향상시킵니다.</p>
+        <h3><span class="skill-number">2</span>n8n-node-configuration</h3>
+        <p>노드 설정 가이드 및 Operation별 속성 의존성 이해 • ~4,258 토큰</p>
       </div>
 
       <div class="skill-item">
-        <h3><span class="skill-number">3</span>prompt-enhancer</h3>
-        <p>간단한 요청을 상세 요구사항으로 변환. 모호한 요청을 구체적인 요구사항으로 확장합니다.</p>
+        <h3><span class="skill-number">3</span>n8n-validation-expert</h3>
+        <p>검증 오류 해석 및 수정, Validation profiles, error types • ~3,664 토큰</p>
       </div>
 
       <div class="skill-item">
-        <h3><span class="skill-number">4</span>codex-claude-loop</h3>
-        <p>Claude + Codex 이중 AI 검증 루프. 두 AI가 서로 코드를 검증하여 품질을 향상시킵니다.</p>
+        <h3><span class="skill-number">4</span>n8n-code-javascript</h3>
+        <p>n8n Code 노드 JavaScript 작성, $input, $json, $node, $helpers 사용법 • ~4,027 토큰</p>
       </div>
 
       <div class="skill-item">
-        <h3><span class="skill-number">5</span>codex</h3>
-        <p>OpenAI Codex CLI 코드 분석/리팩토링. 기존 코드를 분석하고 최적화 제안을 제공합니다.</p>
+        <h3><span class="skill-number">5</span>n8n-expression-syntax</h3>
+        <p>{{ }} 표현식 문법 및 오류 수정, Webhook 데이터 접근, 다중 입력 처리 • ~2,400 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">6</span>n8n-mcp-tools-expert</h3>
+        <p>n8n MCP 도구 사용법, search_nodes, validate, create 활용 • ~3,188 토큰</p>
       </div>
     </div>
 
-    <h3 style="font-size: 24px; margin: 60px 0 24px 0; color: var(--accent);">프로젝트 초기화 (2개)</h3>
+    <h3 style="font-size: 24px; margin: 60px 0 24px 0; color: var(--accent);">🎨 디자인 & 프론트엔드 (5개)</h3>
     <div class="skills-grid">
       <div class="skill-item">
-        <h3><span class="skill-number">6</span>flutter-init</h3>
-        <p>Flutter Clean Architecture 프로젝트 생성. 클린 아키텍처 기반 Flutter 프로젝트를 즉시 시작합니다.</p>
+        <h3><span class="skill-number">7</span>canvas-design</h3>
+        <p>비주얼 아트 생성, PNG/PDF 디자인 • ~2,984 토큰</p>
       </div>
 
       <div class="skill-item">
-        <h3><span class="skill-number">7</span>nextjs15-init</h3>
-        <p>Next.js 15 App Router 프로젝트 생성. 최신 Next.js 15 프로젝트를 베스트 프랙티스로 시작합니다.</p>
+        <h3><span class="skill-number">8</span>nextjs</h3>
+        <p>Next.js App Router, RSC, PPR, Turborepo 모노레포 관리 • ~2,344 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">9</span>tailwindcss</h3>
+        <p>Tailwind CSS + ShadCN UI, 반응형 디자인 패턴 • ~2,493 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">10</span>landing-page-guide</h3>
+        <p>랜딩 페이지 11가지 필수 요소, 전환율 최적화 • ~2,417 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">11</span>theme-factory</h3>
+        <p>10가지 사전 설정 테마, 슬라이드/문서/HTML 스타일링 • ~781 토큰</p>
       </div>
     </div>
 
-    <h3 style="font-size: 24px; margin: 60px 0 24px 0; color: var(--accent);">콘텐츠 생성 (4개)</h3>
+    <h3 style="font-size: 24px; margin: 60px 0 24px 0; color: var(--accent);">📄 문서 처리 (4개)</h3>
     <div class="skills-grid">
       <div class="skill-item">
-        <h3><span class="skill-number">8</span>landing-page-guide</h3>
-        <p>고전환율 랜딩페이지 제작 가이드. 마케팅 효과적인 랜딩페이지 구조와 카피를 생성합니다.</p>
+        <h3><span class="skill-number">12</span>pptx</h3>
+        <p>PowerPoint 생성/편집, 프레젠테이션 자동화 • ~6,387 토큰</p>
       </div>
 
       <div class="skill-item">
-        <h3><span class="skill-number">9</span>card-news-generator</h3>
-        <p>인스타그램 카드 뉴스 자동 생성. 콘텐츠를 입력하면 카드 뉴스 형태로 변환합니다.</p>
+        <h3><span class="skill-number">13</span>xlsx</h3>
+        <p>Excel 파일 생성/편집, 데이터 분석 • ~1,322 토큰</p>
       </div>
 
       <div class="skill-item">
-        <h3><span class="skill-number">10</span>card-news-generator-v2</h3>
-        <p>카드 뉴스 V2 (배경 이미지 지원). 커스텀 배경 이미지를 포함한 카드 뉴스를 생성합니다.</p>
+        <h3><span class="skill-number">14</span>docx</h3>
+        <p>Word 문서 생성/편집 • ~1,345 토큰</p>
       </div>
 
       <div class="skill-item">
-        <h3><span class="skill-number">11</span>midjourney-cardnews-bg</h3>
-        <p>Midjourney 배경 프롬프트 생성. 카드 뉴스용 Midjourney 프롬프트를 자동 생성합니다.</p>
+        <h3><span class="skill-number">15</span>pdf</h3>
+        <p>PDF 문서 처리 및 변환 • ~1,288 토큰</p>
+      </div>
+    </div>
+
+    <h3 style="font-size: 24px; margin: 60px 0 24px 0; color: var(--accent);">🚀 마케팅 (2개)</h3>
+    <div class="skills-grid">
+      <div class="skill-item">
+        <h3><span class="skill-number">16</span>viral-marketing-mastery</h3>
+        <p>바이럴 마케팅 전략, STEPPS 프레임워크, 소셜 미디어 최적화 • ~14,303 토큰 (초대형)</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">17</span>seo</h3>
+        <p>검색 엔진 최적화 전략 • ~1,891 토큰</p>
+      </div>
+    </div>
+
+    <h3 style="font-size: 24px; margin: 60px 0 24px 0; color: var(--accent);">💡 생산성 (4개)</h3>
+    <div class="skills-grid">
+      <div class="skill-item">
+        <h3><span class="skill-number">18</span>systematic-debugging</h3>
+        <p>4단계 디버깅 프레임워크, Root cause investigation • ~2,497 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">19</span>writing-plans</h3>
+        <p>상세한 구현 계획 작성, 엔지니어를 위한 단계별 가이드 • ~863 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">20</span>subagent-driven-development</h3>
+        <p>독립적 태스크 병렬 실행, 코드 리뷰 통합 • ~1,268 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">21</span>prompt-engineering-patterns</h3>
+        <p>고급 프롬프트 엔지니어링, LLM 성능 최적화 • ~1,745 토큰</p>
+      </div>
+    </div>
+
+    <h3 style="font-size: 24px; margin: 60px 0 24px 0; color: var(--accent);">🛠️ 개발 도구 (6개)</h3>
+    <div class="skills-grid">
+      <div class="skill-item">
+        <h3><span class="skill-number">22</span>skill-creator</h3>
+        <p>새로운 스킬 생성 가이드, 스킬 구조 설계 • ~2,886 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">23</span>claude-code-analyzer</h3>
+        <p>Claude Code 사용 패턴 분석, CLAUDE.md 개선 제안 • ~2,342 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">24</span>research</h3>
+        <p>멀티소스 리서치 에이전트, Quick/Standard/Extensive 모드 • ~1,447 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">25</span>git-pro</h3>
+        <p>고급 Git 작업 자동화 • ~2,190 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">26</span>testing-expert</h3>
+        <p>테스트 작성 및 자동화 전문가 • ~2,645 토큰</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">27</span>api-integration</h3>
+        <p>API 통합 및 연동 가이드 • ~2,134 토큰</p>
+      </div>
+    </div>
+
+    <h3 style="font-size: 24px; margin: 60px 0 24px 0; color: var(--accent);">🪟 Windows 전용 (10개)</h3>
+    <div class="skills-grid">
+      <div class="skill-item">
+        <h3><span class="skill-number">28</span>card-news-generator</h3>
+        <p>카드뉴스 자동 생성, 한국어 콘텐츠 최적화</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">29</span>card-news-generator-v2</h3>
+        <p>개선된 카드뉴스 생성, 더 많은 템플릿 지원</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">30</span>midjourney-cardnews-bg</h3>
+        <p>Midjourney 배경 이미지 생성, 카드뉴스 배경 자동화</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">31</span>nextjs15-init</h3>
+        <p>Next.js 15 프로젝트 초기화</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">32</span>flutter-init</h3>
+        <p>Flutter 프로젝트 초기화</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">33</span>codex</h3>
+        <p>OpenAI Codex CLI 코드 분석/리팩토링</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">34</span>codex-claude-loop</h3>
+        <p>Claude + Codex 이중 AI 검증 루프</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">35</span>meta-prompt-generator</h3>
+        <p>메타 프롬프트 생성, 커스텀 슬래시 커맨드 자동 생성</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">36</span>prompt-enhancer</h3>
+        <p>프롬프트 개선, 간단한 요청을 상세 요구사항으로 변환</p>
+      </div>
+
+      <div class="skill-item">
+        <h3><span class="skill-number">37</span>code-changelog</h3>
+        <p>자동 변경사항 문서화, Git 커밋 히스토리 분석</p>
       </div>
     </div>
   </div>
