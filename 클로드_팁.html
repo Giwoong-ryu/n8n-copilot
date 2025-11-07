@@ -856,38 +856,51 @@
 
     <!-- 실전 워크플로우 -->
     <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 40px;">
-      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">🔄 실전 워크플로우 예시</h3>
+      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">🔄 실전 사용 예시 (복사해서 사용하세요)</h3>
 
       <div style="display: grid; gap: 24px;">
         <div style="border: 2px solid var(--accent); border-radius: 12px; padding: 24px; background: rgba(124, 58, 237, 0.02);">
-          <h4 style="font-size: 17px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">📱 새 기능 개발 플로우</h4>
+          <h4 style="font-size: 17px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">📝 보고서 자동 생성</h4>
           <div style="font-size: 14px; line-height: 1.9; color: var(--text-primary);">
-            <strong>1단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/design</code> - 기능 설계 및 아키텍처 결정<br>
-            <strong>2단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/implement</code> - 코드 작성<br>
-            <strong>3단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/test</code> - 테스트 생성 및 실행<br>
-            <strong>4단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/document</code> - 문서 자동 생성<br>
-            <strong>5단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/git</code> - 커밋 및 PR 생성
+            <strong style="color: var(--accent);">상황:</strong> 매주 월요일 주간 보고서를 작성해야 함<br><br>
+            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent); margin-bottom: 12px;">
+              <strong>방법 1 - Command 사용:</strong><br>
+              채팅창에 <code style="background: #F5F5F5; padding: 3px 8px; border-radius: 4px;">/document 주간 보고서 작성해줘</code> 입력
+            </div>
+            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent);">
+              <strong>방법 2 - 자연어로 요청:</strong><br>
+              "커맨드를 사용해서 이번 주 보고서 자동으로 만들어줘" 입력
+            </div>
           </div>
         </div>
 
         <div style="border: 2px solid var(--success); border-radius: 12px; padding: 24px; background: rgba(5, 150, 105, 0.02);">
-          <h4 style="font-size: 17px; font-weight: 600; color: var(--success); margin-bottom: 16px;">🐛 버그 수정 플로우</h4>
+          <h4 style="font-size: 17px; font-weight: 600; color: var(--success); margin-bottom: 16px;">🔧 Git 커밋 자동화</h4>
           <div style="font-size: 14px; line-height: 1.9; color: var(--text-primary);">
-            <strong>1단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/troubleshoot</code> - 문제 진단 및 원인 파악<br>
-            <strong>2단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/implement</code> - 수정 코드 작성<br>
-            <strong>3단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/test</code> - 회귀 테스트 추가<br>
-            <strong>4단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/git</code> - 커밋 (fix: 버그 설명)
+            <strong style="color: var(--success);">상황:</strong> 코드 수정 후 커밋 메시지 작성이 번거로움<br><br>
+            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid var(--success); margin-bottom: 12px;">
+              <strong>방법 1 - Command로 간단히:</strong><br>
+              <code style="background: #F5F5F5; padding: 3px 8px; border-radius: 4px;">/git</code> 입력 → Claude가 변경사항 분석하여 커밋 메시지 자동 작성 및 커밋
+            </div>
+            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid var(--success);">
+              <strong>방법 2 - 상세 지시:</strong><br>
+              "이번 변경사항 커밋해줘. 커밋 메시지는 conventional commits 형식으로" 입력
+            </div>
           </div>
         </div>
 
         <div style="border: 2px solid #F59E0B; border-radius: 12px; padding: 24px; background: rgba(245, 158, 11, 0.02);">
-          <h4 style="font-size: 17px; font-weight: 600; color: #F59E0B; margin-bottom: 16px;">♻️ 레거시 리팩토링 플로우</h4>
+          <h4 style="font-size: 17px; font-weight: 600; color: #F59E0B; margin-bottom: 16px;">🎨 React 컴포넌트 생성</h4>
           <div style="font-size: 14px; line-height: 1.9; color: var(--text-primary);">
-            <strong>1단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/analyze</code> - 코드베이스 분석<br>
-            <strong>2단계:</strong> <strong>refactoring-expert Agent</strong> 호출 - 개선 방안 제안<br>
-            <strong>3단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/improve</code> - 리팩토링 실행<br>
-            <strong>4단계:</strong> <code style="background: var(--bg-tertiary); padding: 4px 8px; border-radius: 4px;">/test</code> - 기존 테스트 통과 확인<br>
-            <strong>5단계:</strong> <strong>code-reviewer Agent</strong> - 최종 리뷰
+            <strong style="color: #F59E0B;">상황:</strong> 새로운 버튼 컴포넌트가 필요함 (React 프로젝트)<br><br>
+            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #F59E0B; margin-bottom: 8px;">
+              <strong>사전 준비:</strong> React Skill 설치 (한 번만)
+            </div>
+            <div style="background: white; padding: 12px; border-radius: 6px; border-left: 3px solid #F59E0B;">
+              <strong>실행:</strong><br>
+              "primary, secondary variant가 있는 Button 컴포넌트 만들어줘. TypeScript로 작성하고 styled-components 사용" 입력<br>
+              → React Skill이 자동 활용되어 정확한 컴포넌트 생성
+            </div>
           </div>
         </div>
       </div>
