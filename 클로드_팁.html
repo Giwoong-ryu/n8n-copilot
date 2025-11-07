@@ -623,249 +623,278 @@
     </div>
 
     <!-- 0단계: 프로젝트 설정 -->
+    <div style="background: var(--bg-secondary); border: 3px solid #10B981; border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-lg); margin-bottom: 60px;">
+
       <!-- 헤더 -->
       <div style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); padding: 40px; color: white;">
         <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
           <span style="font-size: 48px;">📁</span>
           <div>
             <div style="display: inline-block; background: rgba(255,255,255,0.3); padding: 6px 16px; border-radius: 16px; font-weight: 700; font-size: 13px; margin-bottom: 8px;">0단계</div>
-            <h3 style="font-size: 28px; font-weight: 700; margin: 0; line-height: 1.3;">프로젝트 설정 - Claude에게 프로젝트 알려주기</h3>
+            <h3 style="font-size: 28px; font-weight: 700; margin: 0; line-height: 1.3;">프로젝트 기능 - 설치 없이 클릭 몇 번이면 끝!</h3>
             <p style="font-size: 15px; opacity: 0.95; margin: 8px 0 0 0; line-height: 1.6;">
-              한 번만 설정하면 매번 "이 프로젝트는 Vue야", "TypeScript 써줘" 반복 안 해도 됨!
+              claude.ai 웹사이트의 "Projects" 기능으로 작업을 더 효율적으로!
             </p>
           </div>
         </div>
       </div>
 
       <div style="padding: 40px;">
-        <!-- 왜 필요한가 -->
-        <div style="background: rgba(239, 68, 68, 0.05); border: 2px solid #EF4444; border-radius: 12px; padding: 24px; margin-bottom: 32px;">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-            <span style="font-size: 24px;">❌</span>
-            <h4 style="font-size: 18px; font-weight: 700; color: #EF4444; margin: 0;">0단계 없이 쓰면?</h4>
+
+        <!-- Projects가 뭔가요? -->
+        <div style="margin-bottom: 48px;">
+          <h4 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; text-align: center;">🤔 Projects가 뭔가요?</h4>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+            <!-- Before -->
+            <div style="background: rgba(239, 68, 68, 0.05); border: 2px solid #EF4444; border-radius: 12px; padding: 24px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <span style="font-size: 24px;">❌</span>
+                <h5 style="font-size: 16px; font-weight: 700; color: #EF4444; margin: 0;">Projects 없이 쓰면?</h5>
+              </div>
+              <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+                매번 대화할 때마다:<br><br>
+                "월간 보고서 작성해줘.<br>
+                형식은 주요성과, 이슈, 계획 순서로.<br>
+                톤은 전문적이지만 간결하게"<br><br>
+                <strong style="color: #EF4444;">→ 똑같은 설명 반복!</strong>
+              </div>
+            </div>
+
+            <!-- After -->
+            <div style="background: rgba(16, 185, 129, 0.05); border: 2px solid #10B981; border-radius: 12px; padding: 24px;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                <span style="font-size: 24px;">✅</span>
+                <h5 style="font-size: 16px; font-weight: 700; color: #10B981; margin: 0;">Projects 사용하면?</h5>
+              </div>
+              <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+                처음 한 번만 설정해두면:<br><br>
+                "월간 보고서 작성해줘"<br><br>
+                <strong style="color: #10B981;">→ 자동으로 형식과 톤에 맞춰 작성!</strong><br>
+                <span style="font-size: 13px; opacity: 0.8;">(설명 반복 필요 없음)</span>
+              </div>
+            </div>
           </div>
-          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            매번 대화할 때마다:<br>
-            "이 프로젝트는 Vue 3 프로젝트야"<br>
-            "TypeScript 쓴다"<br>
-            "Composition API로 작성해줘"<br>
-            "컴포넌트는 PascalCase로 해줘"<br>
-            ...<br>
-            <strong style="color: #EF4444;">→ 토큰 낭비, 일관성 없음, 매번 설명 귀찮음</strong>
+
+          <div style="background: rgba(59, 130, 246, 0.05); border: 2px solid #3B82F6; border-radius: 12px; padding: 20px; text-align: center;">
+            <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+              <strong style="color: #3B82F6; font-size: 15px;">Projects = 프로젝트별 전용 작업 공간</strong><br>
+              <span style="font-size: 13px;">월간보고서 프로젝트, 이메일작성 프로젝트, 회의록정리 프로젝트 등을 따로 만들어서 관리!</span>
+            </div>
           </div>
         </div>
 
-        <div style="background: rgba(16, 185, 129, 0.05); border: 2px solid #10B981; border-radius: 12px; padding: 24px; margin-bottom: 40px;">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-            <span style="font-size: 24px;">✅</span>
-            <h4 style="font-size: 18px; font-weight: 700; color: #10B981; margin: 0;">0단계 설정하면?</h4>
-          </div>
-          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            "TodoList 컴포넌트 만들어줘" 한 마디면 끝!<br>
-            <strong style="color: #10B981;">→ 자동으로 Vue 3 + TypeScript + Composition API + PascalCase로 생성!</strong><br>
-            <span style="font-size: 13px; opacity: 0.8;">새 대화 시작해도 프로젝트 설정 자동으로 읽음</span>
-          </div>
-        </div>
+        <!-- 만드는 방법 -->
+        <h4 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; text-align: center;">⏱️ 3분 만들기 (클릭 5번이면 끝!)</h4>
 
-        <!-- 3분 따라하기 -->
-        <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; text-align: center;">⏱️ 3분 따라하기</h3>
-
-        <!-- 1단계: 터미널 열기 -->
-        <div style="background: white; border: 2px solid #10B981; border-radius: 12px; padding: 28px; margin-bottom: 24px;">
+        <!-- 1단계 -->
+        <div style="background: white; border: 2px solid #10B981; border-radius: 12px; padding: 28px; margin-bottom: 20px;">
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
             <div style="min-width: 36px; height: 36px; background: #10B981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">1</div>
-            <h4 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">터미널(명령 프롬프트) 열기</h4>
+            <h5 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">claude.ai 접속</h5>
           </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-            <!-- Windows -->
-            <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 20px;">
-              <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">🪟 Windows 사용자</div>
-              <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
-                <strong>방법 1:</strong> 윈도우 키(⊞) 누르고 "cmd" 검색<br>
-                <strong>방법 2:</strong> 윈도우 키 + R → "cmd" 입력 → Enter
-              </div>
-            </div>
-
-            <!-- Mac -->
-            <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 20px;">
-              <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">🍎 Mac 사용자</div>
-              <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
-                <strong>방법 1:</strong> Command(⌘) + Space → "terminal" 검색<br>
-                <strong>방법 2:</strong> Applications → Utilities → Terminal
-              </div>
-            </div>
-          </div>
-
-          <div style="background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 16px; border: 1px dashed #10B981;">
-            <div style="font-size: 12px; font-weight: 600; color: #10B981; margin-bottom: 6px;">💡 터미널이란?</div>
-            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
-              컴퓨터에게 명령어로 지시하는 프로그램입니다. 검은 화면에 글자가 나오면 성공!
-            </div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            웹 브라우저에서 <a href="https://claude.ai" target="_blank" style="color: #10B981; font-weight: 600;">claude.ai</a> 접속<br>
+            <span style="font-size: 13px; opacity: 0.8;">(Google 계정으로 로그인하면 간편해요)</span>
           </div>
         </div>
 
-        <!-- 2단계: 프로젝트 폴더로 이동 -->
-        <div style="background: white; border: 2px solid #10B981; border-radius: 12px; padding: 28px; margin-bottom: 24px;">
+        <!-- 2단계 -->
+        <div style="background: white; border: 2px solid #10B981; border-radius: 12px; padding: 28px; margin-bottom: 20px;">
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
             <div style="min-width: 36px; height: 36px; background: #10B981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">2</div>
-            <h4 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">프로젝트 폴더로 이동하기</h4>
+            <h5 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">왼쪽 메뉴에서 "Projects" 클릭</h5>
           </div>
-
-          <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.7;">
-            <strong style="color: var(--text-primary);">cd</strong> 명령어로 프로젝트 폴더로 이동합니다.
-          </div>
-
-          <div style="background: #2D3748; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-            <div style="font-size: 12px; color: #A0AEC0; margin-bottom: 8px;"># Windows 예시</div>
-            <code style="color: #E2E8F0; font-size: 14px; font-family: 'Courier New', monospace;">cd C:\Users\내이름\Documents\my-project</code>
-          </div>
-
-          <div style="background: #2D3748; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-            <div style="font-size: 12px; color: #A0AEC0; margin-bottom: 8px;"># Mac 예시</div>
-            <code style="color: #E2E8F0; font-size: 14px; font-family: 'Courier New', monospace;">cd ~/Documents/my-project</code>
-          </div>
-
-          <div style="background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 16px; border: 1px dashed #10B981;">
-            <div style="font-size: 12px; font-weight: 600; color: #10B981; margin-bottom: 6px;">💡 팁</div>
-            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
-              <strong>프로젝트가 없다면?</strong> 일단 Desktop 같은 곳으로 이동하세요!<br>
-              <code style="background: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">cd Desktop</code> 또는 <code style="background: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">cd ~/Desktop</code>
+          <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 20px; border: 1px dashed #10B981;">
+            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+              <strong style="color: var(--text-primary);">💡 찾는 방법:</strong><br>
+              화면 왼쪽 사이드바 → "Projects" 메뉴 찾기<br>
+              (보통 "New Chat" 아래에 있어요)
             </div>
           </div>
         </div>
 
-        <!-- 3단계: 프로젝트 지침 파일 만들기 -->
-        <div style="background: white; border: 2px solid #10B981; border-radius: 12px; padding: 28px; margin-bottom: 24px;">
+        <!-- 3단계 -->
+        <div style="background: white; border: 2px solid #10B981; border-radius: 12px; padding: 28px; margin-bottom: 20px;">
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
             <div style="min-width: 36px; height: 36px; background: #10B981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">3</div>
-            <h4 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">프로젝트 지침 파일 만들기 (복사-붙여넣기!)</h4>
+            <h5 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">"Create Project" 버튼 클릭</h5>
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            오른쪽 위에 있는 <strong style="color: #10B981;">"+ Create Project"</strong> 버튼 클릭
+          </div>
+        </div>
+
+        <!-- 4단계 -->
+        <div style="background: white; border: 2px solid #10B981; border-radius: 12px; padding: 28px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+            <div style="min-width: 36px; height: 36px; background: #10B981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">4</div>
+            <h5 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">프로젝트 이름 입력</h5>
+          </div>
+          <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.7;">
+            예시: "월간보고서", "이메일작성", "회의록정리"
+          </div>
+          <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 16px;">
+            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
+              <strong style="color: var(--text-primary);">💡 팁:</strong> 나중에 쉽게 찾을 수 있게 명확한 이름으로!
+            </div>
+          </div>
+        </div>
+
+        <!-- 5단계 -->
+        <div style="background: white; border: 2px solid #10B981; border-radius: 12px; padding: 28px; margin-bottom: 32px;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+            <div style="min-width: 36px; height: 36px; background: #10B981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">5</div>
+            <h5 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">지침 입력하기 (복사-붙여넣기!)</h5>
           </div>
 
           <div style="background: #FEF3C7; border: 2px solid #F59E0B; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
-            <div style="font-size: 14px; font-weight: 700; color: #F59E0B; margin-bottom: 8px;">⚠️ 수정할 부분만 딱 3곳!</div>
+            <div style="font-size: 14px; font-weight: 700; color: #F59E0B; margin-bottom: 8px;">⚡ 가장 쉬운 방법!</div>
             <div style="font-size: 13px; color: #92400E; line-height: 1.7;">
-              아래 코드를 복사한 후, <strong style="background: #FDE68A; padding: 2px 6px; border-radius: 4px;">[여기를 수정]</strong> 부분만 고치고 붙여넣으세요!
+              <strong>Claude에게 물어보세요:</strong><br>
+              "월간보고서용 프로젝트 지침 만들어줘"<br>
+              → Claude가 지침 만들어줌 → 복사 → "Custom instructions" 섹션에 붙여넣기!
             </div>
           </div>
 
-          <div style="position: relative;">
-            <div style="background: #2D3748; border-radius: 10px; padding: 20px; margin-bottom: 16px; position: relative;">
-              <div style="position: absolute; top: 12px; right: 12px; background: #10B981; color: white; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;">📋 클릭해서 전체 복사</div>
-
-              <pre style="color: #E2E8F0; font-size: 13px; line-height: 1.8; margin: 0; font-family: 'Courier New', monospace; overflow-x: auto;">mkdir -p .claude && cat > .claude/project-instructions.md << 'EOF'
-# 프로젝트 지침
-
-## 프로젝트 이름
-<strong style="background: #FDE68A; color: #1A1A1A; padding: 3px 8px; border-radius: 4px;">⭐ [여기에 프로젝트 이름 입력 예: "온라인 쇼핑몰"]</strong>
-
-## 프로젝트 설명
-<strong style="background: #FDE68A; color: #1A1A1A; padding: 3px 8px; border-radius: 4px;">⭐ [프로젝트가 무엇인지 한 줄로 설명 예: "사용자가 상품을 검색하고 구매할 수 있는 웹사이트"]</strong>
-
-## 기술 스택
-<strong style="background: #FDE68A; color: #1A1A1A; padding: 3px 8px; border-radius: 4px;">⭐ [사용하는 기술들 예: "Vue 3, TypeScript, Tailwind CSS"]</strong>
-- 아직 정하지 않았다면: "미정"이라고 써도 됩니다!
-
-## 코딩 규칙
-- 함수명: camelCase 사용 (예: getUserData)
-- 컴포넌트명: PascalCase 사용 (예: UserProfile)
-- 들여쓰기: 2칸 (스페이스)
-
-## 금지 사항
-- console.log는 개발 중에만 사용
-- 직접 API 호출 금지 (API 함수 사용)
-
-## 프로젝트 구조
-```
-src/
-  components/  - 재사용 가능한 컴포넌트
-  views/      - 페이지 컴포넌트
-  utils/      - 유틸리티 함수
-```
-
-EOF
-</pre>
-            </div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 16px;">
+            <strong style="color: var(--text-primary);">Custom instructions 섹션에 입력:</strong>
           </div>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px;">
-            <div style="background: rgba(5, 150, 105, 0.05); border: 1px solid var(--success); border-radius: 8px; padding: 16px;">
-              <div style="font-size: 13px; font-weight: 600; color: var(--success); margin-bottom: 8px;">✅ 개발 프로젝트가 있다면</div>
-              <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
-                프로젝트 이름, 설명, 기술 스택을 구체적으로 입력하세요!
-              </div>
-            </div>
-
-            <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid #3B82F6; border-radius: 8px; padding: 16px;">
-              <div style="font-size: 13px; font-weight: 600; color: #3B82F6; margin-bottom: 8px;">💼 일반 업무용이라면</div>
-              <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
-                "업무 자동화", "문서 작성", "미정" 이렇게 간단히 써도 OK!
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 4단계: 확인하기 -->
-        <div style="background: white; border: 2px solid #10B981; border-radius: 12px; padding: 28px; margin-bottom: 24px;">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-            <div style="min-width: 36px; height: 36px; background: #10B981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">4</div>
-            <h4 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;">완성! 확인하기</h4>
-          </div>
-
-          <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.7;">
-            파일이 제대로 생성되었는지 확인해볼까요?
-          </div>
-
-          <div style="background: #2D3748; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-            <div style="font-size: 12px; color: #A0AEC0; margin-bottom: 8px;"># Windows/Mac 공통</div>
-            <code style="color: #E2E8F0; font-size: 14px; font-family: 'Courier New', monospace;">
-              cat .claude/project-instructions.md
-            </code>
-          </div>
-
-          <div style="background: rgba(16, 185, 129, 0.1); border-radius: 8px; padding: 20px; border: 1px solid #10B981;">
-            <div style="font-size: 14px; font-weight: 700; color: #10B981; margin-bottom: 12px;">🎉 성공!</div>
+          <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid #10B981; border-radius: 8px; padding: 20px;">
             <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
-              파일 내용이 보이면 성공입니다!<br>
-              이제 Claude가 프로젝트를 자동으로 이해합니다.<br><br>
-              <strong style="color: var(--text-primary);">다음부터는:</strong><br>
-              "TodoList 만들어줘"라고만 하면<br>
-              → 자동으로 프로젝트 설정에 맞춰 코드 생성!
+              <strong style="color: #10B981;">예시 (월간보고서):</strong><br><br>
+              <em style="color: var(--text-primary);">
+              "매달 실적 보고서를 작성해주세요.<br>
+              형식: 주요성과 → 이슈 및 해결방안 → 다음달 계획<br>
+              톤: 전문적이지만 간결하게, 경영진이 빠르게 파악할 수 있도록<br>
+              수치와 구체적인 근거 포함"
+              </em>
             </div>
           </div>
         </div>
 
-        <!-- Windows에서 안될 때 -->
-        <details style="background: var(--bg-tertiary); border-radius: 12px; padding: 24px; margin-top: 32px; cursor: pointer;">
-          <summary style="font-size: 16px; font-weight: 700; color: var(--text-primary); cursor: pointer; list-style: none;">
-            ⚠️ Windows에서 안 될 때 (클릭해서 보기)
-          </summary>
-          <div style="margin-top: 16px; font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            <strong style="color: var(--text-primary);">PowerShell 사용하기:</strong><br>
-            1. 윈도우 키 + X → "Windows PowerShell" 선택<br>
-            2. 아래 명령어 사용:<br><br>
+        <!-- 예시 템플릿들 -->
+        <div style="background: rgba(124, 58, 237, 0.03); border-radius: 12px; padding: 32px; margin-bottom: 40px;">
+          <h4 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; text-align: center;">📝 바로 쓸 수 있는 템플릿 예시</h4>
 
-            <div style="background: #2D3748; border-radius: 8px; padding: 16px; margin: 12px 0;">
-              <pre style="color: #E2E8F0; font-size: 13px; margin: 0; font-family: 'Courier New', monospace; overflow-x: auto;">New-Item -Path ".claude" -ItemType Directory -Force
-Set-Content -Path ".claude/project-instructions.md" -Value @"
-# 프로젝트 지침
+          <div style="display: grid; gap: 20px;">
 
-## 프로젝트 이름
-[여기에 입력]
+            <!-- 템플릿 1 -->
+            <details style="background: white; border: 2px solid var(--border); border-radius: 10px; padding: 20px; cursor: pointer;">
+              <summary style="font-size: 15px; font-weight: 700; color: var(--accent); cursor: pointer; list-style: none;">
+                📊 월간보고서 프로젝트 (클릭해서 보기)
+              </summary>
+              <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.8; color: var(--text-secondary);">
+                  <strong style="color: var(--text-primary); display: block; margin-bottom: 8px;">Claude에게 이렇게 물어보세요:</strong>
+                  <em>"월간 실적 보고서 작성용 프로젝트 지침 만들어줘. 형식은 주요성과, 이슈, 다음달계획 순서로. 톤은 전문적이지만 간결하게"</em>
+                </div>
+              </div>
+            </details>
 
-## 프로젝트 설명
-[여기에 입력]
+            <!-- 템플릿 2 -->
+            <details style="background: white; border: 2px solid var(--border); border-radius: 10px; padding: 20px; cursor: pointer;">
+              <summary style="font-size: 15px; font-weight: 700; color: var(--accent); cursor: pointer; list-style: none;">
+                ✉️ 비즈니스 이메일 프로젝트 (클릭해서 보기)
+              </summary>
+              <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.8; color: var(--text-secondary);">
+                  <strong style="color: var(--text-primary); display: block; margin-bottom: 8px;">Claude에게 이렇게 물어보세요:</strong>
+                  <em>"비즈니스 이메일 작성용 프로젝트 지침 만들어줘. 제목은 20자 이내로 명확하게, 본문은 3-5문단으로 간결하게, 정중하지만 능동적인 톤으로"</em>
+                </div>
+              </div>
+            </details>
 
-## 기술 스택
-[여기에 입력]
+            <!-- 템플릿 3 -->
+            <details style="background: white; border: 2px solid var(--border); border-radius: 10px; padding: 20px; cursor: pointer;">
+              <summary style="font-size: 15px; font-weight: 700; color: var(--accent); cursor: pointer; list-style: none;">
+                📝 회의록 정리 프로젝트 (클릭해서 보기)
+              </summary>
+              <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.8; color: var(--text-secondary);">
+                  <strong style="color: var(--text-primary); display: block; margin-bottom: 8px;">Claude에게 이렇게 물어보세요:</strong>
+                  <em>"회의록 정리용 프로젝트 지침 만들어줘. 형식은 날짜-참석자-논의사항-결정사항-액션아이템 순서로. 액션아이템은 체크리스트로 만들고 담당자와 마감일 명확히"</em>
+                </div>
+              </div>
+            </details>
 
-## 코딩 규칙
-- 함수명: camelCase
-- 컴포넌트명: PascalCase
-"@</pre>
-            </div>
           </div>
-        </details>
+        </div>
+
+        <!-- 중요 팁들 -->
+        <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(167, 139, 250, 0.02) 100%); border: 2px solid var(--accent); border-radius: 12px; padding: 32px;">
+          <h4 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px; text-align: center;">💡 꼭 알아야 할 중요 팁!</h4>
+
+          <div style="display: grid; gap: 20px;">
+
+            <!-- 팁 1 -->
+            <div style="background: white; border-radius: 10px; padding: 24px;">
+              <div style="display: flex; align-items: start; gap: 12px;">
+                <span style="font-size: 28px; flex-shrink: 0;">1️⃣</span>
+                <div>
+                  <h5 style="font-size: 16px; font-weight: 700; color: var(--accent); margin: 0 0 12px 0;">채팅방 다 찼을 때 맥락 이어가는 법</h5>
+                  <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+                    <strong style="color: var(--text-primary);">문제:</strong> 한 채팅방에 너무 많이 대화하면 "대화 한도 도달" 메시지<br><br>
+                    <strong style="color: #10B981;">✅ 해결:</strong><br>
+                    1. 같은 프로젝트 안에서 <strong>"+ New Chat"</strong> 클릭<br>
+                    2. 이전 대화 내용 요약해서 붙여넣기 (선택)<br>
+                    3. 끝! (프로젝트 지침은 자동으로 적용됨)
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 팁 2 -->
+            <div style="background: white; border-radius: 10px; padding: 24px;">
+              <div style="display: flex; align-items: start; gap: 12px;">
+                <span style="font-size: 28px; flex-shrink: 0;">2️⃣</span>
+                <div>
+                  <h5 style="font-size: 16px; font-weight: 700; color: var(--accent); margin: 0 0 12px 0;">파일 업로드 활용하기</h5>
+                  <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+                    <strong style="color: var(--text-primary);">프로젝트에 파일을 올려두면:</strong><br>
+                    • 매번 파일 업로드 안 해도 됨<br>
+                    • 템플릿, 양식, 참고 문서 등을 보관<br>
+                    • 최대 10개 파일, 각 10MB까지 가능<br><br>
+                    <strong style="color: #10B981;">예시:</strong> 월간보고서 프로젝트에 "지난달_보고서.pdf" 올려두면 → "지난달 형식 참고해서 이번 달 보고서 작성해줘"
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 팁 3 -->
+            <div style="background: white; border-radius: 10px; padding: 24px;">
+              <div style="display: flex; align-items: start; gap: 12px;">
+                <span style="font-size: 28px; flex-shrink: 0;">3️⃣</span>
+                <div>
+                  <h5 style="font-size: 16px; font-weight: 700; color: var(--accent); margin: 0 0 12px 0;">프로젝트 vs 일반 채팅 언제 뭘 쓸까?</h5>
+                  <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+                    <strong style="color: var(--accent);">프로젝트 사용:</strong> 반복되는 작업 (보고서, 이메일, 회의록 등)<br>
+                    <strong style="color: var(--text-primary);">일반 채팅 사용:</strong> 일회성 질문 (간단한 검색, 번역, 설명 등)<br><br>
+                    <strong style="color: #10B981;">💡 팁:</strong> 일주일에 2번 이상 하는 작업이면 프로젝트로 만드세요!
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 팁 4 -->
+            <div style="background: white; border-radius: 10px; padding: 24px;">
+              <div style="display: flex; align-items: start; gap: 12px;">
+                <span style="font-size: 28px; flex-shrink: 0;">4️⃣</span>
+                <div>
+                  <h5 style="font-size: 16px; font-weight: 700; color: var(--accent); margin: 0 0 12px 0;">지침은 나중에 수정할 수 있어요</h5>
+                  <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+                    처음부터 완벽하게 만들 필요 없습니다!<br><br>
+                    <strong style="color: var(--text-primary);">수정 방법:</strong><br>
+                    프로젝트 이름 옆 <strong>"⋮"</strong> 클릭 → <strong>"Edit project"</strong> → Custom instructions 수정<br><br>
+                    <span style="font-size: 13px; opacity: 0.8;">사용하면서 부족한 부분을 추가하는 게 더 좋아요!</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
 
       </div>
     </div>
