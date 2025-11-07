@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>클로드_팁 - Claude Code 가이드</title>
-  <meta name="description" content="Claude Code 스킬셋, MCP, Agent 활용법 등 모든 기술 문서">
+  <title>클로드 완전 정복 - 누구나 쉽게 따라하는 Claude 가이드</title>
+  <meta name="description" content="개발자부터 일반인까지! 직장인, 학생, 프리랜서를 위한 Claude 사용법. 바로 복사해서 쓸 수 있는 월간보고서, 이메일, 회의록 패키지 포함">
   <style>
     * {
       margin: 0;
@@ -306,8 +306,8 @@
         ← 포트폴리오로 돌아가기
       </a>
 
-      <h1>💡 클로드_팁</h1>
-      <p class="subtitle">Claude Code를 더 효율적으로 사용하기 위한 가이드</p>
+      <h1>💡 <strong>클로드 완전 정복</strong></h1>
+      <p class="subtitle">개발자부터 일반인까지! 누구나 쉽게 따라하는 Claude 활용 가이드</p>
 
       <div class="container">
         <div class="cards-grid">
@@ -521,6 +521,505 @@
           <strong style="color: var(--text-primary);">• ChatGPT</strong>: 빠른 프로토타입, 학습, 간단한 스크립트 작성이 필요하면 → <strong style="color: var(--success);">ChatGPT 추천</strong><br>
           <strong style="color: var(--text-primary);">• Gemini</strong>: 최신 정보 검색, Google Workspace 통합이 필요하면 → <strong style="color: var(--success);">Gemini 추천</strong><br>
           <strong style="color: var(--text-primary);">• 결론</strong>: 세 가지 모두 무료 플랜이 있으니 직접 테스트해보고 본인 스타일에 맞는 도구 선택!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3단계 진행 시스템 -->
+  <div class="container section">
+    <h2>🎯 3단계 진행 시스템 - 나에게 맞는 레벨로 시작하기</h2>
+    <p class="section-subtitle">클로드는 모두를 위한 도구입니다! 직장인, 학생, 프리랜서, 개발자 모두 환영합니다 👋</p>
+
+    <!-- 레벨 소개 -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 60px;">
+      <!-- Level 1 -->
+      <div style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(5, 150, 105, 0.02) 100%); border: 2px solid var(--success); border-radius: 16px; padding: 32px;">
+        <div style="display: inline-block; background: var(--success); color: white; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 14px; margin-bottom: 16px;">LEVEL 1</div>
+        <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">개인 업무용</h3>
+        <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 20px;">
+          보고서, 이메일, 회의록, 요약 등<br>
+          일상적인 문서 작업
+        </p>
+        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--success); margin-bottom: 8px;">✅ 필요한 것</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            • Claude Web (claude.ai) 계정만<br>
+            • <strong style="color: var(--text-primary);">설치 불필요!</strong>
+          </div>
+        </div>
+        <div style="background: white; border-radius: 8px; padding: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--success); margin-bottom: 8px;">💡 사용 방법</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            아래 <strong>"패키지 바로 사용"</strong>에서<br>
+            프롬프트 복사 → Claude Web에 붙여넣기
+          </div>
+        </div>
+      </div>
+
+      <!-- Level 2 -->
+      <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(124, 58, 237, 0.02) 100%); border: 2px solid var(--accent); border-radius: 16px; padding: 32px;">
+        <div style="display: inline-block; background: var(--accent); color: white; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 14px; margin-bottom: 16px;">LEVEL 2</div>
+        <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">반복 작업 자동화</h3>
+        <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 20px;">
+          같은 형식의 보고서 매일 작성<br>
+          템플릿 기반 문서 자동화
+        </p>
+        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 8px;">✅ 필요한 것</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            • Level 1 + Claude Code 설치<br>
+            • Commands (커맨드) 설치
+          </div>
+        </div>
+        <div style="background: white; border-radius: 8px; padding: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 8px;">💡 사용 방법</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            <strong style="color: var(--text-primary);">/월간보고서</strong> 입력하면<br>
+            자동으로 보고서 생성
+          </div>
+        </div>
+      </div>
+
+      <!-- Level 3 -->
+      <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.02) 100%); border: 2px solid #8B5CF6; border-radius: 16px; padding: 32px;">
+        <div style="display: inline-block; background: #8B5CF6; color: white; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 14px; margin-bottom: 16px;">LEVEL 3</div>
+        <h3 style="font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">팀 공유 및 시스템화</h3>
+        <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 20px;">
+          팀 전체가 사용하는 워크플로우<br>
+          회사 시스템과 연동
+        </p>
+        <div style="background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: #8B5CF6; margin-bottom: 8px;">✅ 필요한 것</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            • Level 2 + Skills, MCP, Plugins<br>
+            • 전문 지식 패키지 설치
+          </div>
+        </div>
+        <div style="background: white; border-radius: 8px; padding: 16px;">
+          <div style="font-size: 13px; font-weight: 600; color: #8B5CF6; margin-bottom: 8px;">💡 사용 방법</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            실시간 데이터 연동, API 자동화<br>
+            복잡한 워크플로우 구축
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 패키지 모음 -->
+    <h2 style="text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 16px; color: var(--text-primary);">📦 바로 사용 가능한 패키지</h2>
+    <p style="text-align: center; color: var(--text-secondary); font-size: 16px; margin-bottom: 48px;">
+      복사해서 붙여넣기만 하면 끝! 간단하죠? 😊
+    </p>
+
+    <!-- 패키지 카드들 -->
+    <div style="display: grid; gap: 32px;">
+
+      <!-- 패키지 1: 월간보고서 -->
+      <div style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md);">
+        <div style="background: linear-gradient(135deg, var(--success) 0%, #10B981 100%); padding: 24px; color: white;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <span style="font-size: 32px;">📊</span>
+            <div>
+              <h3 style="font-size: 24px; font-weight: 700; margin: 0;">월간보고서 패키지</h3>
+              <p style="font-size: 14px; opacity: 0.9; margin: 4px 0 0 0;">매달 반복되는 실적 보고서, 이제 자동으로!</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">직장인</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">팀장</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">관리자</span>
+          </div>
+        </div>
+
+        <div style="padding: 32px;">
+          <!-- Level 1: 프롬프트 -->
+          <div style="margin-bottom: 32px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+              <span style="background: var(--success); color: white; padding: 6px 16px; border-radius: 16px; font-weight: 700; font-size: 13px;">LEVEL 1</span>
+              <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">설치 없이 바로 사용</span>
+            </div>
+
+            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; border-left: 4px solid var(--success);">
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;">📋 복사해서 Claude Web에 붙여넣으세요</div>
+              <pre style="background: white; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6; color: var(--text-primary); border: 1px solid var(--border);">당신은 전문 비즈니스 보고서 작성 전문가입니다.
+
+다음 형식으로 월간 실적 보고서를 작성해주세요:
+
+## 📅 [YYYY년 MM월] 월간 실적 보고서
+
+### 1. 📊 주요 성과
+- 목표 대비 달성률
+- 전월 대비 증감률
+- 핵심 성과 지표 (KPI)
+
+### 2. 💡 주요 활동 내역
+- 완료된 프로젝트/업무
+- 진행 중인 업무
+- 차질 사항 및 이유
+
+### 3. 📈 데이터 분석
+- 수치로 보는 성과
+- 그래프나 표로 시각화 제안
+- 트렌드 분석
+
+### 4. ⚠️ 이슈 및 해결방안
+- 발생한 문제점
+- 해결 시도 내역
+- 향후 대응 계획
+
+### 5. 🎯 다음 달 계획
+- 목표 설정
+- 실행 계획
+- 필요 리소스
+
+**작성 시 주의사항:**
+- 명확하고 간결한 문장 사용
+- 구체적인 수치와 근거 제시
+- 경영진이 빠르게 파악할 수 있도록 요약 중심
+- 긍정적이지만 현실적인 tone
+
+이제 제가 데이터를 제공하면 위 형식으로 보고서를 작성해주세요.</pre>
+
+              <div style="margin-top: 16px; padding: 16px; background: rgba(5, 150, 105, 0.05); border-radius: 8px; border: 1px dashed var(--success);">
+                <div style="font-size: 13px; font-weight: 600; color: var(--success); margin-bottom: 8px;">💡 사용 팁</div>
+                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+                  1. 위 프롬프트를 복사<br>
+                  2. <a href="https://claude.ai" target="_blank" style="color: var(--accent);">claude.ai</a> 접속<br>
+                  3. 새 대화 시작 → 붙여넣기<br>
+                  4. 실제 데이터 입력하면 보고서 완성!
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Level 2: 자동화 -->
+          <div style="margin-bottom: 32px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+              <span style="background: var(--accent); color: white; padding: 6px 16px; border-radius: 16px; font-weight: 700; font-size: 13px;">LEVEL 2</span>
+              <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">커맨드로 자동화 (설치 필요)</span>
+            </div>
+
+            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; border-left: 4px solid var(--accent);">
+              <div style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 16px;">🔧 설치 방법 (5분)</div>
+
+              <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border);">
+                <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">1단계: Claude Code 설치하기(저장)</div>
+                <pre style="background: #2D3748; color: #E2E8F0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin-bottom: 8px;">npm install -g @anthropic-ai/claude-code</pre>
+                <div style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+                  💡 <strong>쉬운 설명:</strong> 터미널(Terminal, 명령 프롬프트)을 열고 위 명령어를 붙여넣기하고 Enter!<br>
+                  💡 <strong>터미널이란?</strong> Windows: '명령 프롬프트' 검색 / Mac: 'Terminal' 검색
+                </div>
+              </div>
+
+              <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border);">
+                <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">2단계: 월간보고서 커맨드 만들기</div>
+                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px;">
+                  프로젝트 폴더에 <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">.claude/commands/월간보고서.md</code> 파일 만들고 아래 내용 저장:
+                </div>
+                <pre style="background: #2D3748; color: #E2E8F0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin-bottom: 8px;">---
+description: 월간 실적 보고서 자동 작성
+---
+
+당신은 전문 비즈니스 보고서 작성 전문가입니다.
+[위의 Level 1 프롬프트 내용 그대로 복사]</pre>
+              </div>
+
+              <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border);">
+                <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">3단계: 사용하기</div>
+                <pre style="background: #2D3748; color: #E2E8F0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 13px; margin-bottom: 8px;">claude-code
+
+# 대화창에서
+/월간보고서
+
+# 그러면 자동으로 프롬프트 실행!</pre>
+                <div style="font-size: 12px; color: var(--text-secondary); margin-top: 12px; padding: 12px; background: rgba(124, 58, 237, 0.05); border-radius: 6px;">
+                  ✨ <strong>이제 매달 "/월간보고서" 입력만 하면 끝!</strong> 매번 긴 프롬프트 복사할 필요 없음
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Level 3 -->
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+              <span style="background: #8B5CF6; color: white; padding: 6px 16px; border-radius: 16px; font-weight: 700; font-size: 13px;">LEVEL 3</span>
+              <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">실시간 데이터 연동 (고급)</span>
+            </div>
+
+            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; border-left: 4px solid #8B5CF6;">
+              <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+                <strong style="color: var(--text-primary);">MCP</strong>로 Google Sheets, Excel, 사내 DB에서 실적 데이터 자동으로 가져와서 보고서 생성!<br>
+                <span style="font-size: 12px; opacity: 0.8;">예: 스프레드시트에 숫자만 입력하면 자동으로 보고서 완성</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 패키지 2: 이메일 작성 -->
+      <div style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md);">
+        <div style="background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); padding: 24px; color: white;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <span style="font-size: 32px;">✉️</span>
+            <div>
+              <h3 style="font-size: 24px; font-weight: 700; margin: 0;">비즈니스 이메일 패키지</h3>
+              <p style="font-size: 14px; opacity: 0.9; margin: 4px 0 0 0;">상황에 맞는 전문적인 이메일, 3초 만에 완성</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">모든 직장인</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">영업</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">마케팅</span>
+          </div>
+        </div>
+
+        <div style="padding: 32px;">
+          <!-- Level 1 -->
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+              <span style="background: var(--success); color: white; padding: 6px 16px; border-radius: 16px; font-weight: 700; font-size: 13px;">LEVEL 1</span>
+              <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">설치 없이 바로 사용</span>
+            </div>
+
+            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; border-left: 4px solid var(--success);">
+              <pre style="background: white; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6; color: var(--text-primary); border: 1px solid var(--border);">당신은 전문 비즈니스 이메일 작성 전문가입니다.
+
+다음 상황에 맞는 이메일을 작성해주세요:
+
+**이메일 종류:**
+- [ ] 업무 요청 이메일
+- [ ] 회의 일정 조율
+- [ ] 프로젝트 진행 상황 공유
+- [ ] 클레임 대응
+- [ ] 협업 제안
+- [ ] 거절 및 양해 요청
+
+**작성 원칙:**
+1. 제목: 20자 이내, 핵심 내용 명확히
+2. 인사: 상황에 맞는 적절한 인사말
+3. 본문: 3-5 문단, 각 문단 2-3줄
+4. 마무리: 명확한 액션 아이템 또는 기대사항
+5. 서명: 전문적인 마무리 인사
+
+**톤앤매너:**
+- 정중하지만 간결하게
+- 수동적이지 않고 능동적으로
+- 읽는 사람 입장에서 작성
+
+제가 상황을 알려드리면 위 원칙에 따라 이메일을 작성해주세요.</pre>
+            </div>
+          </div>
+
+          <!-- Level 2 설치 간소화 -->
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+              <span style="background: var(--accent); color: white; padding: 6px 16px; border-radius: 16px; font-weight: 700; font-size: 13px;">LEVEL 2</span>
+              <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">커맨드로 자동화</span>
+            </div>
+
+            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 16px; border-left: 4px solid var(--accent);">
+              <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+                <code style="background: white; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: var(--text-primary);">.claude/commands/이메일.md</code> 파일에 위 프롬프트 저장<br>
+                → 사용: <code style="background: white; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: var(--text-primary);">/이메일 [상황 간단히]</code><br>
+                <span style="font-size: 12px; opacity: 0.8;">예: /이메일 회의 일정 조율</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 패키지 3: 회의록 정리 -->
+      <div style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md);">
+        <div style="background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); padding: 24px; color: white;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <span style="font-size: 32px;">📝</span>
+            <div>
+              <h3 style="font-size: 24px; font-weight: 700; margin: 0;">회의록 정리 패키지</h3>
+              <p style="font-size: 14px; opacity: 0.9; margin: 4px 0 0 0;">지저분한 메모를 깔끔한 회의록으로!</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">팀장</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">PM</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">비서</span>
+          </div>
+        </div>
+
+        <div style="padding: 32px;">
+          <div style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+              <span style="background: var(--success); color: white; padding: 6px 16px; border-radius: 16px; font-weight: 700; font-size: 13px;">LEVEL 1</span>
+              <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">설치 없이 바로 사용</span>
+            </div>
+
+            <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; border-left: 4px solid var(--success);">
+              <pre style="background: white; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; line-height: 1.6; color: var(--text-primary); border: 1px solid var(--border);">당신은 전문 회의록 작성 전문가입니다.
+
+지저분한 회의 메모를 다음 형식으로 정리해주세요:
+
+## 📅 회의록
+
+**일시:** YYYY.MM.DD (요일) HH:MM
+**장소:** [회의실 또는 온라인]
+**참석자:** [이름1, 이름2, ...]
+**작성자:** [작성자명]
+
+### 1. 회의 목적
+- 이번 회의의 주요 목적 1-2줄 요약
+
+### 2. 주요 논의사항
+#### (1) 첫 번째 안건
+- 논의 내용 요약
+- 제기된 의견들
+- 결론
+
+#### (2) 두 번째 안건
+- 논의 내용 요약
+- 제기된 의견들
+- 결론
+
+### 3. 결정사항
+- [ ] 결정 1: 구체적인 결정 내용
+- [ ] 결정 2: 구체적인 결정 내용
+
+### 4. 액션 아이템
+- [ ] [담당자명] 할 일 1 (마감: YYYY.MM.DD)
+- [ ] [담당자명] 할 일 2 (마감: YYYY.MM.DD)
+
+### 5. 다음 회의
+- 일시: YYYY.MM.DD
+- 안건: [다음 회의 주제]
+
+**작성 원칙:**
+- 중요한 내용만 간결하게
+- 누가, 무엇을, 언제까지 명확히
+- 체크리스트로 액션 아이템 관리
+
+이제 회의 메모를 주시면 위 형식으로 정리해드리겠습니다.</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 패키지 4: 개발자용 - 코드 리뷰 -->
+      <div style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-md);">
+        <div style="background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%); padding: 24px; color: white;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <span style="font-size: 32px;">💻</span>
+            <div>
+              <h3 style="font-size: 24px; font-weight: 700; margin: 0;">코드 리뷰 패키지</h3>
+              <p style="font-size: 14px; opacity: 0.9; margin: 4px 0 0 0;">개발자를 위한 전문적인 코드 리뷰</p>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">개발자</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">시니어</span>
+            <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">테크리드</span>
+          </div>
+        </div>
+
+        <div style="padding: 32px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+            <span style="background: var(--accent); color: white; padding: 6px 16px; border-radius: 16px; font-weight: 700; font-size: 13px;">LEVEL 2+</span>
+            <span style="font-size: 15px; font-weight: 600; color: var(--text-primary);">Commands + Agents 조합</span>
+          </div>
+
+          <div style="background: var(--bg-tertiary); border-radius: 12px; padding: 20px; border-left: 4px solid #8B5CF6;">
+            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.8;">
+              <strong style="color: var(--text-primary);">자동화된 코드 리뷰 프로세스:</strong><br>
+              1. <code style="background: white; padding: 2px 6px; border-radius: 4px;">/review</code> 입력<br>
+              2. code-reviewer Agent 자동 호출<br>
+              3. 보안 취약점, 성능, 가독성 자동 분석<br>
+              4. 개선 제안 + 수정 코드 제공<br><br>
+
+              <div style="background: white; padding: 16px; border-radius: 8px; margin-top: 12px; border: 1px solid var(--border);">
+                <div style="font-size: 12px; font-weight: 600; color: #8B5CF6; margin-bottom: 8px;">💡 추가 설치</div>
+                <pre style="background: #2D3748; color: #E2E8F0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 12px;">npm install -g @anthropic-ai/claude-code
+# Agents는 자동으로 포함됨!</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 용어 사전 -->
+    <div style="background: var(--bg-secondary); border: 2px solid var(--accent); border-radius: 16px; padding: 40px; margin-top: 60px;">
+      <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); text-align: center; margin-bottom: 32px;">📖 초보자를 위한 용어 사전</h3>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+          <div style="font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">터미널 (Terminal)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            = 명령 프롬프트 = 명령줄<br>
+            컴퓨터에게 명령어로 지시하는 프로그램<br>
+            <span style="font-size: 12px; opacity: 0.8;">Windows: cmd 또는 PowerShell / Mac: 터미널</span>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+          <div style="font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">커밋 (Commit)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            = 저장 = 버전 기록<br>
+            코드 변경 사항을 기록으로 남기는 것<br>
+            <span style="font-size: 12px; opacity: 0.8;">게임 저장처럼, 이전 시점으로 돌아갈 수 있음</span>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+          <div style="font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">푸시 (Push)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            = 업로드 = 동기화<br>
+            내 컴퓨터의 변경사항을 서버에 올리는 것<br>
+            <span style="font-size: 12px; opacity: 0.8;">구글 드라이브에 파일 올리는 것과 비슷</span>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+          <div style="font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">풀 (Pull)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            = 다운로드 = 최신화<br>
+            서버의 최신 코드를 내 컴퓨터로 가져오는 것<br>
+            <span style="font-size: 12px; opacity: 0.8;">클라우드에서 파일 받는 것과 비슷</span>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+          <div style="font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">브랜치 (Branch)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            = 가지 = 작업 공간<br>
+            원본을 건드리지 않고 새 기능 개발하는 공간<br>
+            <span style="font-size: 12px; opacity: 0.8;">문서 사본 만들어서 편집하는 것과 비슷</span>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+          <div style="font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">리포지토리 (Repository)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            = 저장소 = 프로젝트 폴더<br>
+            코드와 변경 기록이 모두 저장된 공간<br>
+            <span style="font-size: 12px; opacity: 0.8;">프로젝트 전체를 담는 구글 드라이브 폴더</span>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+          <div style="font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">CLI (Command Line Interface)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            = 명령줄 인터페이스<br>
+            마우스 대신 키보드로 명령어 입력하는 방식<br>
+            <span style="font-size: 12px; opacity: 0.8;">터미널에서 명령어 치는 것</span>
+          </div>
+        </div>
+
+        <div style="background: white; padding: 20px; border-radius: 12px; border: 1px solid var(--border);">
+          <div style="font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">토큰 (Token)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.7;">
+            = AI가 읽는 단어 수 = 사용량<br>
+            Claude가 처리하는 텍스트의 양<br>
+            <span style="font-size: 12px; opacity: 0.8;">한글 1글자 ≈ 3-4토큰, 영어 1단어 ≈ 1토큰</span>
+          </div>
         </div>
       </div>
     </div>
