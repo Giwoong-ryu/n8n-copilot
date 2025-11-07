@@ -379,6 +379,125 @@
     </div>
   </div>
 
+  <!-- Claude 요금제 정보 -->
+  <div class="container section">
+    <h2>💳 Claude 요금제 및 토큰 정보</h2>
+    <p class="section-subtitle">효율적인 토큰 관리를 위한 요금제별 비교</p>
+
+    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 40px;">
+      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">📋 요금제별 제공 토큰 및 기능</h3>
+
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+          <thead>
+            <tr style="background: var(--bg-tertiary);">
+              <th style="padding: 16px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600;">요금제</th>
+              <th style="padding: 16px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600;">월 요금</th>
+              <th style="padding: 16px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600;">사용량</th>
+              <th style="padding: 16px; text-align: left; border-bottom: 2px solid var(--border); font-weight: 600;">주요 기능</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding: 16px; border-bottom: 1px solid var(--border);"><strong>Free</strong></td>
+              <td style="padding: 16px; border-bottom: 1px solid var(--border);">$0</td>
+              <td style="padding: 16px; border-bottom: 1px solid var(--border);">제한적 (일일 제한)</td>
+              <td style="padding: 16px; border-bottom: 1px solid var(--border);">기본 대화, 코드 작성, 간단한 작업</td>
+            </tr>
+            <tr style="background: rgba(124, 58, 237, 0.03);">
+              <td style="padding: 16px; border-bottom: 1px solid var(--border);"><strong>Pro</strong> ⭐</td>
+              <td style="padding: 16px; border-bottom: 1px solid var(--border);">$20/월</td>
+              <td style="padding: 16px; border-bottom: 1px solid var(--border);"><strong>5배 더 많은 사용량</strong></td>
+              <td style="padding: 16px; border-bottom: 1px solid var(--border);">
+                Skills 사용 가능<br>
+                Agents 무제한<br>
+                Commands 무제한<br>
+                우선 접근
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 16px;"><strong>Max</strong> 🚀</td>
+              <td style="padding: 16px;">$100/월</td>
+              <td style="padding: 16px;"><strong>최대 사용량</strong> (Pro 대비 5배)</td>
+              <td style="padding: 16px;">
+                대용량 Skills 로드 가능<br>
+                복잡한 프로젝트<br>
+                최우선 접근<br>
+                확장된 컨텍스트
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="background: rgba(217, 119, 6, 0.1); border-left: 4px solid var(--warning); padding: 20px; border-radius: 8px; margin-top: 24px;">
+        <p style="font-size: 14px; color: var(--text-primary); line-height: 1.8; margin: 0;">
+          <strong>⚠️ 토큰 사용 주의사항:</strong><br>
+          • <strong>Free 플랜</strong>: Skills 사용 시 일일 한도 빠르게 소진 가능<br>
+          • <strong>Pro 플랜 권장</strong>: 중소형 프로젝트, 6-10개 스킬 사용<br>
+          • <strong>Max 플랜 권장</strong>: 대형 프로젝트, 전체 스킬셋(37개) 활용
+        </p>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 40px;">
+      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">🎯 도구별 토큰 사용량</h3>
+
+      <div style="display: grid; gap: 16px;">
+        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent);">
+          <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">📚 Skills (스킬)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+            • <strong>평균 ~3,000 토큰/스킬</strong><br>
+            • 전체 37개 로드 시: <strong>~81,891 토큰</strong><br>
+            • 추천: 패키지당 5-10개 스킬 (15-30K 토큰)<br>
+            • n8n 패키지 6개: ~20,408 토큰 (적정 크기)
+          </div>
+        </div>
+
+        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--success);">
+          <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">🤖 Agents (에이전트)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+            • Agent 정의 자체는 토큰 소비 없음<br>
+            • Task tool 호출 시 작업 수행 중 토큰 사용<br>
+            • 복잡한 작업일수록 더 많은 토큰 소비<br>
+            • <strong>효율적</strong>: 단일 대화보다 자율 작업으로 토큰 절약 가능
+          </div>
+        </div>
+
+        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid #3B82F6;">
+          <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">⌨️ Commands (슬래시 커맨드)</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+            • 커맨드 정의는 <strong>토큰 소비 없음</strong><br>
+            • 프롬프트 실행 시에만 토큰 사용<br>
+            • 반복 작업 자동화로 <strong>토큰 절약</strong><br>
+            • 무제한 사용 가능 (요금제 무관)
+          </div>
+        </div>
+
+        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid #8B5CF6;">
+          <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">🔌 MCP & Plugins</div>
+          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+            • 플러그인 정의는 토큰 소비 없음<br>
+            • MCP 런타임 데이터 접근: 추가 토큰 없음<br>
+            • <strong>효율적</strong>: Static 컨텍스트 대신 실시간 데이터<br>
+            • Skills 대체 시 토큰 대폭 절약
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%); border: 2px solid var(--success); border-radius: 12px; padding: 32px;">
+      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">💡 토큰 절약 전략</h3>
+      <div style="font-size: 14px; line-height: 2; color: var(--text-primary);">
+        <strong>1. Skills 선택적 로드:</strong> 필요한 스킬만 패키지로 묶어 사용 (전체 대신 5-10개)<br>
+        <strong>2. MCP 우선 활용:</strong> 실시간 데이터는 MCP로, Static 지식만 Skills로<br>
+        <strong>3. Commands 활용:</strong> 반복 작업은 슬래시 커맨드로 자동화<br>
+        <strong>4. Agents 효율 사용:</strong> 단순 대화보다 명확한 작업에 Agent 사용<br>
+        <strong>5. 요금제 선택:</strong> 프로젝트 규모에 맞는 요금제 (Free→Pro→Max)
+      </div>
+    </div>
+  </div>
+
   <!-- 인벤토리 통계 -->
   <div class="container section">
     <h2>📊 Claude Code 도구 인벤토리</h2>
