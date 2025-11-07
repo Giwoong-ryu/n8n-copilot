@@ -360,7 +360,7 @@
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
             <h2>Plugins</h2>
-            <p>claude-plugins.dev에서 설치한 10개의 공식 플러그인 패키지</p>
+            <p>anthropics/skills 마켓플레이스에서 설치한 10개의 공식 플러그인 패키지</p>
             <span class="card-badge new">10개 플러그인</span>
           </a>
 
@@ -922,18 +922,19 @@
             <div style="display: flex; align-items: start; gap: 16px;">
               <span style="font-size: 36px; flex-shrink: 0;">1️⃣</span>
               <div>
-                <h5 style="font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 0 0 12px 0;">같은 설명을 매번 반복할 때 → <strong style="color: var(--accent);">Skills 사용</strong></h5>
+                <h5 style="font-size: 17px; font-weight: 700; color: var(--text-primary); margin: 0 0 12px 0;">전문 지식이 필요할 때 → <strong style="color: var(--accent);">Skills 자동 활용</strong></h5>
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
                   <div style="background: rgba(239, 68, 68, 0.05); border-radius: 8px; padding: 16px;">
-                    <div style="font-size: 13px; font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ Before</div>
+                    <div style="font-size: 13px; font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ Skills 없이</div>
                     <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
                       매번 "이건 n8n 워크플로우야. HTTP Request 노드는..." 설명 반복
                     </div>
                   </div>
                   <div style="background: rgba(16, 185, 129, 0.05); border-radius: 8px; padding: 16px;">
-                    <div style="font-size: 13px; font-weight: 600; color: #10B981; margin-bottom: 8px;">✅ After (Skills)</div>
+                    <div style="font-size: 13px; font-weight: 600; color: #10B981; margin-bottom: 8px;">✅ Skills 설치 후</div>
                     <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.6;">
-                      n8n Skill 로드 → Claude가 이미 전문가처럼 작동
+                      "n8n 워크플로우 만들어줘" → Claude가 자동으로 n8n Skill 사용!<br>
+                      <span style="font-size: 12px; opacity: 0.8;">로드 명령 필요 없음</span>
                     </div>
                   </div>
                 </div>
@@ -1249,8 +1250,8 @@
         <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent);">
           <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">📚 특정 분야 전문 지식이 필요할 때</div>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            → <strong>Skills</strong> 로드<br>
-            예시: n8n 워크플로우 개발 → n8n 스킬 6개 로드 (20K 토큰 1회)
+            → <strong>Skills</strong> 설치 (Claude가 필요할 때 자동 활용)<br>
+            예시: n8n 워크플로우 개발 → n8n 스킬 6개 설치 → 필요한 것만 자동으로 사용
           </div>
         </div>
 
@@ -1325,12 +1326,13 @@
 
       <div style="display: grid; gap: 20px;">
         <div style="border-left: 4px solid #EF4444; padding: 20px; background: rgba(239, 68, 68, 0.05); border-radius: 8px;">
-          <h4 style="font-size: 16px; font-weight: 600; color: #EF4444; margin-bottom: 12px;">❌ 실수 1: Skills 전부 로드</h4>
+          <h4 style="font-size: 16px; font-weight: 600; color: #EF4444; margin-bottom: 12px;">❌ 실수 1: Skills 설치를 너무 많이</h4>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 12px;">
-            <strong>문제:</strong> 37개 전체 로드 → 81K 토큰 소비 → Free 플랜 1일 한도 거의 소진
+            <strong>문제:</strong> 관련 없는 Skills 37개 전부 설치 → 느려짐, 관리 어려움
           </div>
           <div style="font-size: 14px; color: var(--success); line-height: 1.8;">
-            <strong>✅ 해결:</strong> 필요한 스킬만 5-10개 선택 로드 (예: n8n 개발자는 n8n 패키지 6개만)
+            <strong>✅ 해결:</strong> 실제 사용하는 분야 Skills만 설치 (예: n8n 개발자는 n8n 관련 6개만)<br>
+            <span style="font-size: 13px; opacity: 0.8;">※ 2025년 최신: Claude가 필요할 때만 자동으로 사용하므로 토큰 걱정 없음!</span>
           </div>
         </div>
 
@@ -1386,10 +1388,10 @@
         <div style="background: white; border-radius: 8px; padding: 20px;">
           <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
             <span style="background: var(--success); color: white; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 13px;">Lv 2 - 2주차</span>
-            <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary);">Skills 선택적 로드</h4>
+            <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary);">Skills 스마트 설치</h4>
           </div>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            → 본인 분야 Skills 5-10개 선택 (예: n8n 개발자 → n8n 스킬 6개)<br>
+            → 본인 분야 Skills 5-10개 선택 설치 (예: n8n 개발자 → n8n 스킬 6개)<br>
             → Pro 플랜 고려 (Skills 사용량 증가)<br>
             <strong style="color: var(--text-primary);">목표:</strong> 전문 지식 기반 작업 50% 빠르게 처리
           </div>
@@ -1544,7 +1546,7 @@
         <h4 style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">💡 조합 전략</h4>
         <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.9;">
           <strong style="color: var(--text-primary);">최고 효율 조합:</strong> Skills (전문 지식) + MCP (실시간 데이터) + Commands (반복 작업) + Plugins (특화 도구)<br>
-          <strong style="color: var(--text-primary);">예시:</strong> n8n Skills 로드 → 파일시스템 MCP로 프로젝트 접근 → /git으로 커밋 자동화 → commit-commands 플러그인으로 PR 생성
+          <strong style="color: var(--text-primary);">예시:</strong> n8n Skills 설치 → 파일시스템 MCP로 프로젝트 접근 → /git으로 커밋 자동화 → commit-commands 플러그인으로 PR 생성
         </div>
       </div>
     </div>
@@ -1613,7 +1615,7 @@
                 </span>
               </td>
               <td style="padding: 16px;">
-                대용량 Skills 로드 가능<br>
+                다수 Skills 활용 가능<br>
                 복잡한 프로젝트<br>
                 최우선 접근<br>
                 확장된 컨텍스트<br>
@@ -1641,10 +1643,10 @@
         <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent);">
           <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">📚 Skills (스킬)</div>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            • <strong>평균 ~3,000 토큰/스킬</strong><br>
-            • 전체 37개 로드 시: <strong>~81,891 토큰</strong><br>
-            • 추천: 패키지당 5-10개 스킬 (15-30K 토큰)<br>
-            • n8n 패키지 6개: ~20,408 토큰 (적정 크기)
+            • <strong>자동 활용</strong>: Claude가 필요할 때만 자동으로 사용<br>
+            • <strong>Progressive Disclosure</strong>: 필요한 부분만 읽어서 토큰 효율적<br>
+            • <strong>설치만 하면 끝</strong>: 로드 명령 필요 없음<br>
+            • 37개 Skills 설치해도 사용하는 것만 토큰 소비
           </div>
         </div>
 
@@ -1762,9 +1764,9 @@
           <div style="border-top: 2px dashed var(--border); padding-top: 16px;">
             <div style="font-weight: 600; color: var(--success); margin-bottom: 8px;">✅ Skills (n8n 패키지 6개) 사용</div>
             <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px;">
-              • Skills 한 번 로드: 20K 토큰<br>
+              • Claude가 필요한 Skills만 자동 활용 (Progressive Disclosure)<br>
               • 워크플로우당 1K 토큰 × 5개 = 5K 토큰<br>
-              • <strong>총 25K 토큰</strong> (절약: <strong style="color: var(--success);">25K 토큰 / 50%</strong>)
+              • <strong>약 5-10K 토큰</strong> (절약: <strong style="color: var(--success);">40K 토큰 / 80%</strong>)
             </div>
           </div>
         </div>
@@ -1820,11 +1822,11 @@
           <h4 style="font-size: 17px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💡 시나리오 4: 실시간 파일 조회 (10개 파일, 매일 최신 데이터)</h4>
 
           <div style="margin-bottom: 16px;">
-            <div style="font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ Skills로 정적 로드</div>
+            <div style="font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ 매번 파일 전체 읽기</div>
             <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px;">
-              • 파일 내용 Skills로 저장: 30K 토큰<br>
-              • 매일 새로운 세션에 로드: 30K × 7일 = <strong>210K 토큰/주</strong><br>
-              • 문제: 데이터 변경 시 Skills 업데이트 필요
+              • 파일 내용 직접 전달: 30K 토큰<br>
+              • 매일 새로운 세션에 재전달: 30K × 7일 = <strong>210K 토큰/주</strong><br>
+              • 문제: 반복적으로 같은 데이터 전송
             </div>
           </div>
 
@@ -1842,9 +1844,9 @@
     </div>
 
     <div style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%); border: 2px solid var(--success); border-radius: 12px; padding: 32px;">
-      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">💡 토큰 절약 전략</h3>
+      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">💡 토큰 효율 전략 (2025년 최신)</h3>
       <div style="font-size: 14px; line-height: 2; color: var(--text-primary);">
-        <strong>1. Skills 선택적 로드:</strong> 필요한 스킬만 패키지로 묶어 사용 (전체 대신 5-10개) → 50% 절약<br>
+        <strong>1. Skills 스마트 설치:</strong> 필요한 분야만 설치 (자동 활용되므로 토큰 걱정 없음!)<br>
         <strong>2. Commands 활용:</strong> 반복 작업은 슬래시 커맨드로 자동화 → 75% 절약<br>
         <strong>3. Agents 효율 사용:</strong> 복잡한 멀티스텝 작업은 Agent로 한 번에 → 40-50% 절약<br>
         <strong>4. MCP 실시간 데이터:</strong> 자주 변경되는 데이터는 MCP로 → 80% 절약<br>
@@ -1880,7 +1882,7 @@
       <div style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%); border: 2px solid var(--success); border-radius: 16px; padding: 32px; text-align: center;">
         <div style="font-size: 48px; font-weight: 800; color: var(--success); margin-bottom: 8px;">10</div>
         <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Plugins</div>
-        <div style="font-size: 13px; color: var(--text-secondary);">claude-plugins.dev</div>
+        <div style="font-size: 13px; color: var(--text-secondary);">anthropics/skills</div>
       </div>
     </div>
 
@@ -1913,9 +1915,9 @@
 
       <div style="background: rgba(124, 58, 237, 0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px;">
         <p style="font-size: 14px; color: var(--text-primary); line-height: 1.8; margin: 0;">
-          <strong>💡 최적화 인사이트:</strong> 37개 전체 스킬 로드 시 ~81,891 토큰 사용.
-          패키지당 15-30K 토큰 (5-10개 스킬) 규모가 최적입니다.
-          현재 n8n 스킬 패키지(6개, ~20K 토큰)가 이상적인 크기입니다.
+          <strong>💡 스마트 활용:</strong> Skills는 Claude가 필요할 때만 자동으로 활용합니다 (Progressive Disclosure).
+          37개 전부 설치해도 사용하는 것만 토큰 소비! 관리 편의를 위해 자신의 분야 Skills만 설치하는 것을 권장합니다.
+          예: n8n 개발자는 n8n 관련 6개 Skills만 설치.
         </p>
       </div>
     </div>
