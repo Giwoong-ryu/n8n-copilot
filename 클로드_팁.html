@@ -1055,291 +1055,276 @@
       </div>
     </div>
 
+    <!-- 토큰 사용량 완전 가이드 -->
     <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 40px;">
-      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">🎯 도구별 토큰 사용량</h3>
+      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">📊 토큰 사용량 완전 가이드</h3>
+      <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 32px;">
+        각 도구를 사용할 때 토큰이 얼마나 필요한지, 어떻게 설치하는지 한눈에 확인하세요
+      </p>
 
-      <div style="display: grid; gap: 16px;">
+      <!-- 도구별 토큰 사용량 + 설치 방법 -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 40px;">
+
+        <!-- Skills -->
+        <div style="padding: 24px; background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(124, 58, 237, 0.02) 100%); border-radius: 12px; border: 2px solid var(--accent);">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <span style="font-size: 32px;">📚</span>
+            <div>
+              <div style="font-weight: 700; font-size: 18px; color: var(--text-primary);">Skills (스킬)</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">전문 지식 자동 적용</div>
+            </div>
+          </div>
+
+          <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: var(--text-primary);">📌 토큰 사용</div>
+            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+              • 자동 활용: Claude가 필요할 때만 사용<br>
+              • Progressive Disclosure로 효율적<br>
+              • 37개 전부 설치해도 OK (사용한 것만 토큰 소비)
+            </div>
+          </div>
+
+          <div style="background: rgba(16, 185, 129, 0.1); padding: 16px; border-radius: 8px; border-left: 3px solid #10B981;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #10B981;">🔧 설치 방법</div>
+            <div style="font-size: 13px; color: var(--text-primary); line-height: 1.7;">
+              <strong>1단계:</strong> Claude Code 실행<br>
+              <strong>2단계:</strong> <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">claude install skill &lt;skill-name&gt;</code><br>
+              <strong>예시:</strong> <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">claude install skill n8n-workflow-automation</code>
+            </div>
+          </div>
+        </div>
+
+        <!-- Commands -->
+        <div style="padding: 24px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(59, 130, 246, 0.02) 100%); border-radius: 12px; border: 2px solid #3B82F6;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <span style="font-size: 32px;">⌨️</span>
+            <div>
+              <div style="font-weight: 700; font-size: 18px; color: var(--text-primary);">Commands (커맨드)</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">반복 작업 자동화</div>
+            </div>
+          </div>
+
+          <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: var(--text-primary);">📌 토큰 사용</div>
+            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+              • 정의: 0 토큰 (무료)<br>
+              • 실행: 프롬프트 크기만큼만 사용<br>
+              • 반복 작업 시 <strong>75% 토큰 절약</strong>
+            </div>
+          </div>
+
+          <div style="background: rgba(16, 185, 129, 0.1); padding: 16px; border-radius: 8px; border-left: 3px solid #10B981;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #10B981;">🔧 설치 방법</div>
+            <div style="font-size: 13px; color: var(--text-primary); line-height: 1.7;">
+              <strong>1단계:</strong> <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">.claude/commands/</code> 폴더 생성<br>
+              <strong>2단계:</strong> <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">mycommand.md</code> 파일 생성<br>
+              <strong>3단계:</strong> 프롬프트 작성 후 <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">/mycommand</code> 사용
+            </div>
+          </div>
+        </div>
+
+        <!-- Agents -->
+        <div style="padding: 24px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(16, 185, 129, 0.02) 100%); border-radius: 12px; border: 2px solid #10B981;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <span style="font-size: 32px;">🤖</span>
+            <div>
+              <div style="font-weight: 700; font-size: 18px; color: var(--text-primary);">Agents (에이전트)</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">복잡한 작업 자동 실행</div>
+            </div>
+          </div>
+
+          <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: var(--text-primary);">📌 토큰 사용</div>
+            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+              • 정의: 0 토큰 (무료)<br>
+              • <strong>예시:</strong> 500줄 문서 검토 시 약 15K-20K 토큰<br>
+              • 멀티스텝 작업 <strong>40-50% 절약</strong>
+            </div>
+          </div>
+
+          <div style="background: rgba(16, 185, 129, 0.1); padding: 16px; border-radius: 8px; border-left: 3px solid #10B981;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #10B981;">🔧 설치 방법</div>
+            <div style="font-size: 13px; color: var(--text-primary); line-height: 1.7;">
+              <strong>1단계:</strong> <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">.claude/agents/</code> 폴더 생성<br>
+              <strong>2단계:</strong> <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">my-agent.md</code> 파일 생성<br>
+              <strong>3단계:</strong> Agent 설명 작성 후 대화에서 호출
+            </div>
+          </div>
+        </div>
+
+        <!-- MCP -->
+        <div style="padding: 24px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(139, 92, 246, 0.02) 100%); border-radius: 12px; border: 2px dashed #8B5CF6;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+            <span style="font-size: 32px;">🔌</span>
+            <div>
+              <div style="font-weight: 700; font-size: 18px; color: var(--text-primary);">MCP</div>
+              <div style="font-size: 13px; color: var(--text-secondary);">실시간 데이터 연결</div>
+            </div>
+          </div>
+
+          <div style="background: white; padding: 16px; border-radius: 8px; margin-bottom: 12px;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: var(--text-primary);">📌 토큰 사용</div>
+            <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+              • 서버 설정: 0 토큰<br>
+              • <strong>예시:</strong> 5MB PDF 읽기 25K-30K / 500줄 파일 3K-5K<br>
+              • 반복 조회 시 <strong>80% 절약</strong>
+            </div>
+          </div>
+
+          <div style="background: rgba(16, 185, 129, 0.1); padding: 16px; border-radius: 8px; border-left: 3px solid #10B981;">
+            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px; color: #10B981;">🔧 설치 방법</div>
+            <div style="font-size: 13px; color: var(--text-primary); line-height: 1.7;">
+              <strong>1단계:</strong> MCP 서버 설치<br>
+              <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">npm install @modelcontextprotocol/server-filesystem</code><br>
+              <strong>2단계:</strong> Claude 설정 파일에 서버 추가<br>
+              <strong>3단계:</strong> Claude 재시작
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 실제 작업별 토큰 사용량 (일상 용어로) -->
+      <h4 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 12px;">💼 실제 작업별 토큰 사용량</h4>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px;">
+
         <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent);">
-          <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">📚 Skills (스킬)</div>
+          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">📄 업무 보고서 작성 (5페이지)</div>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            • <strong>자동 활용</strong>: Claude가 필요할 때만 자동으로 사용<br>
-            • <strong>Progressive Disclosure</strong>: 필요한 부분만 읽어서 토큰 효율적<br>
-            • <strong>설치만 하면 끝</strong>: 로드 명령 필요 없음<br>
-            • 37개 Skills 설치해도 사용하는 것만 토큰 소비
+            • <strong>토큰</strong>: 약 8K-10K<br>
+            • <strong>Free</strong>: 하루 5-10개<br>
+            • <strong>Pro</strong>: 하루 25-50개<br>
+            • <strong>Max</strong>: 하루 125-250개
           </div>
         </div>
 
-        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--success);">
-          <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">🤖 Agents (에이전트)</div>
+        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent);">
+          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">🎨 발표 자료 만들기 (10슬라이드)</div>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            • Agent 정의 자체는 토큰 소비 없음<br>
-            • Task tool 호출 시 작업 수행 중 토큰 사용<br>
-            • <strong>구체적 예시</strong>: code-reviewer Agent로 500줄 코드 리뷰 시 약 15K-20K 토큰<br>
-            • <strong>효율적</strong>: 단일 대화(~25K)보다 자율 작업으로 토큰 절약 가능
+            • <strong>토큰</strong>: 약 8K-12K<br>
+            • <strong>Free</strong>: 하루 4-8개<br>
+            • <strong>Pro</strong>: 하루 20-40개<br>
+            • <strong>Max</strong>: 하루 100-200개
           </div>
         </div>
 
-        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid #3B82F6;">
-          <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">⌨️ Commands (슬래시 커맨드)</div>
+        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent);">
+          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">💻 간단한 웹페이지 만들기</div>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            • 커맨드 정의는 <strong>토큰 소비 없음</strong><br>
-            • 프롬프트 실행 시에만 토큰 사용<br>
-            • 반복 작업 자동화로 <strong>토큰 절약</strong><br>
-            • 무제한 사용 가능 (요금제 무관)
+            • <strong>토큰</strong>: 약 12K-20K<br>
+            • <strong>Free</strong>: 하루 2-5개<br>
+            • <strong>Pro</strong>: 하루 12-25개<br>
+            • <strong>Max</strong>: 하루 60-125개
           </div>
         </div>
 
-        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid #8B5CF6;">
-          <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;">🔌 MCP & Plugins</div>
+        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent);">
+          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">🔍 긴 문서 검토 및 요약 (50페이지)</div>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            • 플러그인 정의는 토큰 소비 없음<br>
-            • <strong>MCP는 데이터 가져올 때마다 토큰 사용</strong><br>
-            • <strong>구체적 예시</strong>: 5MB PDF 문서 읽기 시 약 25K-30K 토큰, 500줄 코드 파일 약 3K-5K 토큰<br>
-            • <strong>장점</strong>: 반복 로드 없이 실시간 최신 데이터 접근<br>
-            • 정적 지식(Skills) vs 동적 데이터(MCP) 구분 사용
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 40px;">
-      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">📝 실전 작업별 토큰 사용량 예시</h3>
-      <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">
-        각 요금제로 하루에 어떤 작업을 얼마나 할 수 있는지 구체적인 예시입니다.
-      </p>
-
-      <div style="display: grid; gap: 16px;">
-        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px;">
-          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">📄 문서 작성/수정 (5페이지 Word 기준)</div>
-          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            • <strong>토큰 사용량</strong>: 약 8K-10K 토큰 (입력 5K + 출력 5K)<br>
-            • <strong>Free 플랜</strong>: 하루 5-10개 문서<br>
-            • <strong>Pro 플랜</strong>: 하루 25-50개 문서<br>
-            • <strong>Max 플랜</strong>: 하루 125-250개 문서
+            • <strong>토큰</strong>: 약 15K-25K<br>
+            • <strong>Free</strong>: 하루 2-4개<br>
+            • <strong>Pro</strong>: 하루 10-20개<br>
+            • <strong>Max</strong>: 하루 50-100개
           </div>
         </div>
 
-        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px;">
-          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">🎨 PPT 작성 (10슬라이드 기준)</div>
+        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent);">
+          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">📧 이메일 대량 작성 (개인화)</div>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            • <strong>토큰 사용량</strong>: 약 8K-12K 토큰 (입력 3K + 출력 8K)<br>
-            • <strong>Free 플랜</strong>: 하루 4-8개 PPT<br>
-            • <strong>Pro 플랜</strong>: 하루 20-40개 PPT<br>
-            • <strong>Max 플랜</strong>: 하루 100-200개 PPT
+            • <strong>토큰</strong>: 약 3K-5K / 개<br>
+            • <strong>Free</strong>: 하루 10-20개<br>
+            • <strong>Pro</strong>: 하루 50-100개<br>
+            • <strong>Max</strong>: 하루 250-500개
           </div>
         </div>
 
-        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px;">
-          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">💻 간단한 프로그램 (CRUD API 기준)</div>
+        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px; border-left: 4px solid var(--accent);">
+          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">📊 데이터 분석 및 차트 생성</div>
           <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            • <strong>토큰 사용량</strong>: 약 12K-20K 토큰 (입력 2K + 출력 15K)<br>
-            • <strong>Free 플랜</strong>: 하루 2-5개 API<br>
-            • <strong>Pro 플랜</strong>: 하루 12-25개 API<br>
-            • <strong>Max 플랜</strong>: 하루 60-125개 API
-          </div>
-        </div>
-
-        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px;">
-          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">🚀 복잡한 프로그램 (전체 앱 with 테스트)</div>
-          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            • <strong>토큰 사용량</strong>: 약 60K-100K 토큰 (입력 10K + 출력 80K)<br>
-            • <strong>Free 플랜</strong>: 하루 0.5-1개 (불가능에 가까움)<br>
-            • <strong>Pro 플랜</strong>: 하루 2-5개 앱<br>
-            • <strong>Max 플랜</strong>: 하루 12-25개 앱
-          </div>
-        </div>
-
-        <div style="padding: 20px; background: var(--bg-tertiary); border-radius: 8px;">
-          <div style="font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">🔍 코드 리뷰 (중형 PR 기준)</div>
-          <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
-            • <strong>토큰 사용량</strong>: 약 15K-25K 토큰 (입력 10K + 출력 10K)<br>
-            • <strong>Free 플랜</strong>: 하루 2-4개 PR<br>
-            • <strong>Pro 플랜</strong>: 하루 10-20개 PR<br>
-            • <strong>Max 플랜</strong>: 하루 50-100개 PR
+            • <strong>토큰</strong>: 약 10K-15K<br>
+            • <strong>Free</strong>: 하루 3-5개<br>
+            • <strong>Pro</strong>: 하루 15-30개<br>
+            • <strong>Max</strong>: 하루 80-150개
           </div>
         </div>
       </div>
-    </div>
 
-    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 40px;">
-      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">⚡ 도구별 효과 vs 비용 비교</h3>
-      <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 24px;">
-        각 도구를 사용하면 토큰이 얼마나 절약되는지 실제 시나리오로 비교합니다.
-      </p>
+      <!-- 도구 사용 전후 비교 -->
+      <h4 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 12px;">💡 도구 사용 전후 토큰 비교</h4>
 
       <div style="display: grid; gap: 20px;">
+
         <div style="border: 2px solid var(--accent); border-radius: 12px; padding: 24px; background: rgba(124, 58, 237, 0.02);">
-          <h4 style="font-size: 17px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💡 시나리오 1: n8n 워크플로우 5개 개발</h4>
+          <h5 style="font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">📝 시나리오: 매주 주간 보고서 작성</h5>
 
-          <div style="margin-bottom: 16px;">
-            <div style="font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ Skills 없이 개발</div>
-            <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px;">
-              • 매번 n8n 개념, 노드, 패턴 설명 요청<br>
-              • 워크플로우당 10K 토큰 × 5개 = <strong>50K 토큰</strong><br>
-              • 각 워크플로우마다 반복 설명 필요
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <div style="font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ 도구 없이</div>
+              <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 12px;">
+                • 매번 "주간 보고서 작성해줘. 형식은..." 전체 설명<br>
+                • 주당 10K 토큰 × 4주 = <strong>40K 토큰/월</strong>
+              </div>
             </div>
-          </div>
 
-          <div style="border-top: 2px dashed var(--border); padding-top: 16px;">
-            <div style="font-weight: 600; color: var(--success); margin-bottom: 8px;">✅ Skills (n8n 패키지 6개) 사용</div>
-            <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px;">
-              • Claude가 필요한 Skills만 자동 활용 (Progressive Disclosure)<br>
-              • 워크플로우당 1K 토큰 × 5개 = 5K 토큰<br>
-              • <strong>약 5-10K 토큰</strong> (절약: <strong style="color: var(--success);">40K 토큰 / 80%</strong>)
+            <div>
+              <div style="font-weight: 600; color: var(--success); margin-bottom: 8px;">✅ Projects 사용</div>
+              <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 12px;">
+                • Custom Instructions에 형식 저장<br>
+                • 주당 2K 토큰 × 4주 = <strong>8K 토큰/월</strong><br>
+                • <strong style="color: var(--success);">절약: 32K (80%)</strong>
+              </div>
             </div>
           </div>
         </div>
 
         <div style="border: 2px solid var(--accent); border-radius: 12px; padding: 24px; background: rgba(124, 58, 237, 0.02);">
-          <h4 style="font-size: 17px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💡 시나리오 2: Git 커밋 & PR 생성 (10회 반복)</h4>
+          <h5 style="font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💾 시나리오: 매일 작업 내용 저장 (10회)</h5>
 
-          <div style="margin-bottom: 16px;">
-            <div style="font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ Commands 없이 수동</div>
-            <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px;">
-              • 매번 "커밋 메시지 작성해줘", "PR 생성해줘" 요청<br>
-              • 회당 2K 토큰 × 10회 = <strong>20K 토큰</strong>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <div style="font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ Commands 없이</div>
+              <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 12px;">
+                • 매번 "변경사항 정리해서 저장해줘" 입력<br>
+                • 회당 2K 토큰 × 10회 = <strong>20K 토큰/일</strong>
+              </div>
             </div>
-          </div>
 
-          <div style="border-top: 2px dashed var(--border); padding-top: 16px;">
-            <div style="font-weight: 600; color: var(--success); margin-bottom: 8px;">✅ Commands (/git) 사용</div>
-            <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px;">
-              • Commands 정의: 0 토큰<br>
-              • 회당 0.5K 토큰 × 10회 = 5K 토큰<br>
-              • <strong>총 5K 토큰</strong> (절약: <strong style="color: var(--success);">15K 토큰 / 75%</strong>)
-            </div>
-          </div>
-        </div>
-
-        <div style="border: 2px solid var(--accent); border-radius: 12px; padding: 24px; background: rgba(124, 58, 237, 0.02);">
-          <h4 style="font-size: 17px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💡 시나리오 3: 복잡한 전체 기능 개발 (Agent 활용)</h4>
-
-          <div style="margin-bottom: 16px;">
-            <div style="font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ 일반 대화로 단계별 개발</div>
-            <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px;">
-              • 1단계: 설계 요청 (10K)<br>
-              • 2단계: 백엔드 구현 (20K)<br>
-              • 3단계: 프론트 구현 (20K)<br>
-              • 4단계: 테스트 작성 (15K)<br>
-              • 5단계: 문서화 (10K)<br>
-              • <strong>총 75K 토큰</strong> + 컨텍스트 누적
-            </div>
-          </div>
-
-          <div style="border-top: 2px dashed var(--border); padding-top: 16px;">
-            <div style="font-weight: 600; color: var(--success); margin-bottom: 8px;">✅ Agent (fullstack-developer) 사용</div>
-            <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px;">
-              • Agent 정의: 0 토큰<br>
-              • 한 번에 전체 작업 요청: 40K 토큰<br>
-              • <strong>총 40K 토큰</strong> (절약: <strong style="color: var(--success);">35K 토큰 / 47%</strong>)<br>
-              • 보너스: 컨텍스트 관리 자동화
+            <div>
+              <div style="font-weight: 600; color: var(--success); margin-bottom: 8px;">✅ Commands 사용</div>
+              <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 12px;">
+                • <code style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px;">/save</code> 명령어만 입력<br>
+                • 회당 0.5K 토큰 × 10회 = <strong>5K 토큰/일</strong><br>
+                • <strong style="color: var(--success);">절약: 15K (75%)</strong>
+              </div>
             </div>
           </div>
         </div>
 
         <div style="border: 2px solid var(--accent); border-radius: 12px; padding: 24px; background: rgba(124, 58, 237, 0.02);">
-          <h4 style="font-size: 17px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💡 시나리오 4: 실시간 파일 조회 (10개 파일, 매일 최신 데이터)</h4>
+          <h5 style="font-size: 16px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">📁 시나리오: 매일 파일 10개 내용 확인</h5>
 
-          <div style="margin-bottom: 16px;">
-            <div style="font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ 매번 파일 전체 읽기</div>
-            <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px;">
-              • 파일 내용 직접 전달: 30K 토큰<br>
-              • 매일 새로운 세션에 재전달: 30K × 7일 = <strong>210K 토큰/주</strong><br>
-              • 문제: 반복적으로 같은 데이터 전송
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <div style="font-weight: 600; color: #EF4444; margin-bottom: 8px;">❌ MCP 없이</div>
+              <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 12px;">
+                • 파일 내용 복사해서 붙여넣기<br>
+                • 일당 30K × 7일 = <strong>210K 토큰/주</strong>
+              </div>
             </div>
-          </div>
 
-          <div style="border-top: 2px dashed var(--border); padding-top: 16px;">
-            <div style="font-weight: 600; color: var(--success); margin-bottom: 8px;">✅ MCP 서버 사용</div>
-            <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 16px;">
-              • MCP 서버 설정: 0 토큰<br>
-              • 필요할 때만 조회: 5K × 7일 = <strong>35K 토큰/주</strong><br>
-              • <strong>절약: 175K 토큰/주 / 83%</strong><br>
-              • 보너스: 항상 최신 데이터 접근
+            <div>
+              <div style="font-weight: 600; color: var(--success); margin-bottom: 8px;">✅ MCP 사용</div>
+              <div style="font-size: 14px; color: var(--text-secondary); line-height: 1.8; padding-left: 12px;">
+                • Claude가 필요시 직접 파일 읽기<br>
+                • 일당 5K × 7일 = <strong>35K 토큰/주</strong><br>
+                • <strong style="color: var(--success);">절약: 175K (83%)</strong>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%); border: 2px solid var(--success); border-radius: 12px; padding: 32px;">
-      <h3 style="font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">💡 토큰 효율 전략 (2025년 최신)</h3>
-      <div style="font-size: 14px; line-height: 2; color: var(--text-primary);">
-        <strong>1. Skills 스마트 설치:</strong> 필요한 분야만 설치 (자동 활용되므로 토큰 걱정 없음!)<br>
-        <strong>2. Commands 활용:</strong> 반복 작업은 슬래시 커맨드로 자동화 → 75% 절약<br>
-        <strong>3. Agents 효율 사용:</strong> 복잡한 멀티스텝 작업은 Agent로 한 번에 → 40-50% 절약<br>
-        <strong>4. MCP 실시간 데이터:</strong> 자주 변경되는 데이터는 MCP로 → 80% 절약<br>
-        <strong>5. 요금제 선택:</strong> 프로젝트 규모에 맞는 요금제 (Free→Pro→Max)
-      </div>
-    </div>
-  </div>
-
-  <!-- 인벤토리 통계 -->
-  <div class="container section">
-    <h2>📊 Claude Code 도구 인벤토리</h2>
-    <p class="section-subtitle">현재 보유 중인 모든 Claude Code 확장 도구 및 토큰 사용량 분석</p>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 60px;">
-      <div style="background: linear-gradient(135deg, rgba(124, 58, 237, 0.1) 0%, rgba(167, 139, 250, 0.05) 100%); border: 2px solid var(--accent); border-radius: 16px; padding: 32px; text-align: center;">
-        <div style="font-size: 48px; font-weight: 800; background: var(--gradient-1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 8px;">37</div>
-        <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Skills</div>
-        <div style="font-size: 13px; color: var(--text-secondary);">~81,891 토큰</div>
-      </div>
-
-      <div id="agents-stats" style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; padding: 32px; text-align: center;">
-        <div style="font-size: 48px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">60</div>
-        <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Agents</div>
-        <div style="font-size: 13px; color: var(--text-secondary);">전문화된 AI 페르소나</div>
-      </div>
-
-      <div id="commands-section" style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; padding: 32px; text-align: center;">
-        <div style="font-size: 48px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">17</div>
-        <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Commands</div>
-        <div style="font-size: 13px; color: var(--text-secondary);">슬래시 커맨드</div>
-      </div>
-
-      <div style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%); border: 2px solid var(--success); border-radius: 16px; padding: 32px; text-align: center;">
-        <div style="font-size: 48px; font-weight: 800; color: var(--success); margin-bottom: 8px;">10</div>
-        <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Plugins</div>
-        <div style="font-size: 13px; color: var(--text-secondary);">anthropics/skills</div>
-      </div>
-    </div>
-
-    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 60px;">
-      <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">🔍 토큰 사용량 분석 결과</h3>
-
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 32px;">
-        <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 20px;">
-          <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">총 스킬 수</div>
-          <div style="font-size: 28px; font-weight: 700; color: var(--text-primary);">27개 (서버)</div>
-          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;">평균: ~3,000 토큰/스킬</div>
-        </div>
-
-        <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 20px;">
-          <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">토큰 분포</div>
-          <div style="font-size: 16px; color: var(--text-primary); line-height: 1.8;">
-            초대형 (10K+): 1개<br>
-            대형 (5-10K): 1개<br>
-            중형 (2-5K): 17개<br>
-            소형 (<2K): 8개
-          </div>
-        </div>
-
-        <div style="background: var(--bg-tertiary); border-radius: 8px; padding: 20px;">
-          <div style="font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">n8n 스킬 패키지</div>
-          <div style="font-size: 28px; font-weight: 700; color: var(--success);">6개</div>
-          <div style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;">~20,408 토큰 (적정 크기)</div>
-        </div>
-      </div>
-
-      <div style="background: rgba(124, 58, 237, 0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px;">
-        <p style="font-size: 14px; color: var(--text-primary); line-height: 1.8; margin: 0;">
-          <strong>💡 스마트 활용:</strong> Skills는 Claude가 필요할 때만 자동으로 활용합니다 (Progressive Disclosure).
-          37개 전부 설치해도 사용하는 것만 토큰 소비! 관리 편의를 위해 자신의 분야 Skills만 설치하는 것을 권장합니다.
-          예: n8n 개발자는 n8n 관련 6개 Skills만 설치.
-        </p>
-      </div>
-    </div>
 
     <!-- Commands 상세 섹션 -->
     <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 60px;">
