@@ -332,7 +332,7 @@
           </a>
 
           <!-- Agents 카드 -->
-          <a href="https://github.com/Giwoong-ryu/n8n-copilot/tree/main/클로드_팁/Agent" class="card">
+          <a href="#agents-section" class="card" onclick="event.preventDefault(); document.querySelector('#agents-section').scrollIntoView({behavior: 'smooth'});">
             <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 2a3 3 0 0 0-3 3v4a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" stroke="currentColor" stroke-width="2"/>
               <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -391,7 +391,7 @@
         <div style="font-size: 13px; color: var(--text-secondary);">~81,891 토큰</div>
       </div>
 
-      <div style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; padding: 32px; text-align: center;">
+      <div id="agents-stats" style="background: var(--bg-secondary); border: 2px solid var(--border); border-radius: 16px; padding: 32px; text-align: center;">
         <div style="font-size: 48px; font-weight: 800; color: var(--accent); margin-bottom: 8px;">60</div>
         <div style="font-size: 16px; color: var(--text-primary); font-weight: 600; margin-bottom: 4px;">Agents</div>
         <div style="font-size: 13px; color: var(--text-secondary);">전문화된 AI 페르소나</div>
@@ -534,6 +534,142 @@
       <div style="background: rgba(124, 58, 237, 0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px; margin-top: 24px;">
         <p style="font-size: 14px; color: var(--text-primary); line-height: 1.8; margin: 0;">
           <strong>💡 사용법:</strong> 슬래시 커맨드는 채팅창에 <code style="background: var(--bg-tertiary); padding: 2px 8px; border-radius: 4px;">/커맨드명</code> 형태로 입력하여 특정 작업을 빠르게 실행할 수 있습니다.
+        </p>
+      </div>
+    </div>
+
+    <!-- Agents 상세 섹션 -->
+    <div id="agents-section" style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 40px; margin-bottom: 60px;">
+      <h3 style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 24px;">🤖 전문 AI 에이전트 (60개)</h3>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💻 언어 전문가 (16개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">c-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">cpp-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">csharp-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">dart-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">go-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">java-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">javascript-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">kotlin-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">php-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">python-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ruby-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">rust-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">scala-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">swift-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">typescript-pro</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">zig-pro</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🏗️ 아키텍처 (8개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">architect-review</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">backend-architect</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">frontend-architect</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">mobile-architect</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">system-design</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">api-design</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">microservices-expert</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">database-design</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🔧 DevOps & 배포 (6개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">devops-engineer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ci-cd-specialist</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">docker-expert</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">kubernetes-expert</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">cloud-architect</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">infrastructure-specialist</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🐛 디버깅 & 테스트 (5개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">debugger</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">test-engineer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">qa-specialist</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">performance-optimizer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">security-auditor</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">📊 데이터 & AI/ML (4개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">data-engineer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ml-engineer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ai-researcher</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">data-scientist</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🎨 디자인 & UX (3개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ux-designer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">ui-designer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">design-system-architect</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">📝 문서화 (5개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">technical-writer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">api-documenter</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">readme-generator</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">changelog-writer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">tutorial-creator</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">🔍 코드 품질 (4개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">code-reviewer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">refactoring-expert</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">code-standards</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">best-practices</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">💼 비즈니스 (7개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">product-manager</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">business-analyst</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">requirements-engineer</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">scrum-master</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">project-planner</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">stakeholder-communicator</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">business-case-analyst</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 32px;">
+        <h4 style="font-size: 18px; font-weight: 600; color: var(--accent); margin-bottom: 16px;">⚙️ 기타 (6개)</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">general-assistant</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">problem-solver</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">research-assistant</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">integration-specialist</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">migration-expert</span>
+          <span style="padding: 8px 14px; background: var(--bg-tertiary); border-radius: 6px; font-size: 13px;">legacy-modernizer</span>
+        </div>
+      </div>
+
+      <div style="background: rgba(124, 58, 237, 0.05); border-left: 4px solid var(--accent); padding: 20px; border-radius: 8px;">
+        <p style="font-size: 14px; color: var(--text-primary); line-height: 1.8; margin: 0;">
+          <strong>💡 사용법:</strong> Agent는 Task tool을 통해 호출되며, 각 전문 분야에 특화된 AI 페르소나로 복잡한 작업을 자율적으로 수행합니다.
+          자세한 내용은 <a href="https://github.com/Giwoong-ryu/n8n-copilot/tree/main/클로드_팁/Agent" style="color: var(--accent);">Agent README</a>를 참고하세요.
         </p>
       </div>
     </div>
