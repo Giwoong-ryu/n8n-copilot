@@ -3,6 +3,9 @@
  * Claude API 연동 및 Content Script와의 통신 처리
  */
 
+// N8N 지식베이스 로드
+importScripts('n8n-knowledge-base.js');
+
 // ========================================
 // 1. API 키 관리
 // ========================================
@@ -49,10 +52,19 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
     // 사용자가 선택한 모델 사용 (2025년 10월 기준)
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
 
+    // N8N 지식베이스를 활용한 시스템 프롬프트 생성
+    const errorContext = JSON.stringify(context);
+    const n8nSystemPrompt = buildSystemPrompt(errorContext);
+
+    // 기존 시스템 프롬프트와 결합
+    const enhancedSystemPrompt = systemPrompt
+      ? `${systemPrompt}\n\n${n8nSystemPrompt}`
+      : n8nSystemPrompt;
+
+    console.log('📚 Using N8N knowledge base');
+
     // System prompt와 user message 결합
-    const fullMessage = systemPrompt
-      ? `${systemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`
-      : formatMessageWithContext(userMessage, context);
+    const fullMessage = `${enhancedSystemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',
