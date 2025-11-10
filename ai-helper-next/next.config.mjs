@@ -4,7 +4,8 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  basePath: '',
+  basePath: '/ai-helper',
+  assetPrefix: '/ai-helper',
   trailingSlash: true,
 };
 
