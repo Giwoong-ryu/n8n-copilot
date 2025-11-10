@@ -69,7 +69,7 @@ async function applyCodeFix(pattern, options) {
 
   console.log('💻 Applying code fix...');
 
-  // 1. 노드 찾기
+  // 1. 노드 이름 확인
   if (!nodeName) {
     return {
       success: false,
@@ -77,17 +77,21 @@ async function applyCodeFix(pattern, options) {
     };
   }
 
-  const nodeElement = findNodeElementByName(nodeName);
-  if (!nodeElement) {
+  // 2. 재시도 로직이 포함된 노드 열기 (최대 3번 시도)
+  try {
+    const panel = await window.openNodeWithRetry(nodeName, 3);
+    if (!panel) {
+      return {
+        success: false,
+        message: '설정 패널을 열 수 없습니다. 노드를 수동으로 열어주세요.'
+      };
+    }
+  } catch (error) {
     return {
       success: false,
-      message: `노드를 찾을 수 없습니다: ${nodeName}`
+      message: `노드 열기 실패: ${error.message}`
     };
   }
-
-  // 2. 노드 클릭하여 열기
-  nodeElement.click();
-  await waitForPanel(2000);
 
   // 3. 현재 코드 읽기
   const reader = new N8NReader();
@@ -137,19 +141,36 @@ async function applyCodeFix(pattern, options) {
   // 6. 코드 적용
   const applied = await applyCodeToEditor(modifiedCode);
 
-  if (applied) {
+  if (!applied) {
+    return {
+      success: false,
+      message: '코드 에디터에 적용하는데 실패했습니다.'
+    };
+  }
+
+  // 7. 적용 후 검증 (Vue reactivity 업데이트 대기)
+  await sleep(300);
+  const actualCode = reader.getCodeFromNode(nodeName);
+
+  if (actualCode && actualCode.includes(autoFix.replaceWith)) {
+    console.log('✅ Code verification passed - changes confirmed');
     return {
       success: true,
       message: `✅ 패턴 수정 완료: ${changeCount}개 변경됨`,
       pattern: pattern,
       before: code,
       after: modifiedCode,
-      changeCount: changeCount
+      changeCount: changeCount,
+      verified: true
     };
   } else {
+    console.error('❌ Code verification failed - changes not detected in editor');
     return {
       success: false,
-      message: '코드 에디터에 적용하는데 실패했습니다.'
+      message: '코드 적용은 성공했지만 검증에 실패했습니다. Monaco 에디터 문제일 수 있습니다.',
+      appliedButNotVerified: true,
+      expected: autoFix.replaceWith,
+      actual: actualCode ? actualCode.substring(0, 100) + '...' : 'null'
     };
   }
 }

@@ -44,6 +44,21 @@ async function getConfidenceThresholds() {
     };
   } catch (error) {
     console.error('❌ Failed to load confidence thresholds:', error);
+
+    // 사용자에게 알림 (iframe이 로드된 경우에만)
+    try {
+      sendMessageToIframe({
+        type: 'warning',
+        data: {
+          message: '⚠️ 설정을 불러오지 못했습니다',
+          details: `기본값(자동 수정: 80%, UI 표시: 50%)을 사용합니다.\n\n오류: ${error.message}`
+        }
+      });
+    } catch (iframeError) {
+      // iframe이 아직 로드되지 않은 경우 무시
+      console.log('💡 Iframe not ready for warning message');
+    }
+
     return { auto: 80, suggest: 50 };
   }
 }
@@ -1584,6 +1599,10 @@ function initializeAICopilot() {
   // Reader와 Writer 인스턴스 생성
   window.n8nReader = new N8NReader();
   window.n8nWriter = new N8NWriter();
+
+  // 재시도 로직이 포함된 노드 열기 함수를 전역으로 노출
+  window.openNodeWithRetry = openNodeWithRetry;
+
   console.log('✅ Reader and Writer initialized');
 
   // N8N 인스턴스에서 노드 정보 가져오기
@@ -1906,7 +1925,8 @@ window.addEventListener('message', async (event) => {
               error: criticalIssue.description,
               currentNode: {
                 type: issueNode.type,
-                name: issueNode.name
+                name: issueNode.name,
+                index: criticalIssue.nodeIndex
               },
               code: criticalIssue.codeSnippet || '',
               executionData: {
@@ -1932,26 +1952,7 @@ window.addEventListener('message', async (event) => {
               if (confidence >= thresholds.auto && bestMatch.pattern.autoApplicable) {
                 console.log(`🚀 High confidence (${confidence}% >= ${thresholds.auto}%) - attempting auto-fix...`);
 
-                // 에러가 있는 노드 자동으로 열기
-                const errorNodeElement = findNodeElementByName(issueNode.name);
-                if (!errorNodeElement) {
-                  console.error('❌ Failed to find error node element:', issueNode.name);
-                  throw new Error(`노드를 찾을 수 없습니다: ${issueNode.name}`);
-                }
-
-                errorNodeElement.click();
-                await sleep(1000); // 패널이 열릴 때까지 대기
-
-                // 설정 패널이 열렸는지 확인
-                const settingsPanel = safeSelector.find('settingsPanel', document, true);
-                if (!settingsPanel) {
-                  console.error('❌ Settings panel not opened after clicking node');
-                  throw new Error('설정 패널을 열 수 없습니다');
-                }
-
-                console.log('✅ Settings panel opened successfully');
-
-                // 패턴 자동 적용
+                // 패턴 자동 적용 (노드 열기는 applyFixPattern 내부에서 처리)
                 const applyResult = await applyFixPattern(bestMatch.patternId, {
                   autoApply: true,
                   nodeName: issueNode.name
@@ -2988,6 +2989,55 @@ async function waitForPanel(maxWaitMs = 2000) {
 
   console.warn('⚠️ Panel wait timeout');
   return null;
+}
+
+/**
+ * 재시도 로직이 포함된 노드 열기 함수
+ * @param {string} nodeName - 노드 이름
+ * @param {number} maxRetries - 최대 재시도 횟수 (기본값: 3)
+ * @returns {Promise<Element|null>} - 열린 설정 패널 또는 null
+ */
+async function openNodeWithRetry(nodeName, maxRetries = 3) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      console.log(`🔄 Attempt ${attempt + 1}/${maxRetries} to open node: ${nodeName}`);
+
+      // 노드 찾기
+      const nodeElement = findNodeElementByName(nodeName);
+      if (!nodeElement) {
+        throw new Error(`노드를 찾을 수 없습니다: ${nodeName}`);
+      }
+
+      // 노드 클릭
+      nodeElement.click();
+
+      // 패널이 열릴 때까지 대기
+      const panel = await waitForPanel(2000);
+
+      if (panel) {
+        console.log(`✅ Node opened successfully on attempt ${attempt + 1}`);
+        return panel;
+      }
+
+      // 패널이 안 열렸으면 다음 시도로
+      throw new Error('설정 패널을 열 수 없습니다');
+
+    } catch (error) {
+      console.warn(`⚠️ Attempt ${attempt + 1} failed:`, error.message);
+
+      // 마지막 시도였으면 에러를 throw
+      if (attempt === maxRetries - 1) {
+        throw new Error(`${maxRetries}번 시도 후 실패: ${error.message}`);
+      }
+
+      // 재시도 전 대기 (지수 백오프: 500ms, 1s, 2s)
+      const backoffDelay = 500 * Math.pow(2, attempt);
+      console.log(`⏳ Waiting ${backoffDelay}ms before retry...`);
+      await sleep(backoffDelay);
+    }
+  }
+
+  throw new Error('Failed to open node after all retries');
 }
 
 async function analyzeErrorsWithCode() {

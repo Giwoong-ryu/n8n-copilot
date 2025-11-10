@@ -530,16 +530,43 @@ ${automaticIssues.length > 1 ? `\n추가로 ${automaticIssues.length - 1}개의 
 
     const { error, automaticIssues } = event.data.data;
 
+    // 에러 메시지에서 단계 파악
+    const errorStepMap = {
+      '노드를 찾을 수 없습니다': '🔍 1단계: 노드 찾기',
+      '설정 패널을 열 수 없습니다': '📂 2단계: 설정 패널 열기',
+      '코드를 읽을 수 없습니다': '📖 3단계: 코드 읽기',
+      '코드 에디터에 적용': '✏️ 4단계: 코드 적용',
+      '검증에 실패': '✅ 5단계: 변경사항 검증'
+    };
+
+    let failedStep = '❓ 알 수 없는 단계';
+    for (const [keyword, stepLabel] of Object.entries(errorStepMap)) {
+      if (error.includes(keyword)) {
+        failedStep = stepLabel;
+        break;
+      }
+    }
+
     const errorMessage = `⚠️ **자동 수정 중 문제 발생**
 
-❌ 오류: ${error}
+❌ 실패 단계: ${failedStep}
+📝 오류 내용: ${error}
 
 📊 감지된 문제: ${automaticIssues.length}개
 
-AI에게 도움을 요청하거나 수동으로 문제를 해결해주세요.`;
+💡 다음 중 하나를 시도해보세요:
+- 수동으로 문제를 해결
+- AI에게 도움 요청
+- 워크플로우 새로고침 후 재시도`;
 
     addMessage(errorMessage, 'assistant');
     sendButton.disabled = false;
+
+  } else if (event.data.type === 'warning') {
+    // 경고 메시지 표시
+    const { message, details } = event.data.data;
+    const warningMessage = details ? `${message}\n\n${details}` : message;
+    addMessage(warningMessage, 'assistant');
 
   } else if (event.data.type === 'workflow-analysis-result') {
     // 워크플로우 분석 결과 처리 - AI에게 직접 전송

@@ -101,7 +101,14 @@ function attachEventListeners() {
 
   // 신뢰도 임계값 저장 버튼
   if (saveThresholdsButton) {
-    saveThresholdsButton.addEventListener('click', saveConfidenceThresholds);
+    saveThresholdsButton.addEventListener('click', async () => {
+      try {
+        await saveConfidenceThresholds();
+      } catch (error) {
+        console.error('❌ Error in saveConfidenceThresholds:', error);
+        showStatus('❌ 예상치 못한 오류가 발생했습니다: ' + error.message, 'error');
+      }
+    });
   }
 
   // 신뢰도 임계값 로드
