@@ -2646,6 +2646,55 @@ window.addEventListener('message', async (event) => {
       ...result
     });
   }
+
+  // 실시간 가이드 시작 요청
+  if (event.data.type === 'start-realtime-guide') {
+    console.log('🚀 Real-time guide start request received:', event.data.patternId);
+
+    const { patternId } = event.data;
+    const pattern = getPattern(patternId);
+
+    if (!pattern) {
+      console.error('❌ Pattern not found:', patternId);
+      return;
+    }
+
+    // RealTimeGuide 시작
+    window.realTimeGuide.start(pattern, {
+      onStepCompleted: (stepIndex, step) => {
+        console.log(`✅ Step ${stepIndex} completed:`, step.description);
+
+        // iframe에 단계 완료 알림
+        sendMessageToIframe({
+          type: 'realtime-guide-step-completed',
+          patternId: patternId,
+          stepIndex: stepIndex
+        });
+      },
+
+      onAllCompleted: () => {
+        console.log('🎉 All steps completed!');
+
+        // iframe에 전체 완료 알림
+        sendMessageToIframe({
+          type: 'realtime-guide-all-completed',
+          patternId: patternId
+        });
+      }
+    });
+  }
+
+  // 수동 단계 완료 요청
+  if (event.data.type === 'manual-step-complete') {
+    console.log('✓ Manual step complete request:', event.data);
+
+    const { patternId, stepIndex } = event.data;
+
+    // RealTimeGuide에 수동 완료 알림
+    if (window.realTimeGuide.isActive) {
+      window.realTimeGuide.forceNextStep();
+    }
+  }
 });
 
 

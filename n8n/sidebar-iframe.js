@@ -553,6 +553,26 @@ ${event.data.after}
       addMessage(`❌ ${event.data.message}`, 'error');
     }
 
+  } else if (event.data.type === 'realtime-guide-step-completed') {
+    // 실시간 가이드 단계 완료
+    console.log('✅ Real-time guide step completed:', event.data);
+
+    const { patternId, stepIndex } = event.data;
+
+    // 체크리스트 메시지 찾기
+    const checklistMessages = document.querySelectorAll('.checklist-message');
+    const latestChecklist = checklistMessages[checklistMessages.length - 1];
+
+    if (latestChecklist) {
+      completeStep(latestChecklist, stepIndex, { id: patternId, manualSteps: [] });
+    }
+
+  } else if (event.data.type === 'realtime-guide-all-completed') {
+    // 실시간 가이드 전체 완료
+    console.log('🎉 Real-time guide all completed:', event.data);
+
+    addMessage('🎉 실시간 가이드를 통해 모든 단계를 완료했습니다! 워크플로우를 저장하고 다시 실행해보세요.', 'assistant');
+
   } else if (event.data.type === 'error') {
     hideLoading('loading-indicator');
 
@@ -702,30 +722,241 @@ function displayPatternMessage(text, patternId, messageDiv) {
 
 
 /**
- * 수동 단계 체크리스트 표시
+ * 수동 단계 체크리스트 표시 (인터랙티브)
  */
 function displayManualSteps(pattern) {
-  const stepsHTML = `
-# 📋 ${pattern.title} - 수동 적용 단계
+  console.log('📋 Displaying interactive checklist for:', pattern.id);
 
-${pattern.manualSteps.map((step, index) => `
-## ${step.step}. ${step.description}
+  // 체크리스트 HTML 생성
+  const checklistHTML = `
+<div class="interactive-checklist">
+  <div class="checklist-header">
+    <h3>📋 ${pattern.title} - 단계별 가이드</h3>
+    <div class="checklist-controls">
+      <button class="checklist-btn start-guide" data-pattern-id="${pattern.id}">
+        🚀 실시간 가이드 시작
+      </button>
+    </div>
+  </div>
 
-${step.example ? `예시: \`${step.example}\`` : ''}
-${step.before && step.after ? `
-\`\`\`
-Before: ${step.before}
-After:  ${step.after}
-\`\`\`
-` : ''}
-`).join('\n')}
+  <div class="checklist-progress">
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="checklist-progress-bar" style="width: 0%"></div>
+    </div>
+    <div class="progress-text" id="checklist-progress-text">0 / ${pattern.manualSteps.length} 완료</div>
+  </div>
 
----
+  <div class="checklist-steps">
+    ${pattern.manualSteps.map((step, index) => `
+      <div class="checklist-step" data-step-index="${index}">
+        <div class="step-header">
+          <input type="checkbox"
+                 class="step-checkbox"
+                 id="step-${pattern.id}-${index}"
+                 data-step-index="${index}"
+                 ${index === 0 ? '' : 'disabled'}>
+          <label for="step-${pattern.id}-${index}" class="step-number">
+            ${step.step}단계
+          </label>
+          <span class="step-status" data-status="pending">⏳ 대기 중</span>
+        </div>
 
-각 단계를 완료한 후 다음 단계로 진행하세요.
+        <div class="step-content">
+          <p class="step-description">${step.description}</p>
+
+          ${step.example ? `
+            <div class="step-example">
+              <strong>예시:</strong> <code>${escapeHtml(step.example)}</code>
+            </div>
+          ` : ''}
+
+          ${step.before && step.after ? `
+            <div class="step-code-change">
+              <div class="code-before">
+                <strong>Before:</strong> <code>${escapeHtml(step.before)}</code>
+              </div>
+              <div class="code-after">
+                <strong>After:</strong> <code>${escapeHtml(step.after)}</code>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="step-actions">
+          <button class="step-btn manual-complete"
+                  data-step-index="${index}"
+                  ${index === 0 ? '' : 'disabled'}>
+            ✓ 완료
+          </button>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+
+  <div class="checklist-footer">
+    <p class="checklist-note">
+      💡 <strong>실시간 가이드</strong>를 시작하면 자동으로 진행 상황을 감지합니다.
+    </p>
+  </div>
+</div>
   `;
 
-  addMessage(stepsHTML, 'assistant');
+  // 메시지 추가
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'message assistant checklist-message';
+  messageDiv.innerHTML = checklistHTML;
+  messagesContainer.appendChild(messageDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  // 이벤트 리스너 추가
+  setTimeout(() => {
+    setupChecklistEvents(pattern, messageDiv);
+  }, 0);
+}
+
+
+/**
+ * 체크리스트 이벤트 설정
+ */
+function setupChecklistEvents(pattern, messageDiv) {
+  // 실시간 가이드 시작 버튼
+  const startGuideBtn = messageDiv.querySelector('.start-guide');
+  if (startGuideBtn) {
+    startGuideBtn.addEventListener('click', () => {
+      console.log('🚀 Starting real-time guide');
+      startGuideBtn.textContent = '⏸️ 가이드 진행 중...';
+      startGuideBtn.disabled = true;
+
+      // parent window에 실시간 가이드 시작 요청
+      window.parent.postMessage({
+        type: 'start-realtime-guide',
+        patternId: pattern.id
+      }, '*');
+
+      // 첫 번째 단계 활성화
+      updateStepStatus(messageDiv, 0, 'in-progress');
+    });
+  }
+
+  // 수동 완료 버튼들
+  const manualCompleteButtons = messageDiv.querySelectorAll('.manual-complete');
+  manualCompleteButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const stepIndex = parseInt(btn.dataset.stepIndex);
+      console.log(`✓ Manual complete clicked for step ${stepIndex}`);
+
+      // 단계 완료 처리
+      completeStep(messageDiv, stepIndex, pattern);
+
+      // parent window에 수동 완료 알림
+      window.parent.postMessage({
+        type: 'manual-step-complete',
+        patternId: pattern.id,
+        stepIndex: stepIndex
+      }, '*');
+    });
+  });
+}
+
+
+/**
+ * 단계 완료 처리
+ */
+function completeStep(messageDiv, stepIndex, pattern) {
+  console.log(`✅ Completing step ${stepIndex}`);
+
+  // 체크박스 체크
+  const checkbox = messageDiv.querySelector(`#step-${pattern.id}-${stepIndex}`);
+  if (checkbox) {
+    checkbox.checked = true;
+    checkbox.disabled = true;
+  }
+
+  // 상태 업데이트
+  updateStepStatus(messageDiv, stepIndex, 'completed');
+
+  // 버튼 비활성화
+  const button = messageDiv.querySelector(`.manual-complete[data-step-index="${stepIndex}"]`);
+  if (button) {
+    button.textContent = '✓ 완료됨';
+    button.disabled = true;
+  }
+
+  // 다음 단계 활성화
+  const nextStepIndex = stepIndex + 1;
+  if (nextStepIndex < pattern.manualSteps.length) {
+    updateStepStatus(messageDiv, nextStepIndex, 'in-progress');
+
+    // 다음 단계 체크박스 활성화
+    const nextCheckbox = messageDiv.querySelector(`#step-${pattern.id}-${nextStepIndex}`);
+    if (nextCheckbox) {
+      nextCheckbox.disabled = false;
+    }
+
+    // 다음 단계 버튼 활성화
+    const nextButton = messageDiv.querySelector(`.manual-complete[data-step-index="${nextStepIndex}"]`);
+    if (nextButton) {
+      nextButton.disabled = false;
+    }
+  }
+
+  // 진행률 업데이트
+  updateChecklistProgress(messageDiv, stepIndex + 1, pattern.manualSteps.length);
+
+  // 모든 단계 완료 확인
+  if (nextStepIndex >= pattern.manualSteps.length) {
+    console.log('🎉 All steps completed!');
+    addMessage('🎉 모든 단계를 완료했습니다! 워크플로우를 저장하고 다시 실행해보세요.', 'assistant');
+  }
+}
+
+
+/**
+ * 단계 상태 업데이트
+ */
+function updateStepStatus(messageDiv, stepIndex, status) {
+  const stepElement = messageDiv.querySelector(`.checklist-step[data-step-index="${stepIndex}"]`);
+  if (!stepElement) return;
+
+  const statusElement = stepElement.querySelector('.step-status');
+  if (!statusElement) return;
+
+  statusElement.dataset.status = status;
+
+  switch (status) {
+    case 'pending':
+      statusElement.textContent = '⏳ 대기 중';
+      stepElement.classList.remove('active', 'completed');
+      break;
+    case 'in-progress':
+      statusElement.textContent = '🔄 진행 중';
+      stepElement.classList.add('active');
+      stepElement.classList.remove('completed');
+      break;
+    case 'completed':
+      statusElement.textContent = '✅ 완료';
+      stepElement.classList.remove('active');
+      stepElement.classList.add('completed');
+      break;
+  }
+}
+
+
+/**
+ * 체크리스트 진행률 업데이트
+ */
+function updateChecklistProgress(messageDiv, completed, total) {
+  const progressBar = messageDiv.querySelector('#checklist-progress-bar');
+  const progressText = messageDiv.querySelector('#checklist-progress-text');
+
+  if (progressBar) {
+    const percentage = Math.round((completed / total) * 100);
+    progressBar.style.width = `${percentage}%`;
+  }
+
+  if (progressText) {
+    progressText.textContent = `${completed} / ${total} 완료`;
+  }
 }
 
 
