@@ -113,8 +113,24 @@ function addMessage(text, type = 'assistant') {
 
   // assistant 메시지는 마크다운을 HTML로 변환
   if (type === 'assistant') {
+    // PATTERN_ID 감지 및 처리
+    const patternMatch = text.match(/PATTERN_ID:\s*(\w+)/);
+
+    if (patternMatch) {
+      const patternId = patternMatch[1];
+      console.log('🔍 Pattern detected:', patternId);
+
+      // 패턴 정보 표시 (특별한 UI)
+      displayPatternMessage(text, patternId, messageDiv);
+    } else {
+      // 일반 메시지 처리
+      messageDiv.innerHTML = parseMarkdown(text);
+    }
+
     // 내장 마크다운 파서 사용
-    messageDiv.innerHTML = parseMarkdown(text);
+    if (!patternMatch) {
+      messageDiv.innerHTML = parseMarkdown(text);
+    }
 
     // 단계 버튼에 이벤트 리스너 추가
     setTimeout(() => {
@@ -488,6 +504,55 @@ window.addEventListener('message', (event) => {
       }
     });
 
+  } else if (event.data.type === 'pattern-apply-result') {
+    // 패턴 적용 결과 처리
+    console.log('🔧 Pattern apply result:', event.data);
+
+    // 버튼 복구
+    const autoApplyButtons = document.querySelectorAll('.auto-apply');
+    autoApplyButtons.forEach(btn => {
+      btn.disabled = false;
+      btn.textContent = '⚡ 자동으로 적용하기';
+    });
+
+    if (event.data.success) {
+      // 성공 메시지
+      addMessage(`✅ ${event.data.message}
+
+**수정 내용:**
+- 변경된 곳: ${event.data.changeCount}개
+
+저장하고 워크플로우를 다시 실행해보세요!`, 'assistant');
+    } else if (event.data.requiresManual) {
+      // 수동 적용 필요
+      addMessage(`⚠️ ${event.data.message}
+
+이 패턴은 수동으로 적용해야 합니다.`, 'assistant');
+
+      // 수동 단계 표시
+      if (event.data.pattern) {
+        displayManualSteps(event.data.pattern);
+      }
+    } else if (event.data.requiresConfirmation) {
+      // 확인 필요
+      addMessage(`⚠️ ${event.data.message}
+
+**수정 전:**
+\`\`\`
+${event.data.before}
+\`\`\`
+
+**수정 후:**
+\`\`\`
+${event.data.after}
+\`\`\`
+
+변경 사항을 확인하고 "⚡ 자동으로 적용하기" 버튼을 다시 클릭하세요.`, 'assistant');
+    } else {
+      // 에러
+      addMessage(`❌ ${event.data.message}`, 'error');
+    }
+
   } else if (event.data.type === 'error') {
     hideLoading('loading-indicator');
 
@@ -526,5 +591,142 @@ function displayPageAnalysis(data) {
 
   addMessage(message, 'assistant');
 }
+
+
+// ========================================
+// 패턴 기반 UI 표시
+// ========================================
+
+/**
+ * 패턴 메시지를 특별한 UI로 표시
+ */
+function displayPatternMessage(text, patternId, messageDiv) {
+  console.log('🎨 Displaying pattern UI for:', patternId);
+
+  // 패턴 정보 가져오기
+  const pattern = getPattern(patternId);
+
+  if (!pattern) {
+    // 패턴을 찾을 수 없으면 일반 메시지로 표시
+    messageDiv.innerHTML = parseMarkdown(text);
+    return;
+  }
+
+  // PATTERN_ID 줄 제거
+  const cleanText = text.replace(/PATTERN_ID:\s*\w+\s*\n?/, '').trim();
+
+  // 패턴 UI 생성
+  const patternHTML = `
+    <div class="pattern-message">
+      <div class="pattern-header">
+        <h3>🔧 ${pattern.title}</h3>
+        <span class="pattern-severity ${pattern.severity}">${pattern.severity}</span>
+      </div>
+
+      <div class="pattern-description">
+        ${parseMarkdown(pattern.description)}
+      </div>
+
+      ${cleanText ? `<div class="ai-explanation">${parseMarkdown(cleanText)}</div>` : ''}
+
+      <div class="pattern-examples">
+        <div class="before-after">
+          <div class="code-section before">
+            <div class="code-label">❌ Before</div>
+            <pre><code>${escapeHtml(pattern.before)}</code></pre>
+          </div>
+          <div class="arrow">→</div>
+          <div class="code-section after">
+            <div class="code-label">✅ After</div>
+            <pre><code>${escapeHtml(pattern.after)}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="pattern-actions">
+        ${pattern.autoApplicable ? `
+          <button class="pattern-btn auto-apply" data-pattern-id="${pattern.id}">
+            ⚡ 자동으로 적용하기
+          </button>
+        ` : ''}
+        <button class="pattern-btn show-steps" data-pattern-id="${pattern.id}">
+          📋 수동 단계 보기
+        </button>
+        <button class="pattern-btn show-explanation" data-pattern-id="${pattern.id}">
+          💡 자세한 설명
+        </button>
+      </div>
+    </div>
+  `;
+
+  messageDiv.innerHTML = patternHTML;
+
+  // 버튼 이벤트 리스너 추가
+  setTimeout(() => {
+    // 자동 적용 버튼
+    const autoApplyBtn = messageDiv.querySelector('.auto-apply');
+    if (autoApplyBtn) {
+      autoApplyBtn.addEventListener('click', () => {
+        console.log('⚡ Auto-apply clicked:', patternId);
+        autoApplyBtn.textContent = '⏳ 적용 중...';
+        autoApplyBtn.disabled = true;
+
+        // parent window(content.js)로 자동 적용 요청
+        window.parent.postMessage({
+          type: 'apply-pattern',
+          patternId: patternId,
+          autoApply: true
+        }, '*');
+      });
+    }
+
+    // 수동 단계 보기 버튼
+    const showStepsBtn = messageDiv.querySelector('.show-steps');
+    if (showStepsBtn) {
+      showStepsBtn.addEventListener('click', () => {
+        console.log('📋 Show steps clicked:', patternId);
+        displayManualSteps(pattern);
+      });
+    }
+
+    // 자세한 설명 버튼
+    const showExplanationBtn = messageDiv.querySelector('.show-explanation');
+    if (showExplanationBtn) {
+      showExplanationBtn.addEventListener('click', () => {
+        console.log('💡 Show explanation clicked:', patternId);
+        addMessage(pattern.explanation, 'assistant');
+      });
+    }
+  }, 0);
+}
+
+
+/**
+ * 수동 단계 체크리스트 표시
+ */
+function displayManualSteps(pattern) {
+  const stepsHTML = `
+# 📋 ${pattern.title} - 수동 적용 단계
+
+${pattern.manualSteps.map((step, index) => `
+## ${step.step}. ${step.description}
+
+${step.example ? `예시: \`${step.example}\`` : ''}
+${step.before && step.after ? `
+\`\`\`
+Before: ${step.before}
+After:  ${step.after}
+\`\`\`
+` : ''}
+`).join('\n')}
+
+---
+
+각 단계를 완료한 후 다음 단계로 진행하세요.
+  `;
+
+  addMessage(stepsHTML, 'assistant');
+}
+
 
 console.log('✅ Sidebar iframe script initialized');

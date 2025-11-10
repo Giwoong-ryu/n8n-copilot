@@ -3,6 +3,9 @@
  * Claude API 연동 및 Content Script와의 통신 처리
  */
 
+// N8N 지식베이스 로드
+importScripts('n8n-knowledge-base.js');
+importScripts('n8n-fix-patterns.js');
 // ========================================
 // 1. API 키 관리
 // ========================================
@@ -49,10 +52,67 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
     // 사용자가 선택한 모델 사용 (2025년 10월 기준)
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${apiKey}`;
 
+    // 에러/워크플로우 분석인지 확인
+    const isErrorAnalysis = context.errorContext || context.workflowContext || context.error;
+
+    // N8N 지식베이스를 활용한 시스템 프롬프트 생성
+    const errorContext = JSON.stringify(context);
+    let n8nSystemPrompt = buildSystemPrompt(errorContext);
+
+    // 에러 분석인 경우: 패턴 감지 및 추천
+    if (isErrorAnalysis) {
+      // 관련 패턴 자동 감지
+      const detectedPatterns = detectRelevantPatterns(context);
+
+      console.log('🔍 Detected patterns:', detectedPatterns.map(p => p.patternId));
+
+      // 패턴 ID 목록 생성
+      const allPatternIds = getAllPatternIds();
+
+      // 패턴 기반 프롬프트 추가
+      n8nSystemPrompt += `
+
+# FIX PATTERNS (자동 수정 패턴)
+
+다음은 사용 가능한 수정 패턴 목록입니다:
+${allPatternIds.map(id => `- ${id}`).join('\n')}
+
+${detectedPatterns.length > 0 ? `
+## 감지된 패턴 (우선순위 순)
+${detectedPatterns.map(p => `
+### ${p.patternId} (신뢰도: ${p.confidence})
+${p.pattern.description}
+`).join('\n')}
+` : ''}
+
+# 응답 형식
+
+문제를 해결할 수 있는 패턴이 있다면 다음 형식으로 응답하세요:
+
+PATTERN_ID: <패턴_id>
+
+그 다음 해당 패턴에 대한 간단한 설명을 한국어로 제공하세요.
+
+예시:
+PATTERN_ID: items_array_pattern
+
+이 문제는 Code 노드에서 items[0]를 반환하여 발생했습니다. $input.all()로 변경하면 모든 아이템이 전송됩니다.
+
+---
+
+패턴으로 해결할 수 없는 일반 질문인 경우에는 PATTERN_ID 없이 일반 답변을 제공하세요.
+`;
+    }
+
+    // 기존 시스템 프롬프트와 결합
+    const enhancedSystemPrompt = systemPrompt
+      ? `${systemPrompt}\n\n${n8nSystemPrompt}`
+      : n8nSystemPrompt;
+
+    console.log('📚 Using N8N knowledge base' + (isErrorAnalysis ? ' + Pattern Detection' : ''));
+
     // System prompt와 user message 결합
-    const fullMessage = systemPrompt
-      ? `${systemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`
-      : formatMessageWithContext(userMessage, context);
+    const fullMessage = `${enhancedSystemPrompt}\n\n${formatMessageWithContext(userMessage, context)}`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',

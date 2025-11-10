@@ -2616,7 +2616,7 @@ function autoFillNodeFields(jsonData) {
 }
 
 // 메시지 리스너: iframe에서 자동 입력 요청 받기
-window.addEventListener('message', (event) => {
+window.addEventListener('message', async (event) => {
   if (event.data.type === 'auto-fill-node') {
     console.log('📥 Auto-fill request received from iframe');
 
@@ -2625,6 +2625,24 @@ window.addEventListener('message', (event) => {
     // 결과를 iframe에 전송
     sendMessageToIframe({
       type: 'auto-fill-result',
+      ...result
+    });
+  }
+
+  // 패턴 자동 적용 요청
+  if (event.data.type === 'apply-pattern') {
+    console.log('🔧 Pattern apply request received from iframe:', event.data.patternId);
+
+    const { patternId, autoApply } = event.data;
+
+    // applyFixPattern 함수 호출
+    const result = await applyFixPattern(patternId, {
+      autoApply: autoApply
+    });
+
+    // 결과를 iframe에 전송
+    sendMessageToIframe({
+      type: 'pattern-apply-result',
       ...result
     });
   }
