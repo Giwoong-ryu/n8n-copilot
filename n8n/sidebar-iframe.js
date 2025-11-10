@@ -536,7 +536,8 @@ ${automaticIssues.length > 1 ? `\n추가로 ${automaticIssues.length - 1}개의 
       'PanelOpenError': { icon: '📂', step: '2단계: 설정 패널 열기', recoverable: true },
       'CodeReadError': { icon: '📖', step: '3단계: 코드 읽기', recoverable: false },
       'CodeApplicationError': { icon: '✏️', step: '4단계: 코드 적용', recoverable: false },
-      'CodeVerificationError': { icon: '✅', step: '5단계: 변경사항 검증', recoverable: false }
+      'CodeVerificationError': { icon: '✅', step: '5단계: 변경사항 검증', recoverable: false },
+      'StorageError': { icon: '💾', step: '설정 로드', recoverable: true }
     };
 
     const errorInfo = errorTypeMap[errorType] || { icon: '❓', step: '알 수 없는 단계', recoverable: false };

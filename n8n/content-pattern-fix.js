@@ -65,9 +65,9 @@ async function applyFixPattern(patternId, options = {}) {
  * 코드 패턴 자동 수정
  */
 async function applyCodeFix(pattern, options) {
-  const { nodeName, currentCode, autoApply = false } = options;
+  const { nodeName, currentCode, autoApply = false, nodeIndex = 0 } = options;
 
-  console.log('💻 Applying code fix...');
+  console.log('💻 Applying code fix...', { nodeName, nodeIndex });
 
   // 1. 노드 이름 확인
   if (!nodeName) {
@@ -77,15 +77,15 @@ async function applyCodeFix(pattern, options) {
     };
   }
 
-  // 2. 재시도 로직이 포함된 노드 열기 (최대 3번 시도)
+  // 2. 재시도 로직이 포함된 노드 열기 (최대 3번 시도, 중복 노드 지원)
   try {
-    const panel = await window.openNodeWithRetry(nodeName, 3);
+    const panel = await window.openNodeWithRetry(nodeName, 3, { index: nodeIndex });
     if (!panel) {
-      throw new PanelOpenError(nodeName, 3);
+      throw new window.PanelOpenError(nodeName, 3);
     }
   } catch (error) {
     // 구조화된 에러면 추가 정보 제공
-    if (error instanceof NodeNotFoundError || error instanceof PanelOpenError) {
+    if (error instanceof window.NodeNotFoundError || error instanceof window.PanelOpenError) {
       return {
         success: false,
         message: error.message,
@@ -106,7 +106,7 @@ async function applyCodeFix(pattern, options) {
   let code = currentCode || reader.getCodeFromNode(nodeName);
 
   if (!code) {
-    const error = new CodeReadError(nodeName, 'Monaco 에디터를 찾을 수 없거나 Code 노드가 아닙니다');
+    const error = new window.CodeReadError(nodeName, 'Monaco 에디터를 찾을 수 없거나 Code 노드가 아닙니다');
     return {
       success: false,
       message: error.message,
@@ -154,7 +154,7 @@ async function applyCodeFix(pattern, options) {
   const applied = await applyCodeToEditor(modifiedCode);
 
   if (!applied) {
-    const error = new CodeApplicationError(nodeName, { reason: 'Monaco 에디터 접근 실패' });
+    const error = new window.CodeApplicationError(nodeName, { reason: 'Monaco 에디터 접근 실패' });
     return {
       success: false,
       message: error.message,
@@ -165,38 +165,45 @@ async function applyCodeFix(pattern, options) {
   }
 
   // 7. 적용 후 검증 (Vue reactivity 업데이트 대기)
-  await sleep(300);
+  await window.sleep(300);
   const actualCode = reader.getCodeFromNode(nodeName);
 
-  if (actualCode && actualCode.includes(autoFix.replaceWith)) {
-    console.log('✅ Code verification passed - changes confirmed');
-    return {
-      success: true,
-      message: `✅ 패턴 수정 완료: ${changeCount}개 변경됨`,
-      pattern: pattern,
-      before: code,
-      after: modifiedCode,
-      changeCount: changeCount,
-      verified: true
-    };
-  } else {
-    console.error('❌ Code verification failed - changes not detected in editor');
-    const error = new CodeVerificationError(
-      nodeName,
-      autoFix.replaceWith,
-      actualCode ? actualCode.substring(0, 100) + '...' : 'null'
-    );
-    return {
-      success: false,
-      message: error.message,
-      errorType: error.name,
-      recoverable: error.recoverable,
-      suggestedAction: error.suggestedAction,
-      appliedButNotVerified: true,
-      expected: error.expected,
-      actual: error.actual
-    };
+  if (actualCode) {
+    // 더 정확한 검증: 변경 전 패턴이 제거되고 새 코드가 적용되었는지 확인
+    const oldPatternRemoved = !autoFix.searchPattern.test(actualCode);
+    const newCodeApplied = actualCode.includes(autoFix.replaceWith);
+
+    if (oldPatternRemoved && newCodeApplied) {
+      console.log('✅ Code verification passed - old pattern removed and new code applied');
+      return {
+        success: true,
+        message: `✅ 패턴 수정 완료: ${changeCount}개 변경됨`,
+        pattern: pattern,
+        before: code,
+        after: modifiedCode,
+        changeCount: changeCount,
+        verified: true
+      };
+    }
   }
+
+  // 검증 실패 시
+  console.error('❌ Code verification failed - changes not detected in editor');
+  const error = new window.CodeVerificationError(
+    nodeName,
+    autoFix.replaceWith,
+    actualCode ? actualCode.substring(0, 100) + '...' : 'null'
+  );
+  return {
+    success: false,
+    message: error.message,
+    errorType: error.name,
+    recoverable: error.recoverable,
+    suggestedAction: error.suggestedAction,
+    appliedButNotVerified: true,
+    expected: error.expected,
+    actual: error.actual
+  };
 }
 
 
@@ -312,24 +319,8 @@ async function applyCodeToEditor(code) {
 }
 
 
-/**
- * 패널이 열릴 때까지 대기 (이미 있는 함수와 중복이지만 명시적으로 추가)
- */
-function waitForPanel(timeout = 3000) {
-  return new Promise((resolve) => {
-    const startTime = Date.now();
-    const interval = setInterval(() => {
-      const panel = safeSelector.find('settingsPanel');
-      if (panel) {
-        clearInterval(interval);
-        resolve(panel);
-      } else if (Date.now() - startTime > timeout) {
-        clearInterval(interval);
-        resolve(null);
-      }
-    }, 100);
-  });
-}
+// waitForPanel 함수는 content.js에서 전역으로 노출되므로 중복 제거
+// window.waitForPanel 사용
 
 
 // ========================================

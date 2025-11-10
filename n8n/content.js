@@ -197,13 +197,17 @@ async function getConfidenceThresholds() {
   } catch (error) {
     console.error('❌ Failed to load confidence thresholds:', error);
 
+    // StorageError로 래핑
+    const storageError = new StorageError('read', error.message);
+
     // 사용자에게 알림 (iframe이 로드된 경우에만)
     try {
       sendMessageToIframe({
         type: 'warning',
         data: {
           message: '⚠️ 설정을 불러오지 못했습니다',
-          details: `기본값(자동 수정: 80%, UI 표시: 50%)을 사용합니다.\n\n오류: ${error.message}`
+          details: `기본값(자동 수정: 80%, UI 표시: 50%)을 사용합니다.\n\n💡 권장 조치: ${storageError.suggestedAction}`,
+          errorType: storageError.name
         }
       });
     } catch (iframeError) {
@@ -2066,6 +2070,7 @@ window.addEventListener('message', async (event) => {
 
         // 상태 머신 초기화
         const phase3SM = new Phase3StateMachine();
+        window.phase3SM = phase3SM;  // 디버깅용 전역 노출
 
         if (automaticIssues.length > 0) {
           console.log('🔍 Detected issues, checking for fix patterns...');
@@ -2119,7 +2124,8 @@ window.addEventListener('message', async (event) => {
                 // 패턴 자동 적용 (노드 열기는 applyFixPattern 내부에서 처리)
                 const applyResult = await applyFixPattern(bestMatch.patternId, {
                   autoApply: true,
-                  nodeName: issueNode.name
+                  nodeName: issueNode.name,
+                  nodeIndex: criticalIssue.nodeIndex  // 중복 노드 이름 지원
                 });
 
                 if (applyResult.success) {
@@ -2207,8 +2213,13 @@ window.addEventListener('message', async (event) => {
               automaticIssues: automaticIssues
             };
 
-            // 구조화된 에러면 추가 정보 제공
-            if (error.name && error.name.endsWith('Error')) {
+            // 커스텀 에러 클래스만 추가 정보 제공 (내장 Error 타입 제외)
+            const customErrorTypes = [
+              'NodeNotFoundError', 'PanelOpenError', 'CodeReadError',
+              'CodeApplicationError', 'CodeVerificationError', 'StorageError'
+            ];
+
+            if (error.name && customErrorTypes.includes(error.name)) {
               errorData.errorType = error.name;
               errorData.recoverable = error.recoverable || false;
               errorData.suggestedAction = error.suggestedAction || null;
@@ -3183,17 +3194,18 @@ async function waitForPanel(maxWaitMs = 2000) {
  * @param {number} maxRetries - 최대 재시도 횟수 (기본값: 3)
  * @returns {Promise<Element|null>} - 열린 설정 패널 또는 null
  */
-async function openNodeWithRetry(nodeName, maxRetries = 3) {
+async function openNodeWithRetry(nodeName, maxRetries = 3, options = {}) {
+  const { index = 0 } = options;  // 중복 노드 이름 지원
   let lastError = null;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
-      console.log(`🔄 Attempt ${attempt + 1}/${maxRetries} to open node: ${nodeName}`);
+      console.log(`🔄 Attempt ${attempt + 1}/${maxRetries} to open node: ${nodeName} (index: ${index})`);
 
-      // 노드 찾기
-      const nodeElement = findNodeElementByName(nodeName);
+      // 노드 찾기 (중복 노드 이름 지원)
+      const nodeElement = findNodeElementByName(nodeName, { index });
       if (!nodeElement) {
-        throw new NodeNotFoundError(nodeName, { attempt: attempt + 1 });
+        throw new NodeNotFoundError(nodeName, { attempt: attempt + 1, index });
       }
 
       // 노드 클릭
@@ -3497,3 +3509,19 @@ function findElement(selector) {
       .map(attr => `${attr.name}="${attr.value}"`)
   };
 }
+
+
+// ========================================
+// 전역 노출: content-pattern-fix.js 등에서 사용
+// ========================================
+
+window.NodeNotFoundError = NodeNotFoundError;
+window.PanelOpenError = PanelOpenError;
+window.CodeReadError = CodeReadError;
+window.CodeApplicationError = CodeApplicationError;
+window.CodeVerificationError = CodeVerificationError;
+window.StorageError = StorageError;
+window.sleep = sleep;
+window.waitForPanel = waitForPanel;
+
+console.log('✅ Content.js: Error classes and utilities exposed globally');
