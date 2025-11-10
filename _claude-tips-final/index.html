@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>N8N AI Copilot - 문서 허브</title>
+  <meta name="description" content="AI 기반 n8n 워크플로우 자동화 Chrome Extension - 개발 문서 및 리포트">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #FAF9F6;
+      --bg-secondary: #FFFFFF;
+      --bg-tertiary: #F5F5F3;
+      --text-primary: #1A1A1A;
+      --text-secondary: #6B6B6B;
+      --border: #E5E5E0;
+      --accent: #7C3AED;
+      --accent-hover: #6D28D9;
+      --success: #059669;
+      --warning: #D97706;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+      --gradient-1: linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%);
+      --gradient-2: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', 'Malgun Gothic', Helvetica, Arial, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 60px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(124, 58, 237, 0.08) 0%, transparent 70%);
+      animation: pulse 15s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(180deg); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      width: 280px;
+      height: 80px;
+      margin: 0 auto 24px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+
+    h1 {
+      font-size: 56px;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 16px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      font-size: 24px;
+      color: var(--text-secondary);
+      margin-bottom: 48px;
+      font-weight: 400;
+    }
+
+    .version-badge {
+      display: inline-block;
+      padding: 8px 20px;
+      background: rgba(124, 58, 237, 0.1);
+      border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 20px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 48px;
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin: 60px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-1);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      margin-bottom: 16px;
+      color: var(--accent);
+    }
+
+    .card h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .card p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .card-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .card-badge.new {
+      background: rgba(5, 150, 105, 0.1);
+      color: var(--success);
+    }
+
+    .arrow {
+      color: var(--accent);
+      font-size: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover .arrow {
+      transform: translateX(4px);
+    }
+
+    /* Portfolio Sections */
+    .section {
+      margin: 80px auto;
+    }
+
+    /* Hide dependent sections initially */
+    .dependent-section {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .dependent-section.visible {
+      display: block;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section h2 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: var(--text-primary);
+      text-align: center;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 16px;
+      margin-bottom: 48px;
+      max-width: 800px;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
+    .project-overview {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      margin-top: 32px;
+      text-align: left;
+    }
+
+    .overview-item {
+      text-align: left;
+    }
+
+    .overview-item h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .overview-item p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Collapsible Sections */
+    .section-header {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .section-header:hover {
+      color: var(--accent);
+    }
+
+    .toggle-icon {
+      width: 24px;
+      height: 24px;
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-icon.open {
+      transform: rotate(180deg);
+    }
+
+    .section-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease;
+    }
+
+    .section-content.open {
+      max-height: 5000px;
+    }
+
+    /* Tech Stack */
+    .tech-stack {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px;
+    }
+
+    .tech-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tech-item:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-md);
+    }
+
+    .tech-item strong {
+      display: block;
+      font-size: 16px;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .tech-item span {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Stats Section */
+    .stats {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(167, 139, 250, 0.05) 100%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      margin: 80px 0;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stats h2 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 40px;
+      color: var(--text-primary);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 32px;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 40px;
+      font-weight: 800;
+      background: var(--gradient-1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding: 32px 0;
+    }
+
+    .timeline-item {
+      display: flex;
+      gap: 32px;
+      margin-bottom: 48px;
+      position: relative;
+    }
+
+    .timeline-date {
+      min-width: 120px;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .timeline-content {
+      flex: 1;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .timeline-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .timeline-content p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Feature List */
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .feature-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .feature-item h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .feature-item p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 60px 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 80px;
+    }
+
+    footer p {
+      color: var(--text-secondary);
+      margin: 8px 0;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    footer a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      margin-top: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .github-link:hover {
+      border-color: var(--accent);
+      background: rgba(124, 58, 237, 0.05);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .github-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 40px;
+      }
+
+      .subtitle {
+        font-size: 18px;
+      }
+
+      .logo {
+        width: 200px;
+        height: 60px;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .overview-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+
+      .tech-stack {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .timeline-item {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .timeline-date {
+        min-width: auto;
+      }
+
+      .feature-list {
+        grid-template-columns: 1fr;
+      }
+
+      .project-overview {
+        padding: 32px 24px;
+      }
+
+      .section h2 {
+        font-size: 28px;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card {
+      animation: fadeInUp 0.6s ease backwards;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+    .card:nth-child(3) { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-content">
+      <!-- Logo -->
+      <svg class="logo" viewBox="0 0 320 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#7C3AED"/>
+            <stop offset="50%" stop-color="#A78BFA"/>
+            <stop offset="100%" stop-color="#EC4899"/>
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+              font-family="system-ui, -apple-system, sans-serif"
+              font-size="48"
+              font-weight="800"
+              fill="url(#textGradient)"
+              filter="url(#glow)">
+          EazyPick
+        </text>
+      </svg>
+
+      <h1>N8N AI Copilot</h1>
+      <p class="subtitle">지능형 n8n 워크플로우 자동화를 위한 Chrome Extension</p>
+      <span class="version-badge">v0.2.0 Alpha • 기본 패턴 구현 완료, 실제 테스트 필요</span>
+
+      <div class="container">
+        <div class="cards-grid">
+          <!-- 작업 리포트 카드 -->
+          <a href="work-report-viewer.html" class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3Z" stroke="currentColor" stroke-width="2"/>
+              <path d="M8 7H16M8 11H16M8 15H12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h2>작업 리포트</h2>
+            <p>모든 커밋, 스킬 활용, 기술 심층 분석을 포함한 완전한 개발 세션 문서입니다.</p>
+            <div class="card-footer">
+              <span class="card-badge new">최신</span>
+              <span class="arrow">→</span>
+            </div>
+          </a>
+
+          <!-- 변경로그 카드 -->
+          <a href="changelog-viewer.html" class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <h2>변경로그</h2>
+            <p>커밋 분석, 파일 변경 사항, 개선 로드맵이 포함된 상세한 버전 히스토리입니다.</p>
+            <div class="card-footer">
+              <span class="card-badge">문서</span>
+              <span class="arrow">→</span>
+            </div>
+          </a>
+
+          <!-- GitHub 카드 -->
+          <a href="https://github.com/Giwoong-ryu/n8n-copilot" target="_blank" class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 19C4 20.5 4 16.5 2 16M16 22V18.13C16.0375 17.6532 15.9731 17.1738 15.811 16.7238C15.6489 16.2738 15.3929 15.8634 15.06 15.52C18.2 15.17 21.5 13.98 21.5 8.52C21.4997 7.12383 20.9627 5.7812 20 4.77C20.4559 3.54851 20.4236 2.19835 19.91 1C19.91 1 18.73 0.650001 16 2.48C13.708 1.85882 11.292 1.85882 9 2.48C6.27 0.650001 5.09 1 5.09 1C4.57638 2.19835 4.54414 3.54851 5 4.77C4.03013 5.7887 3.49252 7.14346 3.5 8.55C3.5 13.97 6.8 15.16 9.94 15.55C9.611 15.89 9.35726 16.2954 9.19531 16.7399C9.03335 17.1844 8.96681 17.6581 9 18.13V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2>소스 코드</h2>
+            <p>전체 소스 코드를 확인하고 기여하거나 GitHub에서 이슈를 보고하세요.</p>
+            <div class="card-footer">
+              <span class="card-badge">저장소</span>
+              <span class="arrow">↗</span>
+            </div>
+          </a>
+
+          <!-- 교육 자료실 카드 -->
+          <a href="education.html" class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2>교육 자료실</h2>
+            <p>n8n 설치부터 카카오톡 전송까지, 실전 자동화 워크플로우를 단계별로 배워보세요.</p>
+            <div class="card-footer">
+              <span class="card-badge new">교육</span>
+              <span class="arrow">→</span>
+            </div>
+          </a>
+
+          <!-- 클로드_팁 카드 -->
+          <a href="./클로드_팁.html" class="card">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <h2>클로드_팁</h2>
+            <p>Claude Code 스킬셋 11개, MCP, Agent 활용법 등 Claude 관련 모든 기술 문서와 팁을 한곳에 모았습니다.</p>
+            <div class="card-footer">
+              <span class="card-badge new">11개 스킬</span>
+              <span class="arrow">→</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 프로젝트 개요 -->
+  <div class="container section" id="overview-section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>프로젝트 개요</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">AI 기반 워크플로우 자동화를 통해 개발자의 생산성을 극대화합니다</p>
+      <div class="project-overview">
+      <div class="overview-grid">
+        <div class="overview-item">
+          <h3>문제 정의</h3>
+          <p>n8n 워크플로우 작성 시 반복적인 설정과 복잡한 노드 구성으로 인해 개발 시간이 과도하게 소요되고, 휴먼 에러가 빈번하게 발생합니다.</p>
+        </div>
+        <div class="overview-item">
+          <h3>솔루션</h3>
+          <p>Chrome Extension과 AI를 결합하여 실시간 페이지 분석, 자동 입력, 에러 감지를 제공하며, Vue.js 리액티브 시스템과 완벽하게 통합됩니다.</p>
+        </div>
+        <div class="overview-item">
+          <h3>주요 목표</h3>
+          <p>반복 작업 자동화를 통한 개발 시간 단축, 안정적인 DOM 조작 패턴 구축, 그리고 재사용 가능한 워크플로우 템플릿 라이브러리 제공을 목표로 합니다.</p>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기술 스택 -->
+  <div class="container section dependent-section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>기술 스택</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">프로젝트에 사용된 핵심 기술들</p>
+      <div class="tech-stack">
+      <div class="tech-item">
+        <strong>Chrome Extension</strong>
+        <span>Manifest V3</span>
+      </div>
+      <div class="tech-item">
+        <strong>Vue.js 3</strong>
+        <span>Reactive System</span>
+      </div>
+      <div class="tech-item">
+        <strong>Claude AI</strong>
+        <span>Sonnet 4.5</span>
+      </div>
+      <div class="tech-item">
+        <strong>JavaScript</strong>
+        <span>ES6+</span>
+      </div>
+      <div class="tech-item">
+        <strong>DOM API</strong>
+        <span>MutationObserver</span>
+      </div>
+      <div class="tech-item">
+        <strong>Git</strong>
+        <span>Version Control</span>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 주요 성과 -->
+  <div class="container">
+    <div class="stats">
+      <h2>개발 현황</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value">2,480+</div>
+          <div class="stat-label">작성된 코드 라인 수</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">16개</div>
+          <div class="stat-label">발견된 잠재 이슈</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">3/16</div>
+          <div class="stat-label">Critical 이슈 해결</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">0%</div>
+          <div class="stat-label">실제 테스트 완료</div>
+        </div>
+      </div>
+      <p style="margin-top: 24px; font-size: 14px; color: var(--text-secondary); text-align: center;">
+        * 실제 n8n 환경에서의 테스트 및 검증 필요<br>
+        * 문서화 자동화로 3시간 → 10분 단축 (측정됨)
+      </p>
+    </div>
+  </div>
+
+  <!-- 개발 과정 -->
+  <div class="container section dependent-section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>개발 과정</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">체계적인 접근과 반복적 개선</p>
+      <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-date">Phase 1</div>
+        <div class="timeline-content">
+          <h3>요구사항 분석 및 설계</h3>
+          <p>n8n DOM 구조 분석, Vue.js 리액티브 시스템 연구, 874줄 규모의 포괄적인 기술 가이드 문서 작성 (meta-prompt-generator 활용)</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Phase 2</div>
+        <div class="timeline-content">
+          <h3>코드 리뷰 및 검증</h3>
+          <p>codex-claude-loop 방식으로 16개 이슈 자동 발견 (Critical 3개, High 5개). 보안, 성능, 메모리 누수 체크 완료</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Phase 3</div>
+        <div class="timeline-content">
+          <h3>Production-Ready 구현</h3>
+          <p>SafeSelector, VueInputWriter, ResilientWriter 클래스 구현. Vue 리액티브 트리거 6단계 프로세스 적용</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-date">Phase 4</div>
+        <div class="timeline-content">
+          <h3>문서화 및 배포</h3>
+          <p>code-changelog 자동 생성, HTML 뷰어 제작, GitHub Pages 배포로 포트폴리오화</p>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 핵심 기능 -->
+  <div class="container section dependent-section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>핵심 기능</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">실시간 페이지 분석부터 자동화까지</p>
+      <div class="feature-list">
+      <div class="feature-item">
+        <h3>실시간 페이지 분석</h3>
+        <p>n8n 페이지의 DOM 구조, CSS 클래스, data-test-id 속성을 실시간으로 분석하여 올바른 선택자를 자동으로 찾습니다.</p>
+      </div>
+      <div class="feature-item">
+        <h3>Vue 리액티브 통합</h3>
+        <p>6단계 프로세스(focus, select, setValue, input event, change event, blur)를 통해 Vue.js 리액티브 시스템을 완벽하게 트리거합니다.</p>
+      </div>
+      <div class="feature-item">
+        <h3>SafeSelector 패턴</h3>
+        <p>여러 우선순위의 선택자를 시도하여 n8n 버전 변경에도 안정적으로 동작하는 Fallback 시스템을 제공합니다.</p>
+      </div>
+      <div class="feature-item">
+        <h3>자동 재시도 메커니즘</h3>
+        <p>네트워크 지연이나 DOM 준비 지연 시 exponential backoff 방식으로 자동 재시도하여 안정성을 보장합니다.</p>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기술적 도전과 해결 -->
+  <div class="container section dependent-section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>기술적 도전과 해결</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">실전에서 마주한 문제들과 창의적 솔루션</p>
+      <div class="feature-list">
+      <div class="feature-item">
+        <h3>Vue.js 리액티브 미작동</h3>
+        <p><strong>문제:</strong> element.value = x 방식이 Vue Proxy를 트리거하지 못함<br>
+        <strong>해결:</strong> Native setter + 이벤트 체인 + Vue 인스턴스 직접 업데이트</p>
+      </div>
+      <div class="feature-item">
+        <h3>MutationObserver 메모리 누수</h3>
+        <p><strong>문제:</strong> 페이지 언로드 후에도 Observer가 작동하여 40MB/시간 누수<br>
+        <strong>해결:</strong> beforeunload 이벤트에서 disconnect() 호출로 완전 정리</p>
+      </div>
+      <div class="feature-item">
+        <h3>선택자 취약성</h3>
+        <p><strong>문제:</strong> n8n 버전 업데이트 시 하드코딩된 선택자 실패<br>
+        <strong>해결:</strong> SafeSelector 패턴으로 우선순위 기반 Fallback 구현</p>
+      </div>
+      <div class="feature-item">
+        <h3>보안 취약점</h3>
+        <p><strong>문제:</strong> Message 이벤트에 origin 검증 없어 외부 주입 가능<br>
+        <strong>해결:</strong> event.source === window 체크로 Same-origin Policy 적용</p>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 향후 계획 -->
+  <div class="container section dependent-section">
+    <div class="section-header" onclick="toggleSection(this)">
+      <h2>향후 계획</h2>
+      <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="section-content">
+      <p class="section-subtitle">지속적인 개선과 기능 확장</p>
+      <div class="overview-grid">
+      <div class="overview-item">
+        <h3>Phase 1 (즉시)</h3>
+        <p><strong>실제 테스트 및 검증:</strong> n8n 환경에서 실제 동작 확인, 사용자 피드백 수집, 발견된 버그 수정. 과대포장된 통계를 실제 측정 데이터로 교체.</p>
+      </div>
+      <div class="overview-item">
+        <h3>Phase 2 (2주)</h3>
+        <p>DebugLogger 시스템, SmartInputWriter (select, checkbox, ACE editor 지원), N8NVersionDetector 구현. 실제 테스트 기반 개선.</p>
+      </div>
+      <div class="overview-item">
+        <h3>Phase 3 (1-3개월)</h3>
+        <p>성능 튜닝, 테스트 코드 작성 (Jest, Playwright), API 문서 작성. 안정성 검증 후 템플릿 라이브러리 구축 및 배포 고려.</p>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="container">
+      <h2 style="font-size: 24px; margin-bottom: 32px;">연락하기</h2>
+      <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: 32px; max-width: 600px; margin-left: auto; margin-right: auto;">
+        프로젝트에 관심이 있으시거나 협업을 원하시면 언제든지 연락주세요.
+      </p>
+
+      <div style="display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px;">
+        <a href="https://github.com/Giwoong-ryu/n8n-copilot" target="_blank" class="github-link">
+          <svg class="github-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z" fill="currentColor"/>
+          </svg>
+          <span>GitHub 저장소</span>
+        </a>
+        <a href="mailto:your.email@example.com" class="github-link">
+          <svg class="github-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2"/>
+            <path d="M22 6l-10 7L2 6" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          <span>이메일 문의</span>
+        </a>
+      </div>
+
+      <div style="border-top: 1px solid var(--border); padding-top: 32px;">
+        <p style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">
+          AI 기반 개발 프로세스로 제작
+        </p>
+        <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 24px;">
+          Claude Sonnet 4.5 • code-changelog • codex-claude-loop • meta-prompt-generator
+        </p>
+        <p style="font-size: 14px; color: var(--text-secondary);">
+          © 2025 N8N AI Copilot • MIT License
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 부드러운 스크롤 추가
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+
+    // 섹션 토글 기능
+    function toggleSection(header) {
+      const icon = header.querySelector('.toggle-icon');
+      const content = header.nextElementSibling;
+      const section = header.parentElement;
+
+      icon.classList.toggle('open');
+      content.classList.toggle('open');
+
+      // 개요 섹션이 열리면 나머지 섹션들 표시
+      if (section.id === 'overview-section' && content.classList.contains('open')) {
+        const dependentSections = document.querySelectorAll('.dependent-section');
+        dependentSections.forEach((depSection, index) => {
+          setTimeout(() => {
+            depSection.classList.add('visible');
+          }, index * 100); // 순차적으로 페이드인
+        });
+      }
+    }
+  </script>
+</body>
+</html>
