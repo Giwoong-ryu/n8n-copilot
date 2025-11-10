@@ -523,6 +523,24 @@ ${automaticIssues.length > 1 ? `\n추가로 ${automaticIssues.length - 1}개의 
 
     sendButton.disabled = false;
 
+  } else if (event.data.type === 'workflow-pattern-error') {
+    // Phase 3: 패턴 감지/적용 중 에러 발생
+    hideLoading('loading-indicator');
+    hideProgress();
+
+    const { error, automaticIssues } = event.data.data;
+
+    const errorMessage = `⚠️ **자동 수정 중 문제 발생**
+
+❌ 오류: ${error}
+
+📊 감지된 문제: ${automaticIssues.length}개
+
+AI에게 도움을 요청하거나 수동으로 문제를 해결해주세요.`;
+
+    addMessage(errorMessage, 'assistant');
+    sendButton.disabled = false;
+
   } else if (event.data.type === 'workflow-analysis-result') {
     // 워크플로우 분석 결과 처리 - AI에게 직접 전송
     hideLoading('loading-indicator');

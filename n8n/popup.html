@@ -337,12 +337,45 @@
 
       <div class="divider"></div>
 
+      <div class="info-section">
+        <h3>⚙️ 고급 설정</h3>
+        <div class="form-group">
+          <label for="autoThreshold">자동 수정 신뢰도 임계값 (%)</label>
+          <input
+            type="number"
+            id="autoThreshold"
+            min="0"
+            max="100"
+            value="80"
+            style="width: 100px;"
+          />
+          <p class="hint">이 값 이상의 신뢰도면 자동으로 수정합니다 (권장: 80)</p>
+        </div>
+
+        <div class="form-group">
+          <label for="suggestThreshold">UI 표시 신뢰도 임계값 (%)</label>
+          <input
+            type="number"
+            id="suggestThreshold"
+            min="0"
+            max="100"
+            value="50"
+            style="width: 100px;"
+          />
+          <p class="hint">이 값 이상의 신뢰도면 패턴 UI를 표시합니다 (권장: 50)</p>
+        </div>
+
+        <button id="saveThresholds">💾 설정 저장</button>
+      </div>
+
+      <div class="divider"></div>
+
       <button id="changeApiKeyButton" class="button-secondary">
         🔄 API 키 변경
       </button>
     </div>
   </div>
-  
+
   <script src="popup.js"></script>
 </body>
 </html>

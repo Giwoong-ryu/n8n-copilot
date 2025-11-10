@@ -76,6 +76,7 @@ function attachEventListeners() {
   const form = document.getElementById('settingsForm');
   const apiKeyInput = document.getElementById('apiKey');
   const changeApiKeyButton = document.getElementById('changeApiKeyButton');
+  const saveThresholdsButton = document.getElementById('saveThresholds');
 
   // 폼 제출
   form.addEventListener('submit', handleFormSubmit);
@@ -97,6 +98,14 @@ function attachEventListeners() {
       showAuthScreen();
     });
   }
+
+  // 신뢰도 임계값 저장 버튼
+  if (saveThresholdsButton) {
+    saveThresholdsButton.addEventListener('click', saveConfidenceThresholds);
+  }
+
+  // 신뢰도 임계값 로드
+  loadConfidenceThresholds();
 }
 
 
@@ -271,6 +280,71 @@ function switchScreen(screenId) {
   if (targetScreen) {
     targetScreen.classList.add('active');
     console.log(`🔄 Switched to ${screenId}`);
+  }
+}
+
+
+// ========================================
+// 10. 신뢰도 임계값 관리
+// ========================================
+
+// 신뢰도 임계값 저장
+async function saveConfidenceThresholds() {
+  try {
+    const autoThreshold = parseInt(document.getElementById('autoThreshold').value);
+    const suggestThreshold = parseInt(document.getElementById('suggestThreshold').value);
+
+    // 유효성 검사
+    if (isNaN(autoThreshold) || autoThreshold < 0 || autoThreshold > 100) {
+      showStatus('❌ 자동 수정 임계값은 0~100 사이여야 합니다', 'error');
+      return;
+    }
+
+    if (isNaN(suggestThreshold) || suggestThreshold < 0 || suggestThreshold > 100) {
+      showStatus('❌ UI 표시 임계값은 0~100 사이여야 합니다', 'error');
+      return;
+    }
+
+    if (suggestThreshold > autoThreshold) {
+      showStatus('❌ UI 표시 임계값은 자동 수정 임계값보다 낮아야 합니다', 'error');
+      return;
+    }
+
+    // Chrome storage에 저장
+    await chrome.storage.local.set({
+      confidenceThresholds: {
+        auto: autoThreshold,
+        suggest: suggestThreshold
+      }
+    });
+
+    console.log('✅ Confidence thresholds saved:', { auto: autoThreshold, suggest: suggestThreshold });
+    showStatus('✅ 신뢰도 임계값이 저장되었습니다!', 'success');
+
+  } catch (error) {
+    console.error('❌ Failed to save confidence thresholds:', error);
+    showStatus('❌ 저장에 실패했습니다: ' + error.message, 'error');
+  }
+}
+
+// 신뢰도 임계값 로드
+async function loadConfidenceThresholds() {
+  try {
+    const result = await chrome.storage.local.get('confidenceThresholds');
+
+    if (result.confidenceThresholds) {
+      const autoInput = document.getElementById('autoThreshold');
+      const suggestInput = document.getElementById('suggestThreshold');
+
+      if (autoInput) autoInput.value = result.confidenceThresholds.auto;
+      if (suggestInput) suggestInput.value = result.confidenceThresholds.suggest;
+
+      console.log('✅ Loaded confidence thresholds:', result.confidenceThresholds);
+    } else {
+      console.log('💡 Using default confidence thresholds');
+    }
+  } catch (error) {
+    console.error('❌ Failed to load confidence thresholds:', error);
   }
 }
 

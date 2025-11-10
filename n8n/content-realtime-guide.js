@@ -6,6 +6,19 @@
  * 토큰 사용: 0 (로컬 JavaScript만 사용)
  */
 
+// Debounce 유틸리티 (content.js에도 있지만 독립 실행을 위해 포함)
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func.apply(this, args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
 class RealTimeGuide {
   constructor() {
     this.steps = [];
@@ -18,6 +31,11 @@ class RealTimeGuide {
     // 단계 완료 콜백
     this.onStepCompleted = null;
     this.onAllCompleted = null;
+
+    // Debounced 체크 함수 (300ms)
+    this.debouncedCheck = debounce(() => {
+      this.checkCurrentStep();
+    }, 300);
   }
 
   /**
@@ -81,8 +99,8 @@ class RealTimeGuide {
     }
 
     this.observer = new MutationObserver((mutations) => {
-      // DOM 변경 발생 시 현재 단계 체크
-      this.checkCurrentStep();
+      // DOM 변경 발생 시 debounced 체크 (300ms 내 중복 호출 방지)
+      this.debouncedCheck();
     });
 
     // document 전체를 감시 (subtree: 하위 요소 포함)
