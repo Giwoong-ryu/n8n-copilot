@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스킬셋 - Claude Code 11개 스킬</title>
-  <meta name="description" content="Claude Code를 위한 11개 AI 자동화 스킬셋">
+  <title>스킬셋 - Claude Code 31개 스킬</title>
+  <meta name="description" content="Claude Code를 위한 31개 AI 자동화 스킬셋">
   <style>
     * {
       margin: 0;
@@ -178,83 +178,19 @@
       border-bottom: none;
     }
 
-    .skill-table code {
-      background: var(--bg-tertiary);
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Courier New', monospace;
-      font-size: 14px;
-      color: var(--accent);
-    }
-
-    .code-block {
-      background: #1A1A1A;
-      color: #F5F5F3;
-      padding: 20px;
-      border-radius: 8px;
-      margin: 24px 0;
-      overflow-x: auto;
-      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Courier New', monospace;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .code-block .comment {
-      color: #6B6B6B;
-    }
-
-    .download-section {
+    .github-link-box {
       background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(167, 139, 250, 0.05) 100%);
       border: 2px solid var(--accent);
       border-radius: 12px;
       padding: 32px;
       margin: 40px 0;
+      text-align: center;
     }
 
-    .download-section h3 {
+    .github-link-box h3 {
       color: var(--accent);
       font-size: 28px;
       margin-bottom: 20px;
-    }
-
-    .download-steps {
-      margin: 24px 0;
-    }
-
-    .download-step {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 24px;
-      align-items: flex-start;
-    }
-
-    .step-number {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      background: var(--accent);
-      color: white;
-      border-radius: 50%;
-      font-weight: 700;
-      flex-shrink: 0;
-    }
-
-    .step-content {
-      flex: 1;
-    }
-
-    .step-content h4 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: var(--text-primary);
-    }
-
-    .step-content p {
-      color: var(--text-secondary);
-      margin-bottom: 12px;
     }
 
     .github-link {
@@ -297,20 +233,6 @@
       margin: 0;
     }
 
-    .scenario-box {
-      background: var(--bg-tertiary);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 24px;
-      margin: 20px 0;
-    }
-
-    .scenario-box h4 {
-      color: var(--accent);
-      font-size: 18px;
-      margin-bottom: 12px;
-    }
-
     footer {
       text-align: center;
       padding: 60px 20px;
@@ -336,7 +258,7 @@
         padding: 24px;
       }
 
-      .download-section {
+      .github-link-box {
         padding: 24px;
       }
 
@@ -354,246 +276,163 @@
 <body>
   <div class="hero">
     <div class="hero-content">
-      <a href="클로드_팁.html" class="back-link">
-        ← 클로드_팁으로 돌아가기
+      <a href="index.html" class="back-link">
+        ← Claude 가이드로 돌아가기
       </a>
 
       <h1>🎯 Claude Code 스킬셋</h1>
-      <p class="subtitle">37개의 강력한 AI 자동화 도구 (서버 27개 + Windows 10개)</p>
+      <p class="subtitle">31개의 강력한 AI 자동화 도구</p>
     </div>
   </div>
 
   <div class="container">
     <!-- 스킬셋 개요 -->
     <div class="content-section">
-      <h2>📦 설치된 스킬 (총 37개 • ~81,891 토큰)</h2>
-      <p>Claude Code를 더욱 강력하게 만들어주는 AI 자동화 스킬셋 모음입니다. n8n 워크플로우부터 디자인, 문서처리, 마케팅, 개발도구까지 다양한 작업을 자동화할 수 있습니다.</p>
+      <h2>📦 설치된 스킬 (총 31개)</h2>
+      <p>Claude Code를 더욱 강력하게 만들어주는 AI 자동화 스킬셋 모음입니다. n8n 워크플로우부터 개발 자동화, 한국어 콘텐츠, 마케팅까지 다양한 작업을 자동화할 수 있습니다.</p>
 
-      <h3>🔧 n8n 워크플로우 (6개 • ~20,408 토큰)</h3>
+      <div class="github-link-box">
+        <h3>📥 모든 스킬 다운로드</h3>
+        <p style="color: var(--text-secondary); margin-bottom: 20px;">
+          31개 스킬의 전체 코드와 상세 문서를 GitHub에서 확인하고 다운로드할 수 있습니다.
+        </p>
+        <a href="https://github.com/Giwoong-ryu/my-skills" target="_blank" class="github-link">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          GitHub: my-skills 레포지토리
+        </a>
+      </div>
+
+      <h3>🔧 n8n 워크플로우 전문 (6개)</h3>
       <table class="skill-table">
         <thead>
           <tr>
             <th style="width: 35%;">스킬명</th>
-            <th style="width: 50%;">기능</th>
-            <th style="width: 15%;">토큰</th>
+            <th style="width: 65%;">기능</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/n8n-workflow-patterns" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>n8n-workflow-patterns</strong> 📦</a></td>
             <td>5가지 핵심 워크플로우 패턴 (Webhook, HTTP API, Database, AI Agent, Scheduled Tasks)</td>
-            <td>~2,871</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/n8n-node-configuration" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>n8n-node-configuration</strong> 📦</a></td>
             <td>노드 설정 가이드 및 Operation별 속성 의존성 이해</td>
-            <td>~4,258</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/n8n-validation-expert" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>n8n-validation-expert</strong> 📦</a></td>
             <td>검증 오류 해석 및 수정, Validation profiles, error types</td>
-            <td>~3,664</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/n8n-code-javascript" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>n8n-code-javascript</strong> 📦</a></td>
-            <td>n8n Code 노드 JavaScript 작성, $input, $json, $node, $helpers 사용법</td>
-            <td>~4,027</td>
+            <td>n8n Code 노드 JavaScript 작성, $input, $json, $node 사용법</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/n8n-expression-syntax" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>n8n-expression-syntax</strong> 📦</a></td>
             <td>{{ }} 표현식 문법 및 오류 수정, Webhook 데이터 접근</td>
-            <td>~2,400</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/n8n-mcp-tools-expert" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>n8n-mcp-tools-expert</strong> 📦</a></td>
             <td>n8n MCP 도구 사용법, search_nodes, validate, create 활용</td>
-            <td>~3,188</td>
           </tr>
         </tbody>
       </table>
 
-      <h3>🎨 디자인 & 프론트엔드 (5개)</h3>
+      <h3>💻 개발 생산성 (6개)</h3>
       <table class="skill-table">
         <thead>
           <tr>
             <th style="width: 35%;">스킬명</th>
-            <th style="width: 50%;">기능</th>
-            <th style="width: 15%;">토큰</th>
+            <th style="width: 65%;">기능</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>canvas-design</strong></td>
-            <td>비주얼 아트 생성, PNG/PDF 디자인</td>
-            <td>~2,984</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/api-design-patterns" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>api-design-patterns</strong> 📦</a></td>
+            <td>RESTful API 설계 패턴 및 베스트 프랙티스</td>
           </tr>
           <tr>
-            <td><strong>nextjs</strong></td>
-            <td>Next.js App Router, RSC, PPR, Turborepo 모노레포 관리</td>
-            <td>~2,344</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/code-review-guidelines" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>code-review-guidelines</strong> 📦</a></td>
+            <td>코드 리뷰 체크리스트 및 피드백 가이드</td>
           </tr>
           <tr>
-            <td><strong>tailwindcss</strong></td>
-            <td>Tailwind CSS + ShadCN UI, 반응형 디자인 패턴</td>
-            <td>~2,493</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/documentation-writer" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>documentation-writer</strong> 📦</a></td>
+            <td>기술 문서 자동 생성 (README, API 문서 등)</td>
           </tr>
           <tr>
-            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/landing-page-guide" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>landing-page-guide</strong> 📦</a></td>
-            <td>랜딩 페이지 11가지 필수 요소, 전환율 최적화</td>
-            <td>~2,417</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/error-handling-strategies" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>error-handling-strategies</strong> 📦</a></td>
+            <td>에러 처리 전략 및 예외 관리 패턴</td>
           </tr>
           <tr>
-            <td><strong>theme-factory</strong></td>
-            <td>10가지 사전 설정 테마, 슬라이드/문서/HTML 스타일링</td>
-            <td>~781</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/git-workflow-korean" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>git-workflow-korean</strong> 📦</a></td>
+            <td>한국어 커밋 메시지 작성 가이드 및 Git 워크플로우</td>
+          </tr>
+          <tr>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/testing-best-practices" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>testing-best-practices</strong> 📦</a></td>
+            <td>테스트 코드 작성 모범 사례 (단위/통합/E2E)</td>
           </tr>
         </tbody>
       </table>
 
-      <h3>📄 문서 처리 (4개)</h3>
+      <h3>🇰🇷 한국어 콘텐츠 (4개)</h3>
       <table class="skill-table">
         <thead>
           <tr>
             <th style="width: 35%;">스킬명</th>
-            <th style="width: 50%;">기능</th>
-            <th style="width: 15%;">토큰</th>
+            <th style="width: 65%;">기능</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>pptx</strong></td>
-            <td>PowerPoint 생성/편집, 프레젠테이션 자동화</td>
-            <td>~6,387</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/korean-blog-seo" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>korean-blog-seo</strong> 📦</a></td>
+            <td>한국어 블로그 SEO 최적화 가이드</td>
           </tr>
           <tr>
-            <td><strong>xlsx</strong></td>
-            <td>Excel 파일 생성/편집, 데이터 분석</td>
-            <td>~1,322</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/korean-grammar-checker" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>korean-grammar-checker</strong> 📦</a></td>
+            <td>한국어 문법 검사 및 교정</td>
           </tr>
           <tr>
-            <td><strong>docx</strong></td>
-            <td>Word 문서 생성/편집</td>
-            <td>~1,345</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/korean-proofreading" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>korean-proofreading</strong> 📦</a></td>
+            <td>한국어 교정 및 윤문</td>
           </tr>
           <tr>
-            <td><strong>pdf</strong></td>
-            <td>PDF 문서 처리 및 변환</td>
-            <td>~1,288</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/korean-sns-content" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>korean-sns-content</strong> 📦</a></td>
+            <td>한국어 SNS 콘텐츠 작성 (인스타그램, 블로그 등)</td>
           </tr>
         </tbody>
       </table>
 
-      <h3>🚀 마케팅 (2개)</h3>
+      <h3>🚀 바이럴 마케팅 (4개)</h3>
       <table class="skill-table">
         <thead>
           <tr>
             <th style="width: 35%;">스킬명</th>
-            <th style="width: 50%;">기능</th>
-            <th style="width: 15%;">토큰</th>
+            <th style="width: 65%;">기능</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>viral-marketing-mastery</strong></td>
-            <td>바이럴 마케팅 전략, STEPPS 프레임워크, 소셜 미디어 최적화</td>
-            <td>~14,303 ⭐</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/content-tone-adapter" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>content-tone-adapter</strong> 📦</a></td>
+            <td>콘텐츠 톤 조정 (격식/친근함/전문성 등)</td>
           </tr>
           <tr>
-            <td><strong>seo</strong></td>
-            <td>검색 엔진 최적화 전략</td>
-            <td>~1,891</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/hashtag-generator" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>hashtag-generator</strong> 📦</a></td>
+            <td>인기 해시태그 자동 생성</td>
+          </tr>
+          <tr>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/thumbnail-copywriting" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>thumbnail-copywriting</strong> 📦</a></td>
+            <td>썸네일 카피 작성 (유튜브, 블로그 등)</td>
+          </tr>
+          <tr>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/viral-marketing-strategy" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>viral-marketing-strategy</strong> 📦</a></td>
+            <td>바이럴 마케팅 전략 및 STEPPS 프레임워크</td>
           </tr>
         </tbody>
       </table>
 
-      <h3>💡 생산성 (4개)</h3>
-      <table class="skill-table">
-        <thead>
-          <tr>
-            <th style="width: 35%;">스킬명</th>
-            <th style="width: 50%;">기능</th>
-            <th style="width: 15%;">토큰</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>systematic-debugging</strong></td>
-            <td>4단계 디버깅 프레임워크, Root cause investigation</td>
-            <td>~2,497</td>
-          </tr>
-          <tr>
-            <td><strong>writing-plans</strong></td>
-            <td>상세한 구현 계획 작성, 엔지니어를 위한 단계별 가이드</td>
-            <td>~863</td>
-          </tr>
-          <tr>
-            <td><strong>subagent-driven-development</strong></td>
-            <td>독립적 태스크 병렬 실행, 코드 리뷰 통합</td>
-            <td>~1,268</td>
-          </tr>
-          <tr>
-            <td><strong>prompt-engineering-patterns</strong></td>
-            <td>고급 프롬프트 엔지니어링, LLM 성능 최적화</td>
-            <td>~1,745</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h3>🛠️ 개발 도구 (6개)</h3>
-      <table class="skill-table">
-        <thead>
-          <tr>
-            <th style="width: 35%;">스킬명</th>
-            <th style="width: 50%;">기능</th>
-            <th style="width: 15%;">토큰</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>skill-creator</strong></td>
-            <td>새로운 스킬 생성 가이드, 스킬 구조 설계</td>
-            <td>~2,886</td>
-          </tr>
-          <tr>
-            <td><strong>claude-code-analyzer</strong></td>
-            <td>Claude Code 사용 패턴 분석, CLAUDE.md 개선 제안</td>
-            <td>~2,342</td>
-          </tr>
-          <tr>
-            <td><strong>research</strong></td>
-            <td>멀티소스 리서치 에이전트, Quick/Standard/Extensive 모드</td>
-            <td>~1,447</td>
-          </tr>
-          <tr>
-            <td><strong>git-pro</strong></td>
-            <td>고급 Git 작업 자동화</td>
-            <td>~2,190</td>
-          </tr>
-          <tr>
-            <td><strong>testing-expert</strong></td>
-            <td>테스트 작성 및 자동화 전문가</td>
-            <td>~2,645</td>
-          </tr>
-          <tr>
-            <td><strong>api-integration</strong></td>
-            <td>API 통합 및 연동 가이드</td>
-            <td>~2,134</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <h3>🪟 Windows 전용 (10개)</h3>
-      <div style="background: var(--bg-secondary); padding: 16px; border-radius: 12px; border: 2px solid var(--accent); margin-bottom: 24px; text-align: center;">
-        <p style="margin-bottom: 12px; color: var(--text-primary); font-size: 16px;">
-          💾 <strong>Windows 전용 스킬 설치 파일 다운로드:</strong>
-        </p>
-        <a href="https://github.com/Giwoong-ryu/my-skills" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: var(--gradient-1); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: transform 0.2s;">
-          <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-          </svg>
-          GitHub: my-skills 레포지토리
-        </a>
-      </div>
+      <h3>🎨 콘텐츠 생성 (4개)</h3>
       <table class="skill-table">
         <thead>
           <tr>
@@ -604,712 +443,151 @@
         <tbody>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/card-news-generator" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>card-news-generator</strong> 📦</a></td>
-            <td>카드뉴스 자동 생성, 한국어 콘텐츠 최적화</td>
+            <td>카드뉴스 자동 생성 (인스타그램, SNS용)</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/card-news-generator-v2" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>card-news-generator-v2</strong> 📦</a></td>
-            <td>개선된 카드뉴스 생성, 더 많은 템플릿 지원</td>
+            <td>고급 카드뉴스 생성 (배경 이미지 지원)</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/midjourney-cardnews-bg" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>midjourney-cardnews-bg</strong> 📦</a></td>
-            <td>Midjourney 배경 이미지 생성, 카드뉴스 배경 자동화</td>
+            <td>Midjourney AI 배경 이미지 프롬프트 생성</td>
           </tr>
           <tr>
-            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/nextjs15-init" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>nextjs15-init</strong> 📦</a></td>
-            <td>Next.js 15 프로젝트 초기화</td>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/landing-page-guide" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>landing-page-guide</strong> 📦</a></td>
+            <td>랜딩페이지 11가지 필수 요소, 전환율 최적화</td>
           </tr>
+        </tbody>
+      </table>
+
+      <h3>🛠️ 개발 자동화 (5개)</h3>
+      <table class="skill-table">
+        <thead>
           <tr>
-            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/flutter-init" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>flutter-init</strong> 📦</a></td>
-            <td>Flutter 프로젝트 초기화</td>
+            <th style="width: 35%;">스킬명</th>
+            <th style="width: 65%;">기능</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/code-changelog" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>code-changelog</strong> 📦</a></td>
+            <td>코드 변경사항 자동 문서화 (HTML 뷰어 포함)</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/codex" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>codex</strong> 📦</a></td>
-            <td>OpenAI Codex CLI 코드 분석/리팩토링</td>
+            <td>OpenAI Codex 기반 코드 분석 및 리팩토링</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/codex-claude-loop" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>codex-claude-loop</strong> 📦</a></td>
-            <td>Claude + Codex 이중 AI 검증 루프</td>
+            <td>Claude + Codex 이중 AI 검증 시스템</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/meta-prompt-generator" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>meta-prompt-generator</strong> 📦</a></td>
-            <td>메타 프롬프트 생성, 커스텀 슬래시 커맨드 자동 생성</td>
+            <td>커스텀 슬래시 커맨드 자동 생성</td>
           </tr>
           <tr>
             <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/prompt-enhancer" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>prompt-enhancer</strong> 📦</a></td>
             <td>프롬프트 개선, 간단한 요청을 상세 요구사항으로 변환</td>
           </tr>
+        </tbody>
+      </table>
+
+      <h3>🚀 프로젝트 초기화 (2개)</h3>
+      <table class="skill-table">
+        <thead>
           <tr>
-            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/code-changelog" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>code-changelog</strong> 📦</a></td>
-            <td>자동 변경사항 문서화, Git 커밋 히스토리 분석</td>
+            <th style="width: 35%;">스킬명</th>
+            <th style="width: 65%;">기능</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/flutter-init" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>flutter-init</strong> 📦</a></td>
+            <td>Flutter Clean Architecture 프로젝트 자동 생성</td>
+          </tr>
+          <tr>
+            <td><a href="https://github.com/Giwoong-ryu/my-skills/tree/main/skills/nextjs15-init" target="_blank" style="color: var(--accent); text-decoration: none;"><strong>nextjs15-init</strong> 📦</a></td>
+            <td>Next.js 15 App Router 프로젝트 자동 생성</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <!-- 개발 자동화 스킬 상세 설명 -->
+    <!-- 스킬 사용법 -->
     <div class="content-section">
-      <h2>🔧 개발 자동화 스킬 상세</h2>
+      <h2>⚙️ 스킬 설치 및 사용법</h2>
 
-      <h3 id="code-changelog" style="color: var(--accent); font-size: 26px; margin-top: 40px;">1. Code Changelog</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        AI가 생성한 모든 코드 변경사항을 자동으로 문서화하고 웹 브라우저에서 실시간으로 확인할 수 있는 스킬입니다.
-      </p>
+      <h3>1. GitHub에서 다운로드</h3>
+      <p>위의 📦 아이콘이 있는 스킬명을 클릭하면 해당 스킬의 GitHub 페이지로 이동합니다.</p>
 
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>자동 문서 생성 (Markdown):</strong> Claude가 작성한 모든 코드 변경사항을 구조화된 마크다운 형식으로 자동 저장</li>
-        <li><strong>HTML 뷰어 (설치 불필요):</strong> Python 내장 서버로 별도 설치 없이 브라우저에서 바로 확인</li>
-        <li><strong>다크 모드 UI (GitHub 스타일):</strong> 눈이 편한 다크 테마와 익숙한 GitHub 디자인</li>
-        <li><strong>실시간 서버:</strong> http://localhost:4000 에서 변경사항을 실시간으로 확인</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> React 프로젝트에서 로그인 기능을 추가한 후</p>
-        <div class="code-block" style="margin-top: 10px;">'코드 변경사항을 HTML 문서로 보여줘' 입력
-
-자동으로 생성됨:
-→ src/components/LoginForm.tsx 추가
-→ src/hooks/useAuth.ts 추가
-→ API 엔드포인트 /api/auth/login 연동
-→ 브라우저에서 http://localhost:4000 자동 오픈</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>실전 시나리오:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li>코드 리뷰 전에 팀원에게 공유할 문서 자동 생성</li>
-          <li>프로젝트 변경 이력을 시각적으로 추적</li>
-          <li>클라이언트에게 작업 내용 보고서 제출</li>
-        </ul>
-      </div>
-
-      <h3 id="meta-prompt-generator" style="color: var(--accent); font-size: 26px; margin-top: 60px;">2. Meta Prompt Generator</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        간단한 설명을 받아 단계별 병렬 처리가 가능한 구조화된 커스텀 슬래시 커맨드를 자동으로 생성합니다.
-      </p>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>지능형 지식 수집:</strong> 웹 검색을 통해 최신 기술 스택과 베스트 프랙티스 자동 수집</li>
-        <li><strong>단계 기반 워크플로우 설계:</strong> 복잡한 작업을 논리적인 단계로 자동 분해</li>
-        <li><strong>포괄적인 테스트 생성:</strong> 각 단계마다 검증 가능한 테스트 케이스 자동 생성</li>
-        <li><strong>병렬 처리 최적화:</strong> 독립적인 작업을 동시 실행하도록 최적화</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> "결제 시스템 구현" 커맨드를 만들고 싶을 때</p>
-        <div class="code-block" style="margin-top: 10px;">'프롬프트 스킬 사용해서 결제 시스템 구현해줘' 입력
-
-자동으로 생성됨:
-→ 결제 API 연동 (Stripe, Toss Payments 비교)
-→ 데이터베이스 스키마 설계
-→ 보안 처리 (토큰, 암호화)
-→ 테스트 케이스 작성
-→ 에러 처리 및 로깅
-→ .claude/commands/payment-system.md 자동 생성</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>실전 시나리오:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li>복잡한 기능을 반복적으로 구현할 때 (CRUD, 인증, 알림 등)</li>
-          <li>팀 전체가 사용할 표준화된 워크플로우 생성</li>
-          <li>신입 개발자를 위한 가이드 커맨드 제작</li>
-        </ul>
-      </div>
-
-      <h3 id="prompt-enhancer" style="color: var(--accent); font-size: 26px; margin-top: 60px;">3. Prompt Enhancer</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        프로젝트 컨텍스트를 분석하여 간단한 개발 요청을 명확하고 상세한 요구사항으로 변환합니다.
-      </p>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>프로젝트 구조 자동 분석:</strong> 현재 프로젝트의 폴더 구조, 패키지, 설정 파일 자동 파악</li>
-        <li><strong>기존 패턴 인식:</strong> 코드베이스에서 사용 중인 네이밍 컨벤션, 아키텍처 패턴 감지</li>
-        <li><strong>구조화된 요구사항 생성:</strong> 모호한 요청을 구체적인 구현 단계로 변환</li>
-        <li><strong>프레임워크별 최적화:</strong> Flutter, Next.js, Python 등 각 스택에 맞는 베스트 프랙티스 적용</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> Flutter 프로젝트에서 로그인 기능 구현</p>
-        <div class="code-block" style="margin-top: 10px;">'로그인 기능 만들어줘' 입력
-
-자동으로 상세 설계서 생성:
-
-Flutter Clean Architecture 기반 로그인 기능 구현
-
-→ Domain Layer
-  entities/user.dart (id, email, name, token)
-  repositories/auth_repository.dart (interface)
-  usecases/login_usecase.dart
-
-→ Data Layer
-  models/user_model.dart (fromJson/toJson)
-  datasources/auth_remote_datasource.dart (HTTP)
-  repositories/auth_repository_impl.dart
-
-→ Presentation Layer
-  screens/login_screen.dart
-  providers/auth_provider.dart (Riverpod)
-  widgets/login_form.dart
-
-→ 보안 요구사항
-  JWT 토큰 flutter_secure_storage 저장
-  입력 검증 (이메일 형식, 비밀번호 최소 8자)
-  에러 처리 (네트워크, 인증 실패)</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>실전 시나리오:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li><strong>신속한 프로토타이핑:</strong> "쇼핑몰 만들어줘" → 완전한 기능 명세서</li>
-          <li><strong>기술 부채 해결:</strong> "이 코드 리팩토링" → 단계별 개선 계획</li>
-          <li><strong>코드 리뷰 준비:</strong> 구현 전 상세한 설계 문서 자동 생성</li>
-        </ul>
-      </div>
-
-      <div class="info-box" style="margin-top: 24px;">
-        <p><strong>지원 스택:</strong></p>
-        <ul style="margin-left: 20px; margin-top: 10px;">
-          <li>Flutter (Clean Architecture, Riverpod, BLoC)</li>
-          <li>Next.js/React (App Router, Zustand, TanStack Query)</li>
-          <li>Python (Django, FastAPI, SQLAlchemy)</li>
-        </ul>
-      </div>
-
-      <h3 id="codex-claude-loop" style="color: var(--accent); font-size: 26px; margin-top: 60px;">4. Codex Claude Loop</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        Claude와 OpenAI Codex가 서로 코드를 검증하고 개선하는 이중 AI 검증 시스템입니다.
-      </p>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>이중 AI 검증:</strong> Claude가 작성한 코드를 Codex가 리뷰하고, 다시 Claude가 개선</li>
-        <li><strong>자동 반복 개선:</strong> 두 AI가 합의할 때까지 코드 품질 향상</li>
-        <li><strong>다각도 분석:</strong> Claude(설계/아키텍처) + Codex(성능/최적화)의 강점 결합</li>
-        <li><strong>실시간 피드백:</strong> 각 반복마다 개선 내용 시각화</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> 복잡한 알고리즘 구현 후 품질 검증</p>
-        <div class="code-block" style="margin-top: 10px;">'이중 AI 검증으로 코드 품질 높여줘' 입력
-
-자동 실행 흐름:
-
-[Claude] 최단 경로 알고리즘 구현 (Dijkstra)
-↓
-[Codex] 리뷰: "시간복잡도 O(n²) → 우선순위 큐로 O(n log n) 개선 가능"
-↓
-[Claude] 우선순위 큐 적용 + 엣지 케이스 처리 추가
-↓
-[Codex] 리뷰: "메모리 사용량 최적화 가능, 나머지 Good"
-↓
-[Claude] 최종 개선
-↓
-✅ 두 AI 합의 완료</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>실전 시나리오:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li>프로덕션 배포 전 핵심 로직 검증</li>
-          <li>성능 크리티컬한 코드 최적화</li>
-          <li>보안이 중요한 인증/결제 코드 리뷰</li>
-        </ul>
-      </div>
-
-      <h3 id="codex" style="color: var(--accent); font-size: 26px; margin-top: 60px;">5. Codex</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        OpenAI Codex를 CLI에서 직접 호출하여 코드 분석, 리팩토링, 버그 수정을 수행합니다.
-      </p>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>레거시 코드 분석:</strong> 오래된 코드베이스를 빠르게 이해하고 문서화</li>
-        <li><strong>자동 리팩토링:</strong> 코드 스멜 감지 및 개선안 제시</li>
-        <li><strong>버그 탐지:</strong> 잠재적인 버그와 보안 취약점 발견</li>
-        <li><strong>성능 최적화:</strong> 병목 지점 찾기 및 최적화 제안</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> 3년 전에 작성된 React 컴포넌트 개선</p>
-        <div class="code-block" style="margin-top: 10px;">'이 컴포넌트를 React 18 기준으로 리팩토링해줘' 입력
-
-Codex가 자동 분석:
-
-→ Class Component → Function Component 변환
-→ componentDidMount → useEffect 변경
-→ this.setState → useState 변경
-→ Suspense, Error Boundary 추가 제안</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>실전 시나리오:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li>새로 합류한 프로젝트의 코드 빠르게 이해하기</li>
-          <li>레거시 시스템 모던 기술 스택으로 마이그레이션</li>
-          <li>코드 리뷰 전 자동 사전 검사</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 프로젝트 초기화 스킬 상세 설명 -->
-    <div class="content-section">
-      <h2>🚀 프로젝트 초기화 스킬 상세</h2>
-
-      <h3 id="flutter-init" style="color: var(--accent); font-size: 26px; margin-top: 40px;">6. Flutter Init</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        Clean Architecture 기반 Flutter 프로젝트를 완전히 구조화된 상태로 자동 생성합니다.
-      </p>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>3-Layer 아키텍처 자동 생성:</strong> Domain / Data / Presentation 레이어 완전 구성</li>
-        <li><strong>필수 패키지 설치:</strong> Riverpod, Dio, Go Router, Freezed 등 주요 패키지 사전 설정</li>
-        <li><strong>폴더 구조 완성:</strong> features별 모듈화된 폴더 구조 (screens, widgets, providers)</li>
-        <li><strong>보일러플레이트 코드:</strong> 즉시 개발 시작 가능한 예제 코드 포함</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> 새 Flutter 프로젝트 시작</p>
-        <div class="code-block" style="margin-top: 10px;">'my_app이라는 이름으로 Flutter 프로젝트 만들어줘' 입력
-
-자동으로 생성되는 구조:
-
-my_app/
-├── lib/
-│   ├── core/          공통 유틸리티
-│   ├── domain/        엔티티, 유스케이스
-│   │   ├── entities/
-│   │   ├── repositories/
-│   │   └── usecases/
-│   ├── data/          API, DB, 모델
-│   │   ├── models/
-│   │   ├── datasources/
-│   │   └── repositories/
-│   ├── presentation/  UI, 상태관리
-│   │   ├── screens/
-│   │   ├── widgets/
-│   │   └── providers/
-│   └── main.dart
-└── pubspec.yaml       Riverpod, Dio, GoRouter 등 설치 완료</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>포함된 패키지:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li><strong>riverpod:</strong> 상태 관리 (Provider 패턴)</li>
-          <li><strong>dio:</strong> HTTP 클라이언트 + 인터셉터</li>
-          <li><strong>go_router:</strong> 선언적 라우팅</li>
-          <li><strong>freezed:</strong> 불변 데이터 클래스 자동 생성</li>
-          <li><strong>flutter_secure_storage:</strong> 안전한 로컬 저장소</li>
-        </ul>
-      </div>
-
-      <h3 id="nextjs15-init" style="color: var(--accent); font-size: 26px; margin-top: 60px;">7. Next.js 15 Init</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        Next.js 15 App Router 기반 프로젝트를 최신 베스트 프랙티스로 자동 구성합니다.
-      </p>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>App Router 구조:</strong> 최신 Next.js 15 App Router 기반 설정</li>
-        <li><strong>TypeScript 완전 지원:</strong> 타입 안전성을 위한 엄격한 설정</li>
-        <li><strong>상태관리 Zustand:</strong> 가볍고 강력한 상태관리 라이브러리 사전 설정</li>
-        <li><strong>TailwindCSS 설정:</strong> 유틸리티 우선 CSS 프레임워크 + 커스텀 테마</li>
-        <li><strong>API Routes:</strong> 풀스택 개발을 위한 API 라우트 예제 포함</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> 새 Next.js 프로젝트 시작</p>
-        <div class="code-block" style="margin-top: 10px;">'my-app이라는 이름으로 Next.js 프로젝트 만들어줘' 입력
-
-자동으로 생성되는 구조:
-
-my-app/
-├── src/
-│   ├── app/           App Router
-│   │   ├── (auth)/    Route Groups
-│   │   ├── api/       API Routes
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/    재사용 컴포넌트
-│   │   ├── ui/        기본 UI 컴포넌트
-│   │   └── layouts/
-│   ├── lib/           유틸리티
-│   │   ├── api.ts
-│   │   └── utils.ts
-│   └── stores/        Zustand 스토어
-├── public/
-├── tailwind.config.ts TailwindCSS 설정 완료
-└── tsconfig.json      TypeScript 엄격 모드</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>포함된 기능:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li><strong>Server Components:</strong> 서버 사이드 렌더링 최적화</li>
-          <li><strong>Suspense & Streaming:</strong> 로딩 상태 자동 처리</li>
-          <li><strong>Metadata API:</strong> SEO 최적화 설정</li>
-          <li><strong>환경변수 관리:</strong> .env.local 템플릿 제공</li>
-          <li><strong>ESLint & Prettier:</strong> 코드 품질 자동 관리</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 콘텐츠 생성 스킬 상세 설명 -->
-    <div class="content-section">
-      <h2>🎨 콘텐츠 생성 스킬 상세</h2>
-
-      <h3 id="landing-page-guide" style="color: var(--accent); font-size: 26px; margin-top: 40px;">8. Landing Page Guide</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        마케팅 전환율을 극대화하는 랜딩페이지 구조와 카피를 단계별로 생성합니다.
-      </p>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>전환율 최적화 구조:</strong> Hero → Features → Social Proof → CTA 최적 배치</li>
-        <li><strong>고객 심리 기반 카피:</strong> AIDA 모델 기반 설득 메시지 자동 생성</li>
-        <li><strong>A/B 테스트 변형안:</strong> 헤드라인, CTA 버튼 3가지 변형 자동 제안</li>
-        <li><strong>반응형 디자인 가이드:</strong> 모바일/데스크톱 최적화 레이아웃</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> SaaS 제품 런칭 준비</p>
-        <div class="code-block" style="margin-top: 10px;">'AI 기반 마케팅 자동화 도구 랜딩페이지 만들어줘' 입력
-
-자동으로 생성됨:
-
-→ Hero Section
-  헤드라인: "마케팅 시간을 90% 줄이세요"
-  서브헤드: "AI가 당신의 마케팅 팀이 됩니다"
-  CTA: "무료로 시작하기" / "데모 보기"
-
-→ Features (3-4개)
-  ✅ 자동 콘텐츠 생성 - 블로그, SNS 포스트를 5분 안에
-  ✅ 타겟 분석 - AI가 고객 페르소나 자동 파악
-  ✅ 캠페인 최적화 - 실시간 A/B 테스트
-
-→ Social Proof
-  "런칭 2주만에 고객 500명 달성"
-  고객 후기 3가지 + 로고 배치
-
-→ FAQ (예상 질문 5가지)
-  설치가 어렵나요?
-  가격은 얼마인가요? ...</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>실전 활용:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li>제품 출시 전 랜딩페이지 1시간 안에 완성</li>
-          <li>광고 캠페인용 여러 변형 페이지 대량 생성</li>
-          <li>웨비나, 이벤트 신청 페이지 제작</li>
-        </ul>
-      </div>
-
-      <h3 id="card-news-generator" style="color: var(--accent); font-size: 26px; margin-top: 60px;">9. Card News Generator</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        긴 텍스트를 인스타그램 카드 뉴스 형태로 자동 변환하여 SNS 콘텐츠를 빠르게 제작합니다.
-      </p>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>자동 슬라이드 분할:</strong> 긴 글을 읽기 좋은 10장 내외의 카드로 분할</li>
-        <li><strong>시각적 구조화:</strong> 제목/본문/번호 자동 배치 및 가독성 최적화</li>
-        <li><strong>이모지 자동 삽입:</strong> 내용에 맞는 이모지 자동 추천</li>
-        <li><strong>인스타그램 최적화:</strong> 1080x1080 정사각형 비율 기본 설정</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> 블로그 글을 SNS용으로 재가공</p>
-        <div class="code-block" style="margin-top: 10px;">'Claude Code 활용 팁을 카드뉴스로 만들어줘' 입력
-
-자동 생성 결과:
-
-[카드 1] 📱 Claude Code 활용법
-         "생산성 10배 높이는 비법"
-
-[카드 2] 💡 TIP 1: 스킬 활용하기
-         간단한 명령어로 반복 작업 자동화
-
-[카드 3] 🚀 TIP 2: 커스텀 커맨드
-         자주 쓰는 작업은 명령어로 저장
-...
-
-[카드 10] ✅ 오늘부터 시작하세요!
-          @계정명 팔로우하고 더 많은 팁 받기</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>활용 분야:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li>기술 블로그 → 인스타그램 카드 뉴스</li>
-          <li>제품 설명서 → 쉬운 사용 가이드</li>
-          <li>통계 데이터 → 시각적 인포그래픽</li>
-        </ul>
-      </div>
-
-      <h3 id="card-news-generator-v2" style="color: var(--accent); font-size: 26px; margin-top: 60px;">10. Card News Generator V2</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        커스텀 배경 이미지를 지원하는 고급 버전 카드 뉴스 생성기입니다.
-      </p>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>배경 이미지 지원:</strong> 각 카드마다 다른 배경 이미지 설정 가능</li>
-        <li><strong>텍스트 오버레이:</strong> 배경 위에 가독성 높은 텍스트 자동 배치</li>
-        <li><strong>그라데이션 효과:</strong> 텍스트 가독성을 위한 오버레이 자동 적용</li>
-        <li><strong>템플릿 선택:</strong> 5가지 디자인 템플릿 (모던/클래식/미니멀/비즈니스/크리에이티브)</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> 여행 관련 콘텐츠 제작</p>
-        <div class="code-block" style="margin-top: 10px;">'제주도 숨은 맛집 카드뉴스를 배경 이미지와 함께 만들어줘' 입력
-(./images/ 폴더에 이미지 준비)
-
-자동 생성 결과:
-
-[카드 1] 배경: 제주 바다 사진
-         텍스트: "제주도 로컬만 아는 맛집" (반투명 오버레이)
-
-[카드 2] 배경: 식당 외관
-         텍스트: "1. 해녀의 집 - 성산포 숨은 맛집"
-
-[카드 3] 배경: 음식 사진
-         텍스트: "신선한 해산물로 만든 해물라면"
-
-각 카드마다 어울리는 배경 자동 매칭</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>V1과의 차이점:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li><strong>V1:</strong> 단색 배경 + 텍스트 (빠른 제작용)</li>
-          <li><strong>V2:</strong> 이미지 배경 + 고급 디자인 (마케팅용)</li>
-        </ul>
-      </div>
-
-      <h3 id="midjourney-cardnews-bg" style="color: var(--accent); font-size: 26px; margin-top: 60px;">11. Midjourney CardNews BG</h3>
-      <p style="font-size: 16px; color: var(--text-primary); font-weight: 500; margin-bottom: 20px;">
-        카드 뉴스 주제에 맞는 Midjourney AI 이미지 생성 프롬프트를 자동으로 만들어줍니다.
-      </p>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">주요 기능:</h4>
-      <ul style="color: var(--text-secondary); line-height: 2; margin-left: 20px;">
-        <li><strong>주제 분석:</strong> 카드 뉴스 내용을 분석하여 적합한 이미지 스타일 추천</li>
-        <li><strong>프롬프트 최적화:</strong> Midjourney V6 기준 최적화된 프롬프트 생성</li>
-        <li><strong>스타일 가이드:</strong> 비즈니스/일러스트/사진/추상 등 다양한 스타일 옵션</li>
-        <li><strong>배치 생성:</strong> 한 번에 10장의 카드 뉴스용 프롬프트 자동 생성</li>
-      </ul>
-
-      <h4 style="font-size: 18px; margin-top: 24px; color: var(--text-primary);">사용 예시:</h4>
-      <div class="scenario-box">
-        <p style="margin-bottom: 10px;"><strong>상황:</strong> "AI 스타트업 창업 가이드" 카드 뉴스 배경 제작</p>
-        <div class="code-block" style="margin-top: 10px;">'AI 스타트업 창업 가이드 카드뉴스를 위한 Midjourney 프롬프트 만들어줘' 입력
-
-자동 생성된 프롬프트들:
-
-[카드 1 - 표지]
-/imagine modern tech startup office, minimalist design,
-blue and purple gradient, professional lighting,
-clean composition --ar 1:1 --v 6
-
-[카드 2 - Step 1]
-/imagine business planning concept, digital interface,
-holographic charts, futuristic workspace,
-soft focus background --ar 1:1 --v 6
-
-[카드 3 - Step 2]
-/imagine AI technology abstract, neural network visualization,
-glowing connections, dark background, cinematic lighting
---ar 1:1 --v 6
-
-각 카드의 내용에 맞는 프롬프트 10개 자동 생성
-→ Discord Midjourney에 붙여넣기만 하면 됨</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>워크플로우:</strong></p>
-        <div class="code-block" style="margin-top: 10px;"><span class="comment"># 1단계: 프롬프트 생성</span>
-midjourney-cardnews-bg "주제" --style business
-
-<span class="comment"># 2단계: Midjourney에서 이미지 생성</span>
-<span class="comment"># (Discord에서 생성된 프롬프트 복사 붙여넣기)</span>
-
-<span class="comment"># 3단계: 생성된 이미지로 카드 뉴스 제작</span>
-card-news-generator-v2 --bg-folder ./midjourney-images/</div>
-      </div>
-
-      <div class="scenario-box">
-        <p><strong>지원 스타일:</strong></p>
-        <ul style="color: var(--text-secondary); margin-left: 20px; line-height: 1.8;">
-          <li><strong>business:</strong> 비즈니스, 스타트업, 기업 콘텐츠</li>
-          <li><strong>illustration:</strong> 설명형 콘텐츠, 교육 자료</li>
-          <li><strong>photographic:</strong> 리얼리즘, 제품 소개</li>
-          <li><strong>abstract:</strong> 테크, AI, 추상적 개념</li>
-          <li><strong>minimal:</strong> 미니멀 디자인, 고급스러운 브랜딩</li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- 설치 위치 및 사용법 -->
-    <div class="content-section">
-      <h2>⚙️ 설치 위치</h2>
+      <h3>2. 설치 위치</h3>
       <p>모든 스킬은 다음 경로에 설치됩니다:</p>
-      <div class="code-block">~/.claude/skills/
-├── code-changelog/
+      <div style="background: #1A1A1A; color: #F5F5F3; padding: 20px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+~/.claude/skills/
+├── n8n-workflow-patterns/
 │   └── SKILL.md
-├── meta-prompt-generator/
+├── api-design-patterns/
 │   └── SKILL.md
-├── prompt-enhancer/
+├── korean-blog-seo/
 │   └── SKILL.md
-├── codex-claude-loop/
-│   └── SKILL.md
-├── codex/
-│   └── SKILL.md
-├── flutter-init/
-│   └── SKILL.md
-├── nextjs15-init/
-│   └── SKILL.md
-├── landing-page-guide/
-│   └── SKILL.md
-├── card-news-generator/
-│   └── SKILL.md
-├── card-news-generator-v2/
-│   └── SKILL.md
-└── midjourney-cardnews-bg/
-    └── SKILL.md</div>
-
-      <h3>🚀 빠른 시작</h3>
-      <div class="code-block"><span class="comment"># 코드 변경사항 문서화</span>
-code-changelog
-
-<span class="comment"># 프롬프트 개선</span>
-prompt-enhancer
-
-<span class="comment"># Next.js 프로젝트 생성</span>
-nextjs15-init
-
-<span class="comment"># 설치된 스킬 목록 확인</span>
-/skills</div>
-    </div>
-
-    <!-- 활용 시나리오 -->
-    <div class="content-section">
-      <h2>💡 주요 활용 시나리오</h2>
-
-      <div class="scenario-box">
-        <h4>시나리오 1: 완벽한 프로젝트 시작</h4>
-        <div class="code-block">1. prompt-enhancer      <span class="comment"># 요구사항 구체화</span>
-2. nextjs15-init       <span class="comment"># 프로젝트 생성</span>
-3. (개발 진행)
-4. codex-claude-loop   <span class="comment"># 코드 검증</span>
-5. code-changelog      <span class="comment"># 문서화</span></div>
+...
       </div>
 
-      <div class="scenario-box">
-        <h4>시나리오 2: 마케팅 캠페인 준비</h4>
-        <div class="code-block">1. landing-page-guide          <span class="comment"># 랜딩페이지 기획</span>
-2. midjourney-cardnews-bg      <span class="comment"># 배경 이미지 프롬프트</span>
-3. card-news-generator-v2      <span class="comment"># SNS 콘텐츠 제작</span></div>
-      </div>
-
-      <div class="scenario-box">
-        <h4>시나리오 3: 레거시 코드 개선</h4>
-        <div class="code-block">1. codex                <span class="comment"># 코드 분석</span>
-2. (리팩토링 진행)
-3. codex-claude-loop    <span class="comment"># 이중 검증</span>
-4. code-changelog       <span class="comment"># 변경사항 문서화</span></div>
-      </div>
-    </div>
-
-    <!-- GitHub 다운로드 안내 -->
-    <div class="download-section">
-      <h3>📥 GitHub에서 스킬 다운로드하기</h3>
-      <p>모든 스킬의 전체 코드와 상세 문서를 GitHub에서 확인하고 다운로드할 수 있습니다.</p>
-
-      <div class="download-steps">
-        <div class="download-step">
-          <div class="step-number">1</div>
-          <div class="step-content">
-            <h4>GitHub 저장소 방문</h4>
-            <p>아래 버튼을 클릭하여 GitHub 저장소로 이동합니다.</p>
-          </div>
-        </div>
-
-        <div class="download-step">
-          <div class="step-number">2</div>
-          <div class="step-content">
-            <h4>파일 탐색 및 복사</h4>
-            <p>각 스킬의 SKILL.md 파일을 클릭하여 내용을 확인하고, 우측 상단의 복사 버튼을 이용해 코드를 복사할 수 있습니다.</p>
-          </div>
-        </div>
-
-        <div class="download-step">
-          <div class="step-number">3</div>
-          <div class="step-content">
-            <h4>로컬에 설치</h4>
-            <p>복사한 내용을 <code>~/.claude/skills/[스킬명]/SKILL.md</code> 경로에 저장하면 Claude Code에서 바로 사용할 수 있습니다.</p>
-          </div>
-        </div>
-
-        <div class="download-step">
-          <div class="step-number">4</div>
-          <div class="step-content">
-            <h4>저장소 전체 다운로드 (선택사항)</h4>
-            <p>GitHub 저장소 페이지에서 <strong>Code</strong> 버튼 → <strong>Download ZIP</strong>을 클릭하여 모든 스킬을 한 번에 다운로드할 수 있습니다.</p>
-          </div>
-        </div>
-      </div>
-
+      <h3>3. 설치 방법</h3>
       <div class="info-box">
-        <p><strong>💡 팁:</strong> GitHub에서는 마크다운 파일이 자동으로 렌더링되어 보기 좋게 표시되며, 코드 블록에서 직접 복사하기 쉽습니다!</p>
+        <p><strong>방법 1:</strong> GitHub에서 개별 스킬의 SKILL.md 파일을 복사하여 로컬 경로에 저장</p>
+      </div>
+      <div class="info-box" style="border-left-color: var(--accent); background: rgba(124, 58, 237, 0.1);">
+        <p><strong>방법 2:</strong> 레포지토리 전체를 다운로드 (Code → Download ZIP)</p>
       </div>
 
-      <a href="https://github.com/Giwoong-ryu/n8n-copilot/tree/main/클로드_팁/스킬셋" class="github-link" target="_blank">
-        <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-        </svg>
-        GitHub에서 스킬셋 다운로드
-      </a>
+      <h3>4. 사용 예시</h3>
+      <div style="background: #1A1A1A; color: #F5F5F3; padding: 20px; border-radius: 8px; margin: 20px 0; font-family: monospace;">
+<span style="color: #6B6B6B;"># n8n 워크플로우 패턴 확인</span>
+/skill n8n-workflow-patterns
+
+<span style="color: #6B6B6B;"># 한국어 블로그 SEO 최적화</span>
+/skill korean-blog-seo
+
+<span style="color: #6B6B6B;"># Flutter 프로젝트 생성</span>
+/skill flutter-init
+      </div>
     </div>
 
-    <!-- 필수 설정 -->
+    <!-- FAQ -->
     <div class="content-section">
-      <h2>🔧 필수 설정</h2>
+      <h2>❓ 자주 묻는 질문</h2>
 
-      <h3>OpenAI API 키 (선택 사항)</h3>
-      <p><code>codex</code>, <code>codex-claude-loop</code> 스킬 사용 시 필요합니다:</p>
-      <div class="code-block">export OPENAI_API_KEY="your-api-key-here"</div>
+      <h3>Q: 모든 스킬을 다 설치해야 하나요?</h3>
+      <p><strong>A:</strong> 아니요. 필요한 스킬만 선택적으로 설치하세요. 예를 들어 n8n을 사용하지 않는다면 n8n 관련 스킬은 건너뛰어도 됩니다.</p>
 
-      <div class="info-box" style="margin-top: 20px;">
-        <p><strong>참고:</strong> OpenAI API 키가 없어도 대부분의 스킬(9개)은 정상적으로 사용할 수 있습니다.</p>
-      </div>
+      <h3>Q: Windows에서만 사용할 수 있나요?</h3>
+      <p><strong>A:</strong> 아니요. 모든 스킬은 Windows, macOS, Linux에서 동작합니다. Claude Code가 설치된 모든 환경에서 사용 가능합니다.</p>
+
+      <h3>Q: 스킬을 직접 만들 수 있나요?</h3>
+      <p><strong>A:</strong> 네! <code>meta-prompt-generator</code> 스킬을 사용하면 커스텀 스킬을 자동으로 생성할 수 있습니다.</p>
+
+      <h3>Q: 스킬이 작동하지 않아요</h3>
+      <p><strong>A:</strong> 다음을 확인하세요:</p>
+      <ul style="margin-left: 20px; color: var(--text-secondary);">
+        <li>SKILL.md 파일이 올바른 경로에 있는지 (~/.claude/skills/스킬명/SKILL.md)</li>
+        <li>파일 권한이 읽기 가능한지</li>
+        <li>Claude Code를 재시작해보세요</li>
+      </ul>
     </div>
   </div>
 
   <footer>
     <div class="container">
       <p style="font-size: 16px; margin-bottom: 16px;">
-        <a href="클로드_팁.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">← 클로드_팁으로 돌아가기</a>
+        <a href="index.html" style="color: var(--accent); text-decoration: none; font-weight: 600;">← Claude 가이드로 돌아가기</a>
       </p>
       <p style="color: var(--text-secondary); font-size: 14px;">
-        Claude Code 스킬셋 11개
+        Claude Code 스킬셋 31개
       </p>
       <p style="font-size: 14px; color: var(--text-secondary); margin-top: 16px;">
-        © 2025 N8N Copilot • Made with ❤️ for Claude Code Users
+        © 2025 Claude Code Skills •
+        <a href="https://github.com/Giwoong-ryu/my-skills" target="_blank" style="color: var(--accent); text-decoration: none;">GitHub</a>
       </p>
     </div>
   </footer>
