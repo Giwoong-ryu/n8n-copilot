@@ -89,13 +89,16 @@ class SafeSelector {
    * 단일 요소 찾기 (querySelector)
    * @param {string} type - selectors 객체의 키
    * @param {Element} parent - 검색 시작 요소 (기본: document)
+   * @param {boolean} silent - true이면 경고 메시지를 출력하지 않음
    * @returns {Element|null}
    */
-  find(type, parent = document) {
+  find(type, parent = document, silent = false) {
     const selectorList = this.selectors[type];
 
     if (!selectorList) {
-      console.warn(`⚠️ SafeSelector: Unknown type "${type}"`);
+      if (!silent) {
+        console.warn(`⚠️ SafeSelector: Unknown type "${type}"`);
+      }
       return null;
     }
 
@@ -103,15 +106,21 @@ class SafeSelector {
       try {
         const element = parent.querySelector(selector);
         if (element) {
-          console.log(`✅ SafeSelector: Found "${type}" with selector: ${selector}`);
+          if (!silent) {
+            console.log(`✅ SafeSelector: Found "${type}" with selector: ${selector}`);
+          }
           return element;
         }
       } catch (error) {
-        console.warn(`⚠️ SafeSelector: Invalid selector "${selector}":`, error.message);
+        if (!silent) {
+          console.warn(`⚠️ SafeSelector: Invalid selector "${selector}":`, error.message);
+        }
       }
     }
 
-    console.warn(`❌ SafeSelector: Could not find "${type}" with any selector`);
+    if (!silent) {
+      console.warn(`❌ SafeSelector: Could not find "${type}" with any selector`);
+    }
     return null;
   }
 
@@ -119,13 +128,16 @@ class SafeSelector {
    * 여러 요소 찾기 (querySelectorAll)
    * @param {string} type - selectors 객체의 키
    * @param {Element} parent - 검색 시작 요소 (기본: document)
+   * @param {boolean} silent - true이면 경고 메시지를 출력하지 않음
    * @returns {NodeList|Array}
    */
-  findAll(type, parent = document) {
+  findAll(type, parent = document, silent = false) {
     const selectorList = this.selectors[type];
 
     if (!selectorList) {
-      console.warn(`⚠️ SafeSelector: Unknown type "${type}"`);
+      if (!silent) {
+        console.warn(`⚠️ SafeSelector: Unknown type "${type}"`);
+      }
       return [];
     }
 
@@ -133,15 +145,21 @@ class SafeSelector {
       try {
         const elements = parent.querySelectorAll(selector);
         if (elements.length > 0) {
-          console.log(`✅ SafeSelector: Found ${elements.length} "${type}" with selector: ${selector}`);
+          if (!silent) {
+            console.log(`✅ SafeSelector: Found ${elements.length} "${type}" with selector: ${selector}`);
+          }
           return elements;
         }
       } catch (error) {
-        console.warn(`⚠️ SafeSelector: Invalid selector "${selector}":`, error.message);
+        if (!silent) {
+          console.warn(`⚠️ SafeSelector: Invalid selector "${selector}":`, error.message);
+        }
       }
     }
 
-    console.warn(`❌ SafeSelector: Could not find any "${type}" with any selector`);
+    if (!silent) {
+      console.warn(`❌ SafeSelector: Could not find any "${type}" with any selector`);
+    }
     return [];
   }
 
@@ -479,8 +497,8 @@ class N8NReader {
   detectErrors() {
     const detectedErrors = [];
 
-    // 1. 노드 실행 에러 패널에서 상세 정보 추출 (SafeSelector 사용)
-    const errorPanels = safeSelector.findAll('errorPanel');
+    // 1. 노드 실행 에러 패널에서 상세 정보 추출 (SafeSelector 사용, silent mode)
+    const errorPanels = safeSelector.findAll('errorPanel', document, true);
 
     errorPanels.forEach(panel => {
       const errorInfo = this.extractDetailedError(panel);
