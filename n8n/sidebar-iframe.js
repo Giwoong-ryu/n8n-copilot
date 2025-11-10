@@ -528,36 +528,39 @@ ${automaticIssues.length > 1 ? `\n추가로 ${automaticIssues.length - 1}개의 
     hideLoading('loading-indicator');
     hideProgress();
 
-    const { error, automaticIssues } = event.data.data;
+    const { error, errorType, recoverable, suggestedAction, automaticIssues } = event.data.data;
 
-    // 에러 메시지에서 단계 파악
-    const errorStepMap = {
-      '노드를 찾을 수 없습니다': '🔍 1단계: 노드 찾기',
-      '설정 패널을 열 수 없습니다': '📂 2단계: 설정 패널 열기',
-      '코드를 읽을 수 없습니다': '📖 3단계: 코드 읽기',
-      '코드 에디터에 적용': '✏️ 4단계: 코드 적용',
-      '검증에 실패': '✅ 5단계: 변경사항 검증'
+    // 에러 타입별 아이콘 및 단계
+    const errorTypeMap = {
+      'NodeNotFoundError': { icon: '🔍', step: '1단계: 노드 찾기', recoverable: true },
+      'PanelOpenError': { icon: '📂', step: '2단계: 설정 패널 열기', recoverable: true },
+      'CodeReadError': { icon: '📖', step: '3단계: 코드 읽기', recoverable: false },
+      'CodeApplicationError': { icon: '✏️', step: '4단계: 코드 적용', recoverable: false },
+      'CodeVerificationError': { icon: '✅', step: '5단계: 변경사항 검증', recoverable: false }
     };
 
-    let failedStep = '❓ 알 수 없는 단계';
-    for (const [keyword, stepLabel] of Object.entries(errorStepMap)) {
-      if (error.includes(keyword)) {
-        failedStep = stepLabel;
-        break;
-      }
-    }
+    const errorInfo = errorTypeMap[errorType] || { icon: '❓', step: '알 수 없는 단계', recoverable: false };
+    const recoverableText = recoverable || errorInfo.recoverable
+      ? '🔄 재시도 가능'
+      : '⚠️ 수동 개입 필요';
 
-    const errorMessage = `⚠️ **자동 수정 중 문제 발생**
+    let errorMessage = `⚠️ **자동 수정 중 문제 발생**
 
-❌ 실패 단계: ${failedStep}
+${errorInfo.icon} 실패 단계: ${errorInfo.step}
 📝 오류 내용: ${error}
+${recoverableText}
 
-📊 감지된 문제: ${automaticIssues.length}개
+📊 감지된 문제: ${automaticIssues?.length || 0}개`;
 
-💡 다음 중 하나를 시도해보세요:
+    // suggestedAction이 있으면 추가
+    if (suggestedAction) {
+      errorMessage += `\n\n💡 권장 조치:\n${suggestedAction}`;
+    } else {
+      errorMessage += `\n\n💡 다음 중 하나를 시도해보세요:
 - 수동으로 문제를 해결
 - AI에게 도움 요청
 - 워크플로우 새로고침 후 재시도`;
+    }
 
     addMessage(errorMessage, 'assistant');
     sendButton.disabled = false;

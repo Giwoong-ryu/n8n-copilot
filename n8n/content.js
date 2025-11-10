@@ -4,7 +4,159 @@
  */
 
 // ========================================
-// 0-1. 유틸리티 함수
+// 0-0. 구조화된 에러 타입
+// ========================================
+
+/**
+ * 노드를 찾을 수 없을 때 발생하는 에러
+ */
+class NodeNotFoundError extends Error {
+  constructor(nodeName, details = {}) {
+    super(`노드를 찾을 수 없습니다: ${nodeName}`);
+    this.name = 'NodeNotFoundError';
+    this.nodeName = nodeName;
+    this.details = details;
+    this.recoverable = true;
+    this.suggestedAction = '워크플로우를 새로고침하거나 노드 이름을 확인해주세요';
+  }
+}
+
+/**
+ * 설정 패널을 열 수 없을 때 발생하는 에러
+ */
+class PanelOpenError extends Error {
+  constructor(nodeName, attempts = 1) {
+    super(`설정 패널을 열 수 없습니다 (${attempts}번 시도)`);
+    this.name = 'PanelOpenError';
+    this.nodeName = nodeName;
+    this.attempts = attempts;
+    this.recoverable = true;
+    this.suggestedAction = '노드를 수동으로 더블클릭하거나 페이지를 새로고침해주세요';
+  }
+}
+
+/**
+ * 코드를 읽을 수 없을 때 발생하는 에러
+ */
+class CodeReadError extends Error {
+  constructor(nodeName, reason = '알 수 없음') {
+    super(`코드를 읽을 수 없습니다: ${nodeName} (원인: ${reason})`);
+    this.name = 'CodeReadError';
+    this.nodeName = nodeName;
+    this.reason = reason;
+    this.recoverable = false;
+    this.suggestedAction = 'Code 노드인지 확인하거나 Monaco 에디터가 로드되었는지 확인해주세요';
+  }
+}
+
+/**
+ * 코드 적용에 실패했을 때 발생하는 에러
+ */
+class CodeApplicationError extends Error {
+  constructor(nodeName, details = {}) {
+    super(`코드 적용 실패: ${nodeName}`);
+    this.name = 'CodeApplicationError';
+    this.nodeName = nodeName;
+    this.details = details;
+    this.recoverable = false;
+    this.suggestedAction = '수동으로 코드를 수정하거나 Monaco 에디터를 확인해주세요';
+  }
+}
+
+/**
+ * 코드 검증에 실패했을 때 발생하는 에러
+ */
+class CodeVerificationError extends Error {
+  constructor(nodeName, expected, actual) {
+    super(`코드 검증 실패: ${nodeName}`);
+    this.name = 'CodeVerificationError';
+    this.nodeName = nodeName;
+    this.expected = expected;
+    this.actual = actual;
+    this.recoverable = false;
+    this.suggestedAction = 'Vue reactivity 문제일 수 있습니다. 수동으로 코드를 확인해주세요';
+  }
+}
+
+/**
+ * Chrome Storage 접근 실패
+ */
+class StorageError extends Error {
+  constructor(operation, reason) {
+    super(`Storage ${operation} 실패: ${reason}`);
+    this.name = 'StorageError';
+    this.operation = operation;
+    this.reason = reason;
+    this.recoverable = true;
+    this.suggestedAction = 'Chrome 권한을 확인하거나 확장 프로그램을 다시 시작해주세요';
+  }
+}
+
+// ========================================
+// 0-1. Phase 3 상태 머신
+// ========================================
+
+/**
+ * Phase 3 자동 수정 상태 머신
+ */
+class Phase3StateMachine {
+  constructor() {
+    this.state = 'IDLE';
+    this.context = {};
+    this.states = {
+      IDLE: '대기',
+      DETECTING_PATTERN: '패턴 감지',
+      EVALUATING_CONFIDENCE: '신뢰도 평가',
+      APPLYING_AUTO_FIX: '자동 수정 적용',
+      SHOWING_UI_PATTERN: 'UI 패턴 표시',
+      FALLING_BACK_TO_GEMINI: 'AI 분석',
+      SUCCESS: '성공',
+      ERROR: '에러 발생'
+    };
+  }
+
+  /**
+   * 상태 전환
+   */
+  transition(newState, context = {}) {
+    const oldState = this.state;
+    this.state = newState;
+    this.context = { ...this.context, ...context };
+
+    console.log(`🔄 Phase 3 State: ${this.states[oldState] || oldState} → ${this.states[newState] || newState}`);
+
+    return this.state;
+  }
+
+  /**
+   * 현재 상태 확인
+   */
+  is(state) {
+    return this.state === state;
+  }
+
+  /**
+   * 초기화
+   */
+  reset() {
+    this.state = 'IDLE';
+    this.context = {};
+  }
+
+  /**
+   * 상태 정보 가져오기
+   */
+  getStateInfo() {
+    return {
+      state: this.state,
+      stateLabel: this.states[this.state],
+      context: this.context
+    };
+  }
+}
+
+// ========================================
+// 0-2. 유틸리티 함수
 // ========================================
 
 /**
@@ -1909,13 +2061,19 @@ window.addEventListener('message', async (event) => {
         console.log('🤖 AI context built:', aiContext);
 
         // ========================================
-        // Phase 3: 자동 패턴 감지 및 적용
+        // Phase 3: 자동 패턴 감지 및 적용 (상태 머신)
         // ========================================
+
+        // 상태 머신 초기화
+        const phase3SM = new Phase3StateMachine();
 
         if (automaticIssues.length > 0) {
           console.log('🔍 Detected issues, checking for fix patterns...');
 
           try {
+            // 상태: 패턴 감지 시작
+            phase3SM.transition('DETECTING_PATTERN', { automaticIssues });
+
             // 가장 심각한 이슈부터 패턴 매칭 시도
             const criticalIssue = automaticIssues[0];
             const issueNode = nodesData.nodes[criticalIssue.nodeIndex];
@@ -1940,6 +2098,9 @@ window.addEventListener('message', async (event) => {
             console.log('🎯 Pattern detection result:', detectedPatterns);
 
             if (detectedPatterns.length > 0) {
+              // 상태: 신뢰도 평가
+              phase3SM.transition('EVALUATING_CONFIDENCE', { detectedPatterns });
+
               const bestMatch = detectedPatterns[0];
               const confidence = bestMatch.confidence;
 
@@ -1950,6 +2111,9 @@ window.addEventListener('message', async (event) => {
 
               // 높은 신뢰도: 자동 적용 시도
               if (confidence >= thresholds.auto && bestMatch.pattern.autoApplicable) {
+                // 상태: 자동 수정 적용
+                phase3SM.transition('APPLYING_AUTO_FIX', { bestMatch, confidence, thresholds });
+
                 console.log(`🚀 High confidence (${confidence}% >= ${thresholds.auto}%) - attempting auto-fix...`);
 
                 // 패턴 자동 적용 (노드 열기는 applyFixPattern 내부에서 처리)
@@ -1959,6 +2123,9 @@ window.addEventListener('message', async (event) => {
                 });
 
                 if (applyResult.success) {
+                  // 상태: 성공
+                  phase3SM.transition('SUCCESS', { applyResult });
+
                   // 성공 - 사용자에게 알림
                   sendMessageToIframe({
                     type: 'workflow-auto-fixed',
@@ -1976,6 +2143,8 @@ window.addEventListener('message', async (event) => {
 
                 } else {
                   // 자동 적용 실패 - UI 표시로 폴백
+                  phase3SM.transition('SHOWING_UI_PATTERN', { reason: 'auto-fix failed' });
+
                   console.warn('⚠️ Auto-fix failed, falling back to UI suggestion');
                   sendMessageToIframe({
                     type: 'workflow-pattern-detected',
@@ -1999,6 +2168,9 @@ window.addEventListener('message', async (event) => {
 
               // 중간 신뢰도: 패턴 UI 표시
               if (confidence >= thresholds.suggest) {
+                // 상태: UI 패턴 표시
+                phase3SM.transition('SHOWING_UI_PATTERN', { bestMatch, confidence });
+
                 console.log(`💡 Medium confidence (${confidence}% >= ${thresholds.suggest}%) - showing pattern UI...`);
 
                 sendMessageToIframe({
@@ -2020,21 +2192,35 @@ window.addEventListener('message', async (event) => {
             }
 
             // 패턴 감지 실패 또는 낮은 신뢰도 - Gemini에게 물어보기
+            phase3SM.transition('FALLING_BACK_TO_GEMINI', { reason: 'low confidence or no patterns' });
             console.log('🤖 No high-confidence pattern found - asking Gemini...');
 
           } catch (error) {
+            // 상태: 에러 발생
+            phase3SM.transition('ERROR', { error });
+
             console.error('❌ Error in Phase 3 pattern detection:', error);
 
-            // 에러 발생 시 사용자에게 알림
+            // 에러 발생 시 사용자에게 알림 (구조화된 에러 정보 포함)
+            const errorData = {
+              error: error.message,
+              automaticIssues: automaticIssues
+            };
+
+            // 구조화된 에러면 추가 정보 제공
+            if (error.name && error.name.endsWith('Error')) {
+              errorData.errorType = error.name;
+              errorData.recoverable = error.recoverable || false;
+              errorData.suggestedAction = error.suggestedAction || null;
+            }
+
             sendMessageToIframe({
               type: 'workflow-pattern-error',
-              data: {
-                error: error.message,
-                automaticIssues: automaticIssues
-              }
+              data: errorData
             });
 
             // 에러 발생 시에도 Gemini로 폴백
+            phase3SM.transition('FALLING_BACK_TO_GEMINI', { reason: 'error occurred' });
             console.log('⚠️ Falling back to Gemini analysis due to error');
           }
         }
@@ -2998,6 +3184,8 @@ async function waitForPanel(maxWaitMs = 2000) {
  * @returns {Promise<Element|null>} - 열린 설정 패널 또는 null
  */
 async function openNodeWithRetry(nodeName, maxRetries = 3) {
+  let lastError = null;
+
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
       console.log(`🔄 Attempt ${attempt + 1}/${maxRetries} to open node: ${nodeName}`);
@@ -3005,7 +3193,7 @@ async function openNodeWithRetry(nodeName, maxRetries = 3) {
       // 노드 찾기
       const nodeElement = findNodeElementByName(nodeName);
       if (!nodeElement) {
-        throw new Error(`노드를 찾을 수 없습니다: ${nodeName}`);
+        throw new NodeNotFoundError(nodeName, { attempt: attempt + 1 });
       }
 
       // 노드 클릭
@@ -3020,14 +3208,24 @@ async function openNodeWithRetry(nodeName, maxRetries = 3) {
       }
 
       // 패널이 안 열렸으면 다음 시도로
-      throw new Error('설정 패널을 열 수 없습니다');
+      throw new PanelOpenError(nodeName, attempt + 1);
 
     } catch (error) {
       console.warn(`⚠️ Attempt ${attempt + 1} failed:`, error.message);
+      lastError = error;
 
       // 마지막 시도였으면 에러를 throw
       if (attempt === maxRetries - 1) {
-        throw new Error(`${maxRetries}번 시도 후 실패: ${error.message}`);
+        // PanelOpenError면 attempts 업데이트
+        if (error instanceof PanelOpenError) {
+          error.attempts = maxRetries;
+        }
+        throw error;
+      }
+
+      // NodeNotFoundError는 재시도해도 소용없음
+      if (error instanceof NodeNotFoundError) {
+        throw error;
       }
 
       // 재시도 전 대기 (지수 백오프: 500ms, 1s, 2s)
@@ -3037,7 +3235,7 @@ async function openNodeWithRetry(nodeName, maxRetries = 3) {
     }
   }
 
-  throw new Error('Failed to open node after all retries');
+  throw lastError || new PanelOpenError(nodeName, maxRetries);
 }
 
 async function analyzeErrorsWithCode() {

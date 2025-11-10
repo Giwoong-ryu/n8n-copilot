@@ -81,12 +81,20 @@ async function applyCodeFix(pattern, options) {
   try {
     const panel = await window.openNodeWithRetry(nodeName, 3);
     if (!panel) {
-      return {
-        success: false,
-        message: '설정 패널을 열 수 없습니다. 노드를 수동으로 열어주세요.'
-      };
+      throw new PanelOpenError(nodeName, 3);
     }
   } catch (error) {
+    // 구조화된 에러면 추가 정보 제공
+    if (error instanceof NodeNotFoundError || error instanceof PanelOpenError) {
+      return {
+        success: false,
+        message: error.message,
+        errorType: error.name,
+        recoverable: error.recoverable,
+        suggestedAction: error.suggestedAction
+      };
+    }
+
     return {
       success: false,
       message: `노드 열기 실패: ${error.message}`
@@ -98,9 +106,13 @@ async function applyCodeFix(pattern, options) {
   let code = currentCode || reader.getCodeFromNode(nodeName);
 
   if (!code) {
+    const error = new CodeReadError(nodeName, 'Monaco 에디터를 찾을 수 없거나 Code 노드가 아닙니다');
     return {
       success: false,
-      message: '코드를 읽을 수 없습니다. Code 노드인지 확인하세요.'
+      message: error.message,
+      errorType: error.name,
+      recoverable: error.recoverable,
+      suggestedAction: error.suggestedAction
     };
   }
 
@@ -142,9 +154,13 @@ async function applyCodeFix(pattern, options) {
   const applied = await applyCodeToEditor(modifiedCode);
 
   if (!applied) {
+    const error = new CodeApplicationError(nodeName, { reason: 'Monaco 에디터 접근 실패' });
     return {
       success: false,
-      message: '코드 에디터에 적용하는데 실패했습니다.'
+      message: error.message,
+      errorType: error.name,
+      recoverable: error.recoverable,
+      suggestedAction: error.suggestedAction
     };
   }
 
@@ -165,12 +181,20 @@ async function applyCodeFix(pattern, options) {
     };
   } else {
     console.error('❌ Code verification failed - changes not detected in editor');
+    const error = new CodeVerificationError(
+      nodeName,
+      autoFix.replaceWith,
+      actualCode ? actualCode.substring(0, 100) + '...' : 'null'
+    );
     return {
       success: false,
-      message: '코드 적용은 성공했지만 검증에 실패했습니다. Monaco 에디터 문제일 수 있습니다.',
+      message: error.message,
+      errorType: error.name,
+      recoverable: error.recoverable,
+      suggestedAction: error.suggestedAction,
       appliedButNotVerified: true,
-      expected: autoFix.replaceWith,
-      actual: actualCode ? actualCode.substring(0, 100) + '...' : 'null'
+      expected: error.expected,
+      actual: error.actual
     };
   }
 }
