@@ -1845,7 +1845,103 @@ window.addEventListener('message', async (event) => {
         console.log('🤖 AI context built:', aiContext);
 
         // ========================================
-        // 사용자 메시지 생성 (개선된 버전)
+        // Phase 3: 자동 패턴 감지 및 적용
+        // ========================================
+
+        if (automaticIssues.length > 0) {
+          console.log('🔍 Detected issues, checking for fix patterns...');
+
+          // 가장 심각한 이슈부터 패턴 매칭 시도
+          const criticalIssue = automaticIssues[0];
+          const issueNode = nodesData.nodes[criticalIssue.nodeIndex];
+
+          // 패턴 감지 컨텍스트 구축
+          const patternContext = {
+            error: criticalIssue.description,
+            currentNode: {
+              type: issueNode.type,
+              name: issueNode.name
+            },
+            code: criticalIssue.codeSnippet || '',
+            executionData: {
+              input: issueNode.inputData,
+              output: issueNode.outputData
+            }
+          };
+
+          // 로컬 패턴 감지 (0 tokens)
+          const detectedPatterns = detectRelevantPatterns(patternContext);
+          console.log('🎯 Pattern detection result:', detectedPatterns);
+
+          if (detectedPatterns.length > 0) {
+            const bestMatch = detectedPatterns[0];
+            const confidence = bestMatch.confidence;
+
+            console.log(`✨ Best pattern match: ${bestMatch.patternId} (confidence: ${confidence})`);
+
+            // 높은 신뢰도 (80% 이상): 자동 적용 시도
+            if (confidence >= 80 && bestMatch.pattern.autoApplicable) {
+              console.log('🚀 High confidence - attempting auto-fix...');
+
+              // 에러가 있는 노드 자동으로 열기
+              const errorNodeElement = findNodeElementByName(issueNode.name);
+              if (errorNodeElement) {
+                errorNodeElement.click();
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 패널이 열릴 때까지 대기
+              }
+
+              // 패턴 자동 적용
+              const applyResult = await applyFixPattern(bestMatch.patternId, {
+                autoApply: true,
+                nodeName: issueNode.name
+              });
+
+              if (applyResult.success) {
+                // 성공 - 사용자에게 알림
+                sendMessageToIframe({
+                  type: 'workflow-auto-fixed',
+                  data: {
+                    patternId: bestMatch.patternId,
+                    nodeName: issueNode.name,
+                    confidence: confidence,
+                    result: applyResult
+                  }
+                });
+
+                currentAnalysisTask = null;
+                window.currentAnalysisTask = null;
+                return;
+              }
+            }
+
+            // 중간 신뢰도 (50-80%): 패턴 UI 표시
+            if (confidence >= 50) {
+              console.log('💡 Medium confidence - showing pattern UI...');
+
+              sendMessageToIframe({
+                type: 'workflow-pattern-detected',
+                data: {
+                  patternId: bestMatch.patternId,
+                  pattern: bestMatch.pattern,
+                  confidence: confidence,
+                  nodeName: issueNode.name,
+                  issueDescription: criticalIssue.description,
+                  automaticIssues: automaticIssues
+                }
+              });
+
+              currentAnalysisTask = null;
+              window.currentAnalysisTask = null;
+              return;
+            }
+          }
+
+          // 패턴 감지 실패 또는 낮은 신뢰도 - Gemini에게 물어보기
+          console.log('🤖 No high-confidence pattern found - asking Gemini...');
+        }
+
+        // ========================================
+        // 사용자 메시지 생성 (기존 방식)
         // ========================================
         let userMessage = '';
 
@@ -1920,7 +2016,7 @@ window.addEventListener('message', async (event) => {
           userMessage = '✅ 워크플로우 분석 완료: 문제 없음';
         }
 
-        // iframe으로 결과 전송
+        // iframe으로 결과 전송 (Gemini API 호출 포함)
         sendMessageToIframe({
           type: 'workflow-analysis-result',
           data: {

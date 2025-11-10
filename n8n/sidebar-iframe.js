@@ -465,6 +465,64 @@ window.addEventListener('message', (event) => {
     addMessage('🛑 워크플로우 분석이 취소되었습니다.', 'assistant');
     sendButton.disabled = false;
 
+  } else if (event.data.type === 'workflow-auto-fixed') {
+    // Phase 3: 높은 신뢰도 패턴 자동 적용 완료
+    hideLoading('loading-indicator');
+    hideProgress();
+
+    const { patternId, nodeName, confidence, result } = event.data.data;
+    const pattern = window.FIX_PATTERNS?.[patternId];
+
+    const successMessage = `🎉 **자동 수정 완료!**
+
+✨ 패턴 감지: **${pattern?.title || patternId}** (신뢰도: ${confidence}%)
+📍 수정된 노드: **${nodeName}**
+✅ 변경 사항: ${result.changeCount || 1}개
+
+**수정 전:**
+\`\`\`
+${pattern?.before || ''}
+\`\`\`
+
+**수정 후:**
+\`\`\`
+${pattern?.after || ''}
+\`\`\`
+
+💾 저장 후 워크플로우를 다시 실행해보세요!`;
+
+    addMessage(successMessage, 'assistant');
+    sendButton.disabled = false;
+
+  } else if (event.data.type === 'workflow-pattern-detected') {
+    // Phase 3: 중간 신뢰도 패턴 감지 - 사용자 확인 필요
+    hideLoading('loading-indicator');
+    hideProgress();
+
+    const { patternId, pattern, confidence, nodeName, issueDescription, automaticIssues } = event.data.data;
+
+    const detectionMessage = `🔍 **문제 감지 완료**
+
+📍 문제 노드: **${nodeName}**
+⚠️ 발견된 문제: ${issueDescription}
+
+💡 해결 패턴 발견: **${pattern.title}** (신뢰도: ${confidence}%)
+
+${automaticIssues.length > 1 ? `\n추가로 ${automaticIssues.length - 1}개의 문제가 더 발견되었습니다.\n` : ''}`;
+
+    addMessage(detectionMessage, 'assistant');
+
+    // 패턴 UI 표시 (기존 displayPatternMessage 재사용)
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message assistant-message pattern-message';
+    displayPatternMessage('', patternId, messageDiv);
+
+    const messagesContainer = document.getElementById('messages');
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    sendButton.disabled = false;
+
   } else if (event.data.type === 'workflow-analysis-result') {
     // 워크플로우 분석 결과 처리 - AI에게 직접 전송
     hideLoading('loading-indicator');
