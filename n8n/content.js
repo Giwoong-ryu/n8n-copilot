@@ -4,7 +4,52 @@
  */
 
 // ========================================
-// 0. SafeSelector - N8N 버전 변경에 안전한 셀렉터 시스템
+// 0-1. 유틸리티 함수
+// ========================================
+
+/**
+ * 대기 함수 (Promise 기반)
+ * @param {number} ms - 대기 시간 (밀리초)
+ */
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Debounce 함수
+ * @param {Function} func - 실행할 함수
+ * @param {number} wait - 대기 시간 (밀리초)
+ */
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+/**
+ * 신뢰도 임계값 설정 가져오기
+ */
+async function getConfidenceThresholds() {
+  try {
+    const result = await chrome.storage.local.get('confidenceThresholds');
+    return result.confidenceThresholds || {
+      auto: 80,      // 자동 적용
+      suggest: 50    // UI 표시
+    };
+  } catch (error) {
+    console.error('❌ Failed to load confidence thresholds:', error);
+    return { auto: 80, suggest: 50 };
+  }
+}
+
+// ========================================
+// 0-2. SafeSelector - N8N 버전 변경에 안전한 셀렉터 시스템
 // ========================================
 
 /**
@@ -830,7 +875,7 @@ class N8NReader {
         console.warn(`⚠️ Panel failed to open for node: ${nodeName} (skipping)`);
         // 패널 닫기 시도
         document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await sleep(200);
         continue;
       }
 
@@ -850,7 +895,7 @@ class N8NReader {
 
       // ESC 키로 패널 닫기
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await sleep(200);
     }
 
     const status = window.currentAnalysisTask && window.currentAnalysisTask.isCancelled() ? 'cancelled' : 'complete';
@@ -1845,7 +1890,156 @@ window.addEventListener('message', async (event) => {
         console.log('🤖 AI context built:', aiContext);
 
         // ========================================
-        // 사용자 메시지 생성 (개선된 버전)
+        // Phase 3: 자동 패턴 감지 및 적용
+        // ========================================
+
+        if (automaticIssues.length > 0) {
+          console.log('🔍 Detected issues, checking for fix patterns...');
+
+          try {
+            // 가장 심각한 이슈부터 패턴 매칭 시도
+            const criticalIssue = automaticIssues[0];
+            const issueNode = nodesData.nodes[criticalIssue.nodeIndex];
+
+            // 패턴 감지 컨텍스트 구축
+            const patternContext = {
+              error: criticalIssue.description,
+              currentNode: {
+                type: issueNode.type,
+                name: issueNode.name
+              },
+              code: criticalIssue.codeSnippet || '',
+              executionData: {
+                input: issueNode.inputData,
+                output: issueNode.outputData
+              }
+            };
+
+            // 로컬 패턴 감지 (0 tokens)
+            const detectedPatterns = detectRelevantPatterns(patternContext);
+            console.log('🎯 Pattern detection result:', detectedPatterns);
+
+            if (detectedPatterns.length > 0) {
+              const bestMatch = detectedPatterns[0];
+              const confidence = bestMatch.confidence;
+
+              console.log(`✨ Best pattern match: ${bestMatch.patternId} (confidence: ${confidence})`);
+
+              // 사용자 설정 신뢰도 임계값 가져오기
+              const thresholds = await getConfidenceThresholds();
+
+              // 높은 신뢰도: 자동 적용 시도
+              if (confidence >= thresholds.auto && bestMatch.pattern.autoApplicable) {
+                console.log(`🚀 High confidence (${confidence}% >= ${thresholds.auto}%) - attempting auto-fix...`);
+
+                // 에러가 있는 노드 자동으로 열기
+                const errorNodeElement = findNodeElementByName(issueNode.name);
+                if (!errorNodeElement) {
+                  console.error('❌ Failed to find error node element:', issueNode.name);
+                  throw new Error(`노드를 찾을 수 없습니다: ${issueNode.name}`);
+                }
+
+                errorNodeElement.click();
+                await sleep(1000); // 패널이 열릴 때까지 대기
+
+                // 설정 패널이 열렸는지 확인
+                const settingsPanel = safeSelector.find('settingsPanel', document, true);
+                if (!settingsPanel) {
+                  console.error('❌ Settings panel not opened after clicking node');
+                  throw new Error('설정 패널을 열 수 없습니다');
+                }
+
+                console.log('✅ Settings panel opened successfully');
+
+                // 패턴 자동 적용
+                const applyResult = await applyFixPattern(bestMatch.patternId, {
+                  autoApply: true,
+                  nodeName: issueNode.name
+                });
+
+                if (applyResult.success) {
+                  // 성공 - 사용자에게 알림
+                  sendMessageToIframe({
+                    type: 'workflow-auto-fixed',
+                    data: {
+                      patternId: bestMatch.patternId,
+                      nodeName: issueNode.name,
+                      confidence: confidence,
+                      result: applyResult
+                    }
+                  });
+
+                  currentAnalysisTask = null;
+                  window.currentAnalysisTask = null;
+                  return;
+
+                } else {
+                  // 자동 적용 실패 - UI 표시로 폴백
+                  console.warn('⚠️ Auto-fix failed, falling back to UI suggestion');
+                  sendMessageToIframe({
+                    type: 'workflow-pattern-detected',
+                    data: {
+                      patternId: bestMatch.patternId,
+                      pattern: bestMatch.pattern,
+                      confidence: confidence,
+                      nodeName: issueNode.name,
+                      issueDescription: criticalIssue.description,
+                      automaticIssues: automaticIssues,
+                      autoFixFailed: true,
+                      failureReason: applyResult.message || '알 수 없는 오류'
+                    }
+                  });
+
+                  currentAnalysisTask = null;
+                  window.currentAnalysisTask = null;
+                  return;
+                }
+              }
+
+              // 중간 신뢰도: 패턴 UI 표시
+              if (confidence >= thresholds.suggest) {
+                console.log(`💡 Medium confidence (${confidence}% >= ${thresholds.suggest}%) - showing pattern UI...`);
+
+                sendMessageToIframe({
+                  type: 'workflow-pattern-detected',
+                  data: {
+                    patternId: bestMatch.patternId,
+                    pattern: bestMatch.pattern,
+                    confidence: confidence,
+                    nodeName: issueNode.name,
+                    issueDescription: criticalIssue.description,
+                    automaticIssues: automaticIssues
+                  }
+                });
+
+                currentAnalysisTask = null;
+                window.currentAnalysisTask = null;
+                return;
+              }
+            }
+
+            // 패턴 감지 실패 또는 낮은 신뢰도 - Gemini에게 물어보기
+            console.log('🤖 No high-confidence pattern found - asking Gemini...');
+
+          } catch (error) {
+            console.error('❌ Error in Phase 3 pattern detection:', error);
+
+            // 에러 발생 시 사용자에게 알림
+            sendMessageToIframe({
+              type: 'workflow-pattern-error',
+              data: {
+                error: error.message,
+                automaticIssues: automaticIssues
+              }
+            });
+
+            // 에러 발생 시에도 Gemini로 폴백
+            console.log('⚠️ Falling back to Gemini analysis due to error');
+          }
+        }
+
+        // ========================================
+        // 사용자 메시지 생성 (기존 방식)
         // ========================================
         let userMessage = '';
 
@@ -1920,7 +2114,7 @@ window.addEventListener('message', async (event) => {
           userMessage = '✅ 워크플로우 분석 완료: 문제 없음';
         }
 
-        // iframe으로 결과 전송
+        // iframe으로 결과 전송 (Gemini API 호출 포함)
         sendMessageToIframe({
           type: 'workflow-analysis-result',
           data: {
@@ -2616,7 +2810,7 @@ function autoFillNodeFields(jsonData) {
 }
 
 // 메시지 리스너: iframe에서 자동 입력 요청 받기
-window.addEventListener('message', (event) => {
+window.addEventListener('message', async (event) => {
   if (event.data.type === 'auto-fill-node') {
     console.log('📥 Auto-fill request received from iframe');
 
@@ -2627,6 +2821,73 @@ window.addEventListener('message', (event) => {
       type: 'auto-fill-result',
       ...result
     });
+  }
+
+  // 패턴 자동 적용 요청
+  if (event.data.type === 'apply-pattern') {
+    console.log('🔧 Pattern apply request received from iframe:', event.data.patternId);
+
+    const { patternId, autoApply } = event.data;
+
+    // applyFixPattern 함수 호출
+    const result = await applyFixPattern(patternId, {
+      autoApply: autoApply
+    });
+
+    // 결과를 iframe에 전송
+    sendMessageToIframe({
+      type: 'pattern-apply-result',
+      ...result
+    });
+  }
+
+  // 실시간 가이드 시작 요청
+  if (event.data.type === 'start-realtime-guide') {
+    console.log('🚀 Real-time guide start request received:', event.data.patternId);
+
+    const { patternId } = event.data;
+    const pattern = getPattern(patternId);
+
+    if (!pattern) {
+      console.error('❌ Pattern not found:', patternId);
+      return;
+    }
+
+    // RealTimeGuide 시작
+    window.realTimeGuide.start(pattern, {
+      onStepCompleted: (stepIndex, step) => {
+        console.log(`✅ Step ${stepIndex} completed:`, step.description);
+
+        // iframe에 단계 완료 알림
+        sendMessageToIframe({
+          type: 'realtime-guide-step-completed',
+          patternId: patternId,
+          stepIndex: stepIndex
+        });
+      },
+
+      onAllCompleted: () => {
+        console.log('🎉 All steps completed!');
+
+        // iframe에 전체 완료 알림
+        sendMessageToIframe({
+          type: 'realtime-guide-all-completed',
+          patternId: patternId
+        });
+      }
+    });
+  }
+
+  // 수동 단계 완료 요청
+  if (event.data.type === 'manual-step-complete') {
+    console.log('✓ Manual step complete request:', event.data);
+
+    const { patternId, stepIndex } = event.data;
+
+    // RealTimeGuide에 수동 완료 알림
+    if (window.realTimeGuide.isActive) {
+      window.realTimeGuide.forceNextStep();
+    }
   }
 });
 
@@ -2722,7 +2983,7 @@ async function waitForPanel(maxWaitMs = 2000) {
     }
 
     // 100ms 대기
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await sleep(100);
   }
 
   console.warn('⚠️ Panel wait timeout');
@@ -2861,7 +3122,7 @@ async function analyzeErrorsWithCode() {
 
           // 패널 닫기 (ESC)
           document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-          await new Promise(resolve => setTimeout(resolve, 200));
+          await sleep(200);
 
         } catch (err) {
           console.error(`❌ Error processing node ${errorDetail.nodeName}:`, err);

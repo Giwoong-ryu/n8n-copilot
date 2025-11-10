@@ -397,6 +397,370 @@
     .scrollbar-thin::-webkit-scrollbar-thumb:hover {
       background: #9ca3af;
     }
+
+    /* 패턴 메시지 스타일 */
+    .pattern-message {
+      width: 100%;
+    }
+
+    .pattern-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #667eea;
+    }
+
+    .pattern-header h3 {
+      margin: 0;
+      color: #667eea;
+      font-size: 16px;
+    }
+
+    .pattern-severity {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .pattern-severity.critical {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .pattern-severity.high {
+      background: #fed7aa;
+      color: #9a3412;
+    }
+
+    .pattern-severity.medium {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .pattern-description {
+      margin: 12px 0;
+      padding: 12px;
+      background: rgba(102, 126, 234, 0.1);
+      border-left: 3px solid #667eea;
+      border-radius: 4px;
+    }
+
+    .ai-explanation {
+      margin: 12px 0;
+      font-style: italic;
+      color: #4b5563;
+    }
+
+    .pattern-examples {
+      margin: 16px 0;
+    }
+
+    .before-after {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .code-section {
+      flex: 1;
+    }
+
+    .code-label {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .code-section.before .code-label {
+      color: #ef4444;
+    }
+
+    .code-section.after .code-label {
+      color: #10b981;
+    }
+
+    .code-section pre {
+      margin: 0;
+      font-size: 12px;
+      background: #1f2937;
+      color: #f3f4f6;
+      padding: 8px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+
+    .arrow {
+      font-size: 24px;
+      color: #667eea;
+      font-weight: bold;
+      flex-shrink: 0;
+    }
+
+    .pattern-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .pattern-btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pattern-btn.auto-apply {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+    }
+
+    .pattern-btn.auto-apply:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .pattern-btn.show-steps {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .pattern-btn.show-steps:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .pattern-btn.show-explanation {
+      background: white;
+      border: 1px solid #d1d5db;
+      color: #4b5563;
+    }
+
+    .pattern-btn.show-explanation:hover {
+      background: #f3f4f6;
+      border-color: #667eea;
+      color: #667eea;
+    }
+
+    .pattern-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* 인터랙티브 체크리스트 스타일 */
+    .interactive-checklist {
+      width: 100%;
+      padding: 16px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .checklist-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #667eea;
+    }
+
+    .checklist-header h3 {
+      margin: 0;
+      font-size: 16px;
+      color: #667eea;
+    }
+
+    .checklist-btn {
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .checklist-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .checklist-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .checklist-progress {
+      margin-bottom: 20px;
+    }
+
+    .checklist-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .checklist-step {
+      padding: 12px;
+      background: white;
+      border-radius: 8px;
+      border: 2px solid #e5e7eb;
+      transition: all 0.3s;
+    }
+
+    .checklist-step.active {
+      border-color: #667eea;
+      background: #f0f4ff;
+      box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+    }
+
+    .checklist-step.completed {
+      border-color: #10b981;
+      background: #f0fdf4;
+      opacity: 0.8;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .step-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: #667eea;
+    }
+
+    .step-checkbox:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .step-number {
+      font-weight: 600;
+      color: #667eea;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .step-status {
+      margin-left: auto;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .step-status[data-status="pending"] {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .step-status[data-status="in-progress"] {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .step-status[data-status="completed"] {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .step-content {
+      padding: 8px 28px;
+    }
+
+    .step-description {
+      margin: 0 0 8px 0;
+      color: #374151;
+      line-height: 1.5;
+    }
+
+    .step-example {
+      margin-top: 8px;
+      padding: 8px;
+      background: #f9fafb;
+      border-left: 3px solid #667eea;
+      border-radius: 4px;
+    }
+
+    .step-example code {
+      font-size: 12px;
+      color: #667eea;
+    }
+
+    .step-code-change {
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12px;
+    }
+
+    .code-before {
+      color: #ef4444;
+    }
+
+    .code-after {
+      color: #10b981;
+    }
+
+    .step-actions {
+      padding: 8px 28px 0 28px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .step-btn {
+      padding: 6px 12px;
+      background: #10b981;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .step-btn:hover:not(:disabled) {
+      background: #059669;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .step-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #d1d5db;
+      color: #6b7280;
+    }
+
+    .checklist-footer {
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .checklist-note {
+      margin: 0;
+      font-size: 13px;
+      color: #6b7280;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body>
@@ -432,6 +796,7 @@
   </div>
   
   <!-- 마크다운 파싱은 sidebar-iframe.js에서 직접 처리 -->
+  <script src="n8n-fix-patterns.js"></script>
   <script src="sidebar-iframe.js"></script>
 </body>
 </html>

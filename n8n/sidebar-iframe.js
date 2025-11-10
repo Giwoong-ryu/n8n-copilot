@@ -113,8 +113,24 @@ function addMessage(text, type = 'assistant') {
 
   // assistant 메시지는 마크다운을 HTML로 변환
   if (type === 'assistant') {
+    // PATTERN_ID 감지 및 처리
+    const patternMatch = text.match(/PATTERN_ID:\s*(\w+)/);
+
+    if (patternMatch) {
+      const patternId = patternMatch[1];
+      console.log('🔍 Pattern detected:', patternId);
+
+      // 패턴 정보 표시 (특별한 UI)
+      displayPatternMessage(text, patternId, messageDiv);
+    } else {
+      // 일반 메시지 처리
+      messageDiv.innerHTML = parseMarkdown(text);
+    }
+
     // 내장 마크다운 파서 사용
-    messageDiv.innerHTML = parseMarkdown(text);
+    if (!patternMatch) {
+      messageDiv.innerHTML = parseMarkdown(text);
+    }
 
     // 단계 버튼에 이벤트 리스너 추가
     setTimeout(() => {
@@ -449,6 +465,82 @@ window.addEventListener('message', (event) => {
     addMessage('🛑 워크플로우 분석이 취소되었습니다.', 'assistant');
     sendButton.disabled = false;
 
+  } else if (event.data.type === 'workflow-auto-fixed') {
+    // Phase 3: 높은 신뢰도 패턴 자동 적용 완료
+    hideLoading('loading-indicator');
+    hideProgress();
+
+    const { patternId, nodeName, confidence, result } = event.data.data;
+    const pattern = window.FIX_PATTERNS?.[patternId];
+
+    const successMessage = `🎉 **자동 수정 완료!**
+
+✨ 패턴 감지: **${pattern?.title || patternId}** (신뢰도: ${confidence}%)
+📍 수정된 노드: **${nodeName}**
+✅ 변경 사항: ${result.changeCount || 1}개
+
+**수정 전:**
+\`\`\`
+${pattern?.before || ''}
+\`\`\`
+
+**수정 후:**
+\`\`\`
+${pattern?.after || ''}
+\`\`\`
+
+💾 저장 후 워크플로우를 다시 실행해보세요!`;
+
+    addMessage(successMessage, 'assistant');
+    sendButton.disabled = false;
+
+  } else if (event.data.type === 'workflow-pattern-detected') {
+    // Phase 3: 중간 신뢰도 패턴 감지 - 사용자 확인 필요
+    hideLoading('loading-indicator');
+    hideProgress();
+
+    const { patternId, pattern, confidence, nodeName, issueDescription, automaticIssues } = event.data.data;
+
+    const detectionMessage = `🔍 **문제 감지 완료**
+
+📍 문제 노드: **${nodeName}**
+⚠️ 발견된 문제: ${issueDescription}
+
+💡 해결 패턴 발견: **${pattern.title}** (신뢰도: ${confidence}%)
+
+${automaticIssues.length > 1 ? `\n추가로 ${automaticIssues.length - 1}개의 문제가 더 발견되었습니다.\n` : ''}`;
+
+    addMessage(detectionMessage, 'assistant');
+
+    // 패턴 UI 표시 (기존 displayPatternMessage 재사용)
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message assistant-message pattern-message';
+    displayPatternMessage('', patternId, messageDiv);
+
+    const messagesContainer = document.getElementById('messages');
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    sendButton.disabled = false;
+
+  } else if (event.data.type === 'workflow-pattern-error') {
+    // Phase 3: 패턴 감지/적용 중 에러 발생
+    hideLoading('loading-indicator');
+    hideProgress();
+
+    const { error, automaticIssues } = event.data.data;
+
+    const errorMessage = `⚠️ **자동 수정 중 문제 발생**
+
+❌ 오류: ${error}
+
+📊 감지된 문제: ${automaticIssues.length}개
+
+AI에게 도움을 요청하거나 수동으로 문제를 해결해주세요.`;
+
+    addMessage(errorMessage, 'assistant');
+    sendButton.disabled = false;
+
   } else if (event.data.type === 'workflow-analysis-result') {
     // 워크플로우 분석 결과 처리 - AI에게 직접 전송
     hideLoading('loading-indicator');
@@ -488,6 +580,75 @@ window.addEventListener('message', (event) => {
       }
     });
 
+  } else if (event.data.type === 'pattern-apply-result') {
+    // 패턴 적용 결과 처리
+    console.log('🔧 Pattern apply result:', event.data);
+
+    // 버튼 복구
+    const autoApplyButtons = document.querySelectorAll('.auto-apply');
+    autoApplyButtons.forEach(btn => {
+      btn.disabled = false;
+      btn.textContent = '⚡ 자동으로 적용하기';
+    });
+
+    if (event.data.success) {
+      // 성공 메시지
+      addMessage(`✅ ${event.data.message}
+
+**수정 내용:**
+- 변경된 곳: ${event.data.changeCount}개
+
+저장하고 워크플로우를 다시 실행해보세요!`, 'assistant');
+    } else if (event.data.requiresManual) {
+      // 수동 적용 필요
+      addMessage(`⚠️ ${event.data.message}
+
+이 패턴은 수동으로 적용해야 합니다.`, 'assistant');
+
+      // 수동 단계 표시
+      if (event.data.pattern) {
+        displayManualSteps(event.data.pattern);
+      }
+    } else if (event.data.requiresConfirmation) {
+      // 확인 필요
+      addMessage(`⚠️ ${event.data.message}
+
+**수정 전:**
+\`\`\`
+${event.data.before}
+\`\`\`
+
+**수정 후:**
+\`\`\`
+${event.data.after}
+\`\`\`
+
+변경 사항을 확인하고 "⚡ 자동으로 적용하기" 버튼을 다시 클릭하세요.`, 'assistant');
+    } else {
+      // 에러
+      addMessage(`❌ ${event.data.message}`, 'error');
+    }
+
+  } else if (event.data.type === 'realtime-guide-step-completed') {
+    // 실시간 가이드 단계 완료
+    console.log('✅ Real-time guide step completed:', event.data);
+
+    const { patternId, stepIndex } = event.data;
+
+    // 체크리스트 메시지 찾기
+    const checklistMessages = document.querySelectorAll('.checklist-message');
+    const latestChecklist = checklistMessages[checklistMessages.length - 1];
+
+    if (latestChecklist) {
+      completeStep(latestChecklist, stepIndex, { id: patternId, manualSteps: [] });
+    }
+
+  } else if (event.data.type === 'realtime-guide-all-completed') {
+    // 실시간 가이드 전체 완료
+    console.log('🎉 Real-time guide all completed:', event.data);
+
+    addMessage('🎉 실시간 가이드를 통해 모든 단계를 완료했습니다! 워크플로우를 저장하고 다시 실행해보세요.', 'assistant');
+
   } else if (event.data.type === 'error') {
     hideLoading('loading-indicator');
 
@@ -526,5 +687,353 @@ function displayPageAnalysis(data) {
 
   addMessage(message, 'assistant');
 }
+
+
+// ========================================
+// 패턴 기반 UI 표시
+// ========================================
+
+/**
+ * 패턴 메시지를 특별한 UI로 표시
+ */
+function displayPatternMessage(text, patternId, messageDiv) {
+  console.log('🎨 Displaying pattern UI for:', patternId);
+
+  // 패턴 정보 가져오기
+  const pattern = getPattern(patternId);
+
+  if (!pattern) {
+    // 패턴을 찾을 수 없으면 일반 메시지로 표시
+    messageDiv.innerHTML = parseMarkdown(text);
+    return;
+  }
+
+  // PATTERN_ID 줄 제거
+  const cleanText = text.replace(/PATTERN_ID:\s*\w+\s*\n?/, '').trim();
+
+  // 패턴 UI 생성
+  const patternHTML = `
+    <div class="pattern-message">
+      <div class="pattern-header">
+        <h3>🔧 ${pattern.title}</h3>
+        <span class="pattern-severity ${pattern.severity}">${pattern.severity}</span>
+      </div>
+
+      <div class="pattern-description">
+        ${parseMarkdown(pattern.description)}
+      </div>
+
+      ${cleanText ? `<div class="ai-explanation">${parseMarkdown(cleanText)}</div>` : ''}
+
+      <div class="pattern-examples">
+        <div class="before-after">
+          <div class="code-section before">
+            <div class="code-label">❌ Before</div>
+            <pre><code>${escapeHtml(pattern.before)}</code></pre>
+          </div>
+          <div class="arrow">→</div>
+          <div class="code-section after">
+            <div class="code-label">✅ After</div>
+            <pre><code>${escapeHtml(pattern.after)}</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="pattern-actions">
+        ${pattern.autoApplicable ? `
+          <button class="pattern-btn auto-apply" data-pattern-id="${pattern.id}">
+            ⚡ 자동으로 적용하기
+          </button>
+        ` : ''}
+        <button class="pattern-btn show-steps" data-pattern-id="${pattern.id}">
+          📋 수동 단계 보기
+        </button>
+        <button class="pattern-btn show-explanation" data-pattern-id="${pattern.id}">
+          💡 자세한 설명
+        </button>
+      </div>
+    </div>
+  `;
+
+  messageDiv.innerHTML = patternHTML;
+
+  // 버튼 이벤트 리스너 추가
+  setTimeout(() => {
+    // 자동 적용 버튼
+    const autoApplyBtn = messageDiv.querySelector('.auto-apply');
+    if (autoApplyBtn) {
+      autoApplyBtn.addEventListener('click', () => {
+        console.log('⚡ Auto-apply clicked:', patternId);
+        autoApplyBtn.textContent = '⏳ 적용 중...';
+        autoApplyBtn.disabled = true;
+
+        // parent window(content.js)로 자동 적용 요청
+        window.parent.postMessage({
+          type: 'apply-pattern',
+          patternId: patternId,
+          autoApply: true
+        }, '*');
+      });
+    }
+
+    // 수동 단계 보기 버튼
+    const showStepsBtn = messageDiv.querySelector('.show-steps');
+    if (showStepsBtn) {
+      showStepsBtn.addEventListener('click', () => {
+        console.log('📋 Show steps clicked:', patternId);
+        displayManualSteps(pattern);
+      });
+    }
+
+    // 자세한 설명 버튼
+    const showExplanationBtn = messageDiv.querySelector('.show-explanation');
+    if (showExplanationBtn) {
+      showExplanationBtn.addEventListener('click', () => {
+        console.log('💡 Show explanation clicked:', patternId);
+        addMessage(pattern.explanation, 'assistant');
+      });
+    }
+  }, 0);
+}
+
+
+/**
+ * 수동 단계 체크리스트 표시 (인터랙티브)
+ */
+function displayManualSteps(pattern) {
+  console.log('📋 Displaying interactive checklist for:', pattern.id);
+
+  // 체크리스트 HTML 생성
+  const checklistHTML = `
+<div class="interactive-checklist">
+  <div class="checklist-header">
+    <h3>📋 ${pattern.title} - 단계별 가이드</h3>
+    <div class="checklist-controls">
+      <button class="checklist-btn start-guide" data-pattern-id="${pattern.id}">
+        🚀 실시간 가이드 시작
+      </button>
+    </div>
+  </div>
+
+  <div class="checklist-progress">
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="checklist-progress-bar" style="width: 0%"></div>
+    </div>
+    <div class="progress-text" id="checklist-progress-text">0 / ${pattern.manualSteps.length} 완료</div>
+  </div>
+
+  <div class="checklist-steps">
+    ${pattern.manualSteps.map((step, index) => `
+      <div class="checklist-step" data-step-index="${index}">
+        <div class="step-header">
+          <input type="checkbox"
+                 class="step-checkbox"
+                 id="step-${pattern.id}-${index}"
+                 data-step-index="${index}"
+                 ${index === 0 ? '' : 'disabled'}>
+          <label for="step-${pattern.id}-${index}" class="step-number">
+            ${step.step}단계
+          </label>
+          <span class="step-status" data-status="pending">⏳ 대기 중</span>
+        </div>
+
+        <div class="step-content">
+          <p class="step-description">${step.description}</p>
+
+          ${step.example ? `
+            <div class="step-example">
+              <strong>예시:</strong> <code>${escapeHtml(step.example)}</code>
+            </div>
+          ` : ''}
+
+          ${step.before && step.after ? `
+            <div class="step-code-change">
+              <div class="code-before">
+                <strong>Before:</strong> <code>${escapeHtml(step.before)}</code>
+              </div>
+              <div class="code-after">
+                <strong>After:</strong> <code>${escapeHtml(step.after)}</code>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+
+        <div class="step-actions">
+          <button class="step-btn manual-complete"
+                  data-step-index="${index}"
+                  ${index === 0 ? '' : 'disabled'}>
+            ✓ 완료
+          </button>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+
+  <div class="checklist-footer">
+    <p class="checklist-note">
+      💡 <strong>실시간 가이드</strong>를 시작하면 자동으로 진행 상황을 감지합니다.
+    </p>
+  </div>
+</div>
+  `;
+
+  // 메시지 추가
+  const messageDiv = document.createElement('div');
+  messageDiv.className = 'message assistant checklist-message';
+  messageDiv.innerHTML = checklistHTML;
+  messagesContainer.appendChild(messageDiv);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  // 이벤트 리스너 추가
+  setTimeout(() => {
+    setupChecklistEvents(pattern, messageDiv);
+  }, 0);
+}
+
+
+/**
+ * 체크리스트 이벤트 설정
+ */
+function setupChecklistEvents(pattern, messageDiv) {
+  // 실시간 가이드 시작 버튼
+  const startGuideBtn = messageDiv.querySelector('.start-guide');
+  if (startGuideBtn) {
+    startGuideBtn.addEventListener('click', () => {
+      console.log('🚀 Starting real-time guide');
+      startGuideBtn.textContent = '⏸️ 가이드 진행 중...';
+      startGuideBtn.disabled = true;
+
+      // parent window에 실시간 가이드 시작 요청
+      window.parent.postMessage({
+        type: 'start-realtime-guide',
+        patternId: pattern.id
+      }, '*');
+
+      // 첫 번째 단계 활성화
+      updateStepStatus(messageDiv, 0, 'in-progress');
+    });
+  }
+
+  // 수동 완료 버튼들
+  const manualCompleteButtons = messageDiv.querySelectorAll('.manual-complete');
+  manualCompleteButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const stepIndex = parseInt(btn.dataset.stepIndex);
+      console.log(`✓ Manual complete clicked for step ${stepIndex}`);
+
+      // 단계 완료 처리
+      completeStep(messageDiv, stepIndex, pattern);
+
+      // parent window에 수동 완료 알림
+      window.parent.postMessage({
+        type: 'manual-step-complete',
+        patternId: pattern.id,
+        stepIndex: stepIndex
+      }, '*');
+    });
+  });
+}
+
+
+/**
+ * 단계 완료 처리
+ */
+function completeStep(messageDiv, stepIndex, pattern) {
+  console.log(`✅ Completing step ${stepIndex}`);
+
+  // 체크박스 체크
+  const checkbox = messageDiv.querySelector(`#step-${pattern.id}-${stepIndex}`);
+  if (checkbox) {
+    checkbox.checked = true;
+    checkbox.disabled = true;
+  }
+
+  // 상태 업데이트
+  updateStepStatus(messageDiv, stepIndex, 'completed');
+
+  // 버튼 비활성화
+  const button = messageDiv.querySelector(`.manual-complete[data-step-index="${stepIndex}"]`);
+  if (button) {
+    button.textContent = '✓ 완료됨';
+    button.disabled = true;
+  }
+
+  // 다음 단계 활성화
+  const nextStepIndex = stepIndex + 1;
+  if (nextStepIndex < pattern.manualSteps.length) {
+    updateStepStatus(messageDiv, nextStepIndex, 'in-progress');
+
+    // 다음 단계 체크박스 활성화
+    const nextCheckbox = messageDiv.querySelector(`#step-${pattern.id}-${nextStepIndex}`);
+    if (nextCheckbox) {
+      nextCheckbox.disabled = false;
+    }
+
+    // 다음 단계 버튼 활성화
+    const nextButton = messageDiv.querySelector(`.manual-complete[data-step-index="${nextStepIndex}"]`);
+    if (nextButton) {
+      nextButton.disabled = false;
+    }
+  }
+
+  // 진행률 업데이트
+  updateChecklistProgress(messageDiv, stepIndex + 1, pattern.manualSteps.length);
+
+  // 모든 단계 완료 확인
+  if (nextStepIndex >= pattern.manualSteps.length) {
+    console.log('🎉 All steps completed!');
+    addMessage('🎉 모든 단계를 완료했습니다! 워크플로우를 저장하고 다시 실행해보세요.', 'assistant');
+  }
+}
+
+
+/**
+ * 단계 상태 업데이트
+ */
+function updateStepStatus(messageDiv, stepIndex, status) {
+  const stepElement = messageDiv.querySelector(`.checklist-step[data-step-index="${stepIndex}"]`);
+  if (!stepElement) return;
+
+  const statusElement = stepElement.querySelector('.step-status');
+  if (!statusElement) return;
+
+  statusElement.dataset.status = status;
+
+  switch (status) {
+    case 'pending':
+      statusElement.textContent = '⏳ 대기 중';
+      stepElement.classList.remove('active', 'completed');
+      break;
+    case 'in-progress':
+      statusElement.textContent = '🔄 진행 중';
+      stepElement.classList.add('active');
+      stepElement.classList.remove('completed');
+      break;
+    case 'completed':
+      statusElement.textContent = '✅ 완료';
+      stepElement.classList.remove('active');
+      stepElement.classList.add('completed');
+      break;
+  }
+}
+
+
+/**
+ * 체크리스트 진행률 업데이트
+ */
+function updateChecklistProgress(messageDiv, completed, total) {
+  const progressBar = messageDiv.querySelector('#checklist-progress-bar');
+  const progressText = messageDiv.querySelector('#checklist-progress-text');
+
+  if (progressBar) {
+    const percentage = Math.round((completed / total) * 100);
+    progressBar.style.width = `${percentage}%`;
+  }
+
+  if (progressText) {
+    progressText.textContent = `${completed} / ${total} 완료`;
+  }
+}
+
 
 console.log('✅ Sidebar iframe script initialized');
