@@ -307,3 +307,16 @@ AI: "이 워크플로우를 3개 노드로 줄일 수 있어요!"
 ---
 
 **질문이나 문제가 있으면 언제든 알려주세요!** 💬
+
+---
+
+## 🔗 관련 프로젝트
+
+### Claude AI 가이드
+- **[claude-tips](https://github.com/Giwoong-ryu/claude-tips)** - Claude AI 한글 완벽 가이드
+- **웹사이트**: [https://giwoong-ryu.github.io/claude-tips/](https://giwoong-ryu.github.io/claude-tips/)
+- 초보자를 위한 실전 Claude 사용법 (Projects, Commands, Agents, Skills, MCP)
+
+### 스킬 라이브러리
+- **[my-skills](https://github.com/Giwoong-ryu/my-skills)** - Claude Code 스킬 모음
+- 31개 실전 스킬 (n8n, 개발 자동화, 문서 처리, 마케팅 등)
