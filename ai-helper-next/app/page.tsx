@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Zap, Clock, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function Home() {
   const tools = [
