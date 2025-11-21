@@ -54,7 +54,7 @@ function detectN8NPage() {
 // ========================================
 async function analyzeError(errorData) {
   console.log('🔍 Analyzing error:', errorData);
-  
+
   const prompt = `N8N 워크플로우에서 다음 에러가 발생했습니다:
 
 노드: ${errorData.nodeName || 'Unknown'}
@@ -72,7 +72,7 @@ async function analyzeError(errorData) {
     prompt,
     'You are an expert N8N workflow automation assistant. Provide concise, actionable solutions.'
   );
-  
+
   return result;
 }
 
@@ -82,7 +82,7 @@ async function analyzeError(errorData) {
 // ========================================
 async function generateJSON(requestData) {
   console.log('📝 Generating JSON:', requestData);
-  
+
   const prompt = `N8N의 ${requestData.nodeType} 노드를 위한 JSON을 생성해주세요.
 
 요구사항:
@@ -96,7 +96,7 @@ ${requestData.example ? `예시:\n${requestData.example}` : ''}
     prompt,
     'You are a JSON generation expert. Always respond with valid, properly formatted JSON only. No explanations.'
   );
-  
+
   if (result.success) {
     try {
       const jsonMatch = result.content.match(/\{[\s\S]*\}/);
@@ -115,7 +115,7 @@ ${requestData.example ? `예시:\n${requestData.example}` : ''}
       };
     }
   }
-  
+
   return result;
 }
 
@@ -125,7 +125,7 @@ ${requestData.example ? `예시:\n${requestData.example}` : ''}
 // ========================================
 async function autoFillSettings(contextData) {
   console.log('⚙️ Auto-filling settings:', contextData);
-  
+
   const prompt = `N8N 워크플로우에서 다음 노드를 설정하려고 합니다:
 
 노드 타입: ${contextData.nodeType}
@@ -147,7 +147,7 @@ ${JSON.stringify(contextData.fields, null, 2)}
     prompt,
     'You are an N8N workflow configuration expert. Suggest appropriate field values based on node type and user requirements.'
   );
-  
+
   if (result.success) {
     try {
       const jsonMatch = result.content.match(/\{[\s\S]*\}/);
@@ -166,7 +166,7 @@ ${JSON.stringify(contextData.fields, null, 2)}
       };
     }
   }
-  
+
   return result;
 }
 
@@ -352,6 +352,26 @@ ${response}`;
         message: response
       });
 
+      // Architecture V2: Visual Feedback (Highlighting)
+      try {
+        // 응답에서 JSON 액션 추출 (예: ```json ... ``` 또는 끝부분의 JSON)
+        const jsonMatch = response.match(/```json\s*({[\s\S]*?})\s*```/) ||
+          response.match(/({[\s\S]*?"action"\s*:\s*"highlight_field"[\s\S]*?})/);
+
+        if (jsonMatch) {
+          const actionData = JSON.parse(jsonMatch[1]);
+
+          if (actionData.action === 'highlight_field' && actionData.field) {
+            console.log('✨ Visual Feedback: Highlighting field', actionData.field);
+            if (n8nAdapter) {
+              await n8nAdapter.highlightErrorField(actionData.field);
+            }
+          }
+        }
+      } catch (e) {
+        console.log('Visual feedback parsing failed (non-critical):', e);
+      }
+
     } catch (error) {
       console.error('❌ Error processing message:', error);
       sendMessageToIframe({
@@ -426,15 +446,42 @@ async function callClaudeAPI(userMessage, context) {
   // Background script에서 N8N 최신 노드 목록 가져오기
   let docsInfo = null;
   try {
-    const response = await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: 'getN8NNodeList' }, resolve);
+    // Extension Context 유효성 체크
+    if (!chrome.runtime?.id) {
+      throw new Error('Extension context invalidated');
+    }
+
+    const response = await new Promise((resolve, reject) => {
+      try {
+        chrome.runtime.sendMessage({ action: 'getN8NNodeList' }, (res) => {
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve(res);
+          }
+        });
+      } catch (e) {
+        reject(e);
+      }
     });
     docsInfo = response?.docsInfo || null;
   } catch (error) {
     console.warn('⚠️ Failed to get N8N node list from background:', error);
-    // Fallback to local storage
-    const n8nDocs = await chrome.storage.local.get('n8nDocs');
-    docsInfo = n8nDocs.n8nDocs;
+
+    // Context invalidated 에러인 경우 사용자에게 알림
+    if (error.message.includes('Extension context invalidated') || !chrome.runtime?.id) {
+      return "⚠️ **확장 프로그램이 업데이트되었습니다.**\n\n원활한 사용을 위해 **페이지를 새로고침** 해주세요.";
+    }
+
+    // Fallback to local storage (only if context is still valid)
+    try {
+      if (chrome.storage && chrome.storage.local) {
+        const n8nDocs = await chrome.storage.local.get('n8nDocs');
+        docsInfo = n8nDocs.n8nDocs;
+      }
+    } catch (storageError) {
+      console.warn('⚠️ Failed to access local storage:', storageError);
+    }
   }
 
   let systemPrompt = `N8N 워크플로우 자동화 전문가 (2025년 10월 기준)`;
@@ -918,9 +965,9 @@ function findInputFields(container) {
 
     // 파라미터 이름
     const paramName = element.getAttribute('data-name') ||
-                     element.getAttribute('name') ||
-                     element.id ||
-                     label.toLowerCase().replace(/\s+/g, '_');
+      element.getAttribute('name') ||
+      element.id ||
+      label.toLowerCase().replace(/\s+/g, '_');
 
     inputs.push({
       element: element,

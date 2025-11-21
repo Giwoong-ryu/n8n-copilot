@@ -1,0 +1,42 @@
+{
+  "claude-code-workflows": {
+    "source": {
+      "source": "git",
+      "url": "https://github.com/wshobson/agents.git"
+    },
+    "installLocation": "C:\\Users\\user\\.claude\\plugins\\marketplaces\\claude-code-workflows",
+    "lastUpdated": "2025-11-06T14:49:08.598Z"
+  },
+  "dotclaude-plugins": {
+    "source": {
+      "source": "git",
+      "url": "https://github.com/dotclaude/marketplace.git"
+    },
+    "installLocation": "C:\\Users\\user\\.claude\\plugins\\marketplaces\\dotclaude-plugins",
+    "lastUpdated": "2025-11-06T14:49:12.763Z"
+  },
+  "anthropic-agent-skills": {
+    "source": {
+      "source": "git",
+      "url": "https://github.com/anthropics/skills.git"
+    },
+    "installLocation": "C:\\Users\\user\\.claude\\plugins\\marketplaces\\anthropic-agent-skills",
+    "lastUpdated": "2025-11-06T14:49:17.367Z"
+  },
+  "fcakyon-claude-plugins": {
+    "source": {
+      "source": "git",
+      "url": "https://github.com/fcakyon/claude-codex-settings.git"
+    },
+    "installLocation": "C:\\Users\\user\\.claude\\plugins\\marketplaces\\fcakyon-claude-plugins",
+    "lastUpdated": "2025-11-06T14:49:21.316Z"
+  },
+  "claude-code-plugins": {
+    "source": {
+      "source": "git",
+      "url": "https://github.com/anthropics/claude-code.git"
+    },
+    "installLocation": "C:\\Users\\user\\.claude\\plugins\\marketplaces\\claude-code-plugins",
+    "lastUpdated": "2025-11-06T14:49:31.703Z"
+  }
+}

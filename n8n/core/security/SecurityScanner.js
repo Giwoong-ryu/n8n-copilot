@@ -125,17 +125,41 @@ class SecurityScanner {
     const issues = [];
     const responseStr = JSON.stringify(aiResponse);
 
+    // Placeholder 패턴 (대문자와 언더스코어로만 구성된 경우, 예: YOUR_API_KEY)
+    const isPlaceholder = (str) => {
+      return /^[A-Z_0-9]+$/.test(str.replace(/['":\s]/g, '')) ||
+        str.includes('YOUR_') ||
+        str.includes('INSERT_') ||
+        str.includes('MY_');
+    };
+
     // API 키 체크
     this.patterns.apiKeys.forEach(pattern => {
       const matches = responseStr.match(pattern);
       if (matches) {
-        issues.push({
-          severity: 'critical',
-          type: 'hardcoded_api_key',
-          message: 'AI가 하드코딩된 API 키를 생성했습니다',
-          details: `발견된 패턴: ${matches[0].substring(0, 30)}...`,
-          fix: 'N8N Credential 노드를 사용하세요',
-          matches: matches.length
+        matches.forEach(match => {
+          // 값 부분만 추출 (간단한 파싱)
+          const value = match.split(/[:=]/)[1]?.trim().replace(/['"]/g, '');
+
+          if (value && isPlaceholder(value)) {
+            // Placeholder는 '설정 필요'로 분류 (Critical 아님)
+            issues.push({
+              severity: 'warning',
+              type: 'configuration_required',
+              message: 'API 키 설정이 필요합니다',
+              details: `설정값: ${value}`,
+              fix: '해당 값을 실제 API 키로 변경하거나 Credential을 연결하세요'
+            });
+          } else {
+            // 실제 하드코딩된 키
+            issues.push({
+              severity: 'critical',
+              type: 'hardcoded_api_key',
+              message: 'AI가 하드코딩된 API 키를 생성했습니다',
+              details: `발견된 패턴: ${match.substring(0, 30)}...`,
+              fix: 'N8N Credential 노드를 사용하세요'
+            });
+          }
         });
       }
     });
@@ -144,13 +168,26 @@ class SecurityScanner {
     this.patterns.passwords.forEach(pattern => {
       const matches = responseStr.match(pattern);
       if (matches) {
-        issues.push({
-          severity: 'critical',
-          type: 'hardcoded_password',
-          message: '하드코딩된 비밀번호가 감지되었습니다',
-          details: '비밀번호는 환경 변수나 Credential로 관리해야 합니다',
-          fix: 'Credential 노드 또는 환경 변수 사용',
-          matches: matches.length
+        matches.forEach(match => {
+          const value = match.split(/[:=]/)[1]?.trim().replace(/['"]/g, '');
+
+          if (value && isPlaceholder(value)) {
+            issues.push({
+              severity: 'warning',
+              type: 'configuration_required',
+              message: '비밀번호 설정이 필요합니다',
+              details: `설정값: ${value}`,
+              fix: '해당 값을 실제 비밀번호로 변경하세요'
+            });
+          } else {
+            issues.push({
+              severity: 'critical',
+              type: 'hardcoded_password',
+              message: '하드코딩된 비밀번호가 감지되었습니다',
+              details: '비밀번호는 환경 변수나 Credential로 관리해야 합니다',
+              fix: 'Credential 노드 또는 환경 변수 사용'
+            });
+          }
         });
       }
     });
@@ -164,8 +201,7 @@ class SecurityScanner {
           type: 'hardcoded_oauth_secret',
           message: 'OAuth Client Secret이 하드코딩되어 있습니다',
           details: 'OAuth Secret은 절대 코드에 포함되어서는 안 됩니다',
-          fix: 'OAuth2 Credential 사용',
-          matches: matches.length
+          fix: 'OAuth2 Credential 사용'
         });
       }
     });
@@ -179,8 +215,7 @@ class SecurityScanner {
           type: 'hardcoded_aws_key',
           message: 'AWS Access Key가 노출되어 있습니다',
           details: 'AWS 키가 유출되면 매우 위험합니다',
-          fix: 'AWS Credential 노드 사용',
-          matches: matches.length
+          fix: 'AWS Credential 노드 사용'
         });
       }
     });
@@ -242,7 +277,7 @@ class SecurityScanner {
 
     // HTTP 메서드 체크
     if (aiResponse.settings && aiResponse.settings.method === 'DELETE' &&
-        !context.userExplicitlyRequested) {
+      !context.userExplicitlyRequested) {
       issues.push({
         severity: 'medium',
         type: 'excessive_permission',
@@ -346,7 +381,7 @@ class SecurityScanner {
 
     // 단순 매칭 (추후 개선 가능)
     return responseStr.includes(credType) ||
-           responseStr.includes(credential.name.toLowerCase());
+      responseStr.includes(credential.name.toLowerCase());
   }
 
   /**

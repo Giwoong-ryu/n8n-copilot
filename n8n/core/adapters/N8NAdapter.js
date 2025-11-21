@@ -172,36 +172,93 @@ class N8NAdapter extends BaseAdapter {
   getNodeId(nodeElement) {
     try {
       return nodeElement.getAttribute('data-node-id') ||
-             nodeElement.getAttribute('id') ||
-             'unknown';
+        nodeElement.getAttribute('id') ||
+        'unknown';
     } catch (error) {
       return 'unknown';
     }
   }
-
   /**
    * 노드 설정 읽기
    */
   async getNodeSettings() {
     try {
-      const settingsPanel = document.querySelector('[class*="NodeSettings"]') ||
-                            document.querySelector('[class*="node-settings"]');
+      // 1. Node View 찾기 (설정 패널)
+      const nodeView = document.querySelector('[class*="NodeView"]') ||
+        document.querySelector('[class*="node-view"]') ||
+        document.querySelector('.el-drawer__body'); // Element UI Drawer
 
-      if (!settingsPanel) {
+      if (!nodeView) {
         return [];
       }
 
-      const inputs = settingsPanel.querySelectorAll('input, select, textarea');
+      // 2. 입력 필드 찾기 (input, select, textarea)
+      const inputs = Array.from(nodeView.querySelectorAll('input, select, textarea, [contenteditable="true"]'));
 
-      return Array.from(inputs).map(input => ({
-        element: input,
-        name: this.getInputName(input),
-        value: input.value,
-        type: input.type || input.tagName.toLowerCase()
-      }));
+      // 3. CodeMirror 에디터 찾기
+      const codeMirrors = Array.from(nodeView.querySelectorAll('.CodeMirror'));
+
+      // 4. Monaco 에디터 찾기
+      const monacoEditors = Array.from(nodeView.querySelectorAll('.monaco-editor'));
+
+      const allFields = [
+        ...inputs.map(input => ({
+          element: input,
+          name: this.getInputName(input),
+          value: input.value || input.textContent,
+          type: input.type || input.tagName.toLowerCase()
+        })),
+        ...codeMirrors.map(cm => ({
+          element: cm,
+          name: this.getCodeMirrorName(cm) || 'code',
+          value: cm.CodeMirror ? cm.CodeMirror.getValue() : '',
+          type: 'codemirror'
+        })),
+        ...monacoEditors.map(editor => ({
+          element: editor,
+          name: this.getMonacoName(editor) || 'code',
+          value: 'monaco_content',
+          type: 'monaco'
+        }))
+      ];
+
+      console.log('🔍 [N8NAdapter] Detected fields:', allFields.map(f => `${f.name} (${f.type})`));
+      return allFields;
     } catch (error) {
       console.error('getNodeSettings error:', error);
       return [];
+    }
+  }
+
+  /**
+   * Monaco 에디터 이름 추출
+   */
+  getMonacoName(editorElement) {
+    try {
+      const parameterItem = editorElement.closest('.parameter-item') ||
+        editorElement.closest('[class*="parameterInput"]');
+
+      if (parameterItem) {
+        const label = parameterItem.querySelector('.parameter-label') ||
+          parameterItem.querySelector('label');
+        return label ? label.textContent.trim() : 'code';
+      }
+      return 'code';
+    } catch (e) {
+      return 'code';
+    }
+  }
+
+  /**
+   * CodeMirror 이름 추출
+   */
+  getCodeMirrorName(cmElement) {
+    try {
+      const label = cmElement.closest('.parameter-item')?.querySelector('.parameter-label') ||
+        cmElement.parentElement?.previousElementSibling;
+      return label ? label.textContent.trim() : 'code';
+    } catch (e) {
+      return 'code';
     }
   }
 
@@ -211,17 +268,94 @@ class N8NAdapter extends BaseAdapter {
   getInputName(inputElement) {
     try {
       const label = inputElement.closest('label') ||
-                    inputElement.previousElementSibling;
+        inputElement.previousElementSibling;
 
       return label ?
-             label.textContent.trim() :
-             inputElement.name ||
-             inputElement.placeholder ||
-             'unknown';
+        label.textContent.trim() :
+        inputElement.name ||
+        inputElement.placeholder ||
+        'unknown';
     } catch (error) {
       return 'unknown';
     }
   }
+
+  /**
+   * Vue 컴포넌트 업데이트
+   */
+  triggerVueUpdate(element, value) {
+    try {
+      const vueInstance = element.__vueParentComponent || element.__vue__;
+
+      if (vueInstance) {
+        console.log('N8NAdapter: Vue instance found, triggering update');
+
+        if (vueInstance.emit) {
+          vueInstance.emit('update:modelValue', value);
+          vueInstance.emit('input', value);
+        }
+
+        if (vueInstance.props && vueInstance.props.modelValue !== undefined) {
+          vueInstance.props.modelValue = value;
+        }
+      }
+    } catch (error) {
+      console.log('Vue update failed (normal):', error.message);
+    }
+  }
+
+  /**
+   * 에러 필드 강조 표시 (Visual Feedback)
+   */
+  async highlightErrorField(fieldName) {
+    try {
+      console.log('N8NAdapter: Highlighting error field', fieldName);
+      const fields = await this.getNodeSettings();
+
+      // 이름으로 필드 찾기 (유사도 매칭)
+      const targetField = fields.find(f =>
+        f.name.toLowerCase().includes(fieldName.toLowerCase()) ||
+        fieldName.toLowerCase().includes(f.name.toLowerCase())
+      );
+
+      if (targetField && targetField.element) {
+        const el = targetField.element;
+
+        // 1. 스크롤 이동
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // 2. 빨간색 테두리 및 발광 효과 적용
+        const originalTransition = el.style.transition;
+        const originalBoxShadow = el.style.boxShadow;
+        const originalBorder = el.style.border;
+
+        el.style.transition = 'all 0.3s ease';
+        el.style.border = '2px solid #ef4444';
+        el.style.boxShadow = '0 0 0 4px rgba(239, 68, 68, 0.2)';
+
+        // CodeMirror/Monaco 처리
+        if (el.classList.contains('CodeMirror') || el.classList.contains('monaco-editor')) {
+          el.style.border = '2px solid #ef4444';
+        }
+
+        // 3. 3초 후 원래대로 복구
+        setTimeout(() => {
+          el.style.border = originalBorder;
+          el.style.boxShadow = originalBoxShadow;
+          el.style.transition = originalTransition;
+        }, 3000);
+
+        return true;
+      }
+
+      console.warn('N8NAdapter: Field not found for highlighting', fieldName);
+      return false;
+    } catch (error) {
+      console.error('highlightErrorField error:', error);
+      return false;
+    }
+  }
+
 
   /**
    * 워크플로우 구조 파악
@@ -275,16 +409,34 @@ class N8NAdapter extends BaseAdapter {
   }
 
   /**
-   * 에러 감지 및 분석 (Architecture V2 enhanced)
    */
   async detectErrors() {
     try {
-      const errorElements = document.querySelectorAll([
-        '[class*="error"]',
-        '[class*="Error"]',
-        '[class*="issue"]',
-        '.el-message--error'
-      ].join(','));
+      // N8N UI의 다양한 에러 표시 방식 대응
+      const errorSelectors = [
+        // 1. Toast/Notification 에러
+        '.el-message--error',
+        '[class*="toast"][class*="error"]',
+        '[class*="notification"][class*="error"]',
+
+        // 2. 노드 실행 에러 (Canvas 내)
+        '[class*="node-status-error"]',
+        '[data-test-id="node-execution-error"]',
+        '.node-status-error',
+        '.has-issues',
+        '[class*="error-badge"]',
+
+        // 3. 설정 패널 내 에러
+        '[class*="parameter-error"]',
+        '[class*="validation-error"]',
+        '.has-error',
+
+        // 4. 일반적인 에러 텍스트 포함 요소
+        '[class*="ErrorMessage"]',
+        '[class*="error-message"]'
+      ];
+
+      const errorElements = document.querySelectorAll(errorSelectors.join(','));
 
       if (errorElements.length === 0) {
         return { current: [], chain: [], rootCause: null };
@@ -292,7 +444,7 @@ class N8NAdapter extends BaseAdapter {
 
       const currentErrors = Array.from(errorElements).map(errorEl => ({
         element: errorEl,
-        message: errorEl.textContent.trim(),
+        message: errorEl.textContent.trim() || 'Error detected on node',
         type: this.getErrorType(errorEl),
         timestamp: new Date().toISOString()
       }));
@@ -485,163 +637,227 @@ class N8NAdapter extends BaseAdapter {
    */
   setFieldValue(fieldElement, value) {
     try {
-      console.log('N8NAdapter: Writing to field', fieldElement, value);
-
-      if (!fieldElement) {
-        console.error('Field element not found');
-        return false;
+      /**
+       * 스크립트 주입 (Page Context 실행용)
+       */
+      injectScript(code) {
+        const script = document.createElement('script');
+        script.textContent = code;
+        (document.head || document.documentElement).appendChild(script);
+        script.remove();
       }
 
-      // 1. 값 설정
-      fieldElement.value = value;
+      /**
+       * 입력 필드에 값 쓰기 (Vue 리액티브 트리거 + Monaco/CodeMirror 지원)
+       */
+      setFieldValue(fieldElement, value) {
+        try {
+          console.log('N8NAdapter: Writing to field', fieldElement, value);
 
-      // 2. Vue 리액티브 이벤트 트리거
-      const events = ['input', 'change', 'blur'];
+          if (!fieldElement) {
+            console.error('Field element not found');
+            return false;
+          }
 
-      events.forEach(eventType => {
-        const event = new Event(eventType, {
-          bubbles: true,
-          cancelable: true
-        });
-        fieldElement.dispatchEvent(event);
-      });
+          // 1. Monaco Editor 처리 (Script Injection)
+          if (fieldElement.classList.contains('monaco-editor') ||
+            fieldElement.closest('.monaco-editor') ||
+            (fieldElement.type === 'monaco')) {
 
-      // 3. Vue 컴포넌트 직접 업데이트 시도
-      this.triggerVueUpdate(fieldElement, value);
+            console.log('N8NAdapter: Detected Monaco Editor, injecting script...');
 
-      console.log('N8NAdapter: Value written successfully');
-      return true;
-    } catch (error) {
-      console.error('setFieldValue error:', error);
-      return false;
-    }
-  }
+            const scriptContent = `
+          (function() {
+            try {
+              console.log('🤖 [N8N Copilot] Attempting to update Monaco Editor...');
+              if (window.monaco && window.monaco.editor) {
+                const editors = window.monaco.editor.getEditors();
+                // 현재 보이는 에디터 찾기
+                const targetEditor = editors.find(e => {
+                  const container = e.getContainerDomNode();
+                  return document.body.contains(container) && container.offsetParent !== null;
+                });
+                
+                if (targetEditor) {
+                  console.log('✅ [N8N Copilot] Target editor found, updating value...');
+                  const model = targetEditor.getModel();
+                  if (model) {
+                    targetEditor.setValue(${JSON.stringify(value)});
+                    console.log('✨ [N8N Copilot] Value updated successfully!');
+                  }
+                } else {
+                  console.warn('⚠️ [N8N Copilot] No visible Monaco editor found');
+                }
+              } else {
+                console.warn('⚠️ [N8N Copilot] window.monaco not found');
+              }
+            } catch(e) { 
+              console.error('❌ [N8N Copilot] Monaco update failed', e); 
+            }
+          })();
+        `;
+            this.injectScript(scriptContent);
+            return true;
+          }
 
-  /**
-   * Vue 컴포넌트 업데이트
-   */
-  triggerVueUpdate(element, value) {
-    try {
-      const vueInstance = element.__vueParentComponent || element.__vue__;
+          // 2. CodeMirror 처리
+          if (fieldElement.classList.contains('CodeMirror') && fieldElement.CodeMirror) {
+            console.log('N8NAdapter: Writing to CodeMirror');
+            fieldElement.CodeMirror.setValue(value);
+            fieldElement.CodeMirror.save();
+            return true;
+          }
 
-      if (vueInstance) {
-        console.log('N8NAdapter: Vue instance found, triggering update');
+          // 3. 일반 Input/Textarea
+          fieldElement.value = value;
 
-        if (vueInstance.emit) {
-          vueInstance.emit('update:modelValue', value);
-          vueInstance.emit('input', value);
-        }
+          // 4. Vue 리액티브 이벤트 트리거
+          const events = ['input', 'change', 'blur'];
 
-        if (vueInstance.props && vueInstance.props.modelValue !== undefined) {
-          vueInstance.props.modelValue = value;
+          events.forEach(eventType => {
+            const event = new Event(eventType, {
+              bubbles: true,
+              cancelable: true
+            });
+            fieldElement.dispatchEvent(event);
+          });
+
+          // 5. Vue 컴포넌트 직접 업데이트 시도
+          this.triggerVueUpdate(fieldElement, value);
+
+          console.log('N8NAdapter: Value written successfully');
+          return true;
+        } catch (error) {
+          console.error('setFieldValue error:', error);
+          return false;
         }
       }
-    } catch (error) {
-      console.log('Vue update failed (normal):', error.message);
-    }
-  }
+
+      /**
+       * Vue 컴포넌트 업데이트
+       */
+      triggerVueUpdate(element, value) {
+        try {
+          const vueInstance = element.__vueParentComponent || element.__vue__;
+
+          if (vueInstance) {
+            console.log('N8NAdapter: Vue instance found, triggering update');
+
+            if (vueInstance.emit) {
+              vueInstance.emit('update:modelValue', value);
+              vueInstance.emit('input', value);
+            }
+
+            if (vueInstance.props && vueInstance.props.modelValue !== undefined) {
+              vueInstance.props.modelValue = value;
+            }
+          }
+        } catch (error) {
+          console.log('Vue update failed (normal):', error.message);
+        }
+      }
 
   /**
    * 노드 생성 (추후 구현)
    */
   async createNode(nodeType, settings) {
-    console.log('N8NAdapter: createNode not yet implemented', nodeType, settings);
-    return {
-      success: false,
-      message: 'Node creation not yet implemented'
-    };
-  }
+        console.log('N8NAdapter: createNode not yet implemented', nodeType, settings);
+        return {
+          success: false,
+          message: 'Node creation not yet implemented'
+        };
+      }
 
   /**
    * 에러 수정 (추후 구현)
    */
   async fixError(fix) {
-    console.log('N8NAdapter: fixError not yet implemented', fix);
-    return {
-      success: false,
-      message: 'Error fixing not yet implemented'
-    };
-  }
+        console.log('N8NAdapter: fixError not yet implemented', fix);
+        return {
+          success: false,
+          message: 'Error fixing not yet implemented'
+        };
+      }
 
   /**
    * 데이터 흐름 추적 (Architecture V2 - DataFlowTracer 사용)
    */
   async traceDataFlow(nodeId) {
-    if (this.dataFlowTracer) {
-      return await this.dataFlowTracer.traceDataFlow(nodeId);
-    }
+        if (this.dataFlowTracer) {
+          return await this.dataFlowTracer.traceDataFlow(nodeId);
+        }
 
-    return {
-      targetNodeId: nodeId,
-      error: true,
-      message: 'DataFlowTracer not initialized'
-    };
-  }
+        return {
+          targetNodeId: nodeId,
+          error: true,
+          message: 'DataFlowTracer not initialized'
+        };
+      }
 
   /**
    * 비즈니스 의도 추론 (Architecture V2)
    */
   async inferBusinessIntent() {
-    try {
-      const structure = await this.getWorkflowStructure();
-      return await this.contextCollector?.inferBusinessIntent(structure) || {
-        goal: 'unknown',
-        pattern: 'unknown',
-        complexity: 'unknown'
-      };
-    } catch (error) {
-      console.error('inferBusinessIntent error:', error);
-      return { goal: 'unknown', pattern: 'unknown', complexity: 'unknown' };
-    }
-  }
+        try {
+          const structure = await this.getWorkflowStructure();
+          return await this.contextCollector?.inferBusinessIntent(structure) || {
+            goal: 'unknown',
+            pattern: 'unknown',
+            complexity: 'unknown'
+          };
+        } catch (error) {
+          console.error('inferBusinessIntent error:', error);
+          return { goal: 'unknown', pattern: 'unknown', complexity: 'unknown' };
+        }
+      }
 
   /**
    * 보안 검증 (Architecture V2)
    */
   async validateSecurity() {
-    if (!this.securityScanner) {
-      return { safe: false, message: 'SecurityScanner not initialized' };
-    }
+        if (!this.securityScanner) {
+          return { safe: false, message: 'SecurityScanner not initialized' };
+        }
 
-    try {
-      const context = await this.getContext();
-      return {
-        safe: true,
-        message: 'Security check passed',
-        context: context.security
-      };
-    } catch (error) {
-      return {
-        safe: false,
-        message: 'Security validation failed',
-        error: error.message
-      };
-    }
-  }
+        try {
+          const context = await this.getContext();
+          return {
+            safe: true,
+            message: 'Security check passed',
+            context: context.security
+          };
+        } catch (error) {
+          return {
+            safe: false,
+            message: 'Security validation failed',
+            error: error.message
+          };
+        }
+      }
 
   // Stub implementations for Architecture V2 methods
   async getPreviousNodes(nodeId) {
-    // TODO: Implement using DOM or n8n API
-    return [];
-  }
+        // TODO: Implement using DOM or n8n API
+        return [];
+      }
 
   async getNodeById(nodeId) {
-    // TODO: Implement
-    return null;
-  }
+        // TODO: Implement
+        return null;
+      }
 
   async getNodeLastOutput(nodeId) {
-    // TODO: Implement - requires n8n execution data access
-    return null;
-  }
+        // TODO: Implement - requires n8n execution data access
+        return null;
+      }
 
   async getNodeOutputSchema(nodeId) {
-    // TODO: Implement
-    return {};
-  }
-}
+        // TODO: Implement
+        return {};
+      }
+    }
 
 // Export
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = N8NAdapter;
-}
+      module.exports = N8NAdapter;
+    }

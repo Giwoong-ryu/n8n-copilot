@@ -31,7 +31,7 @@ async function callAI(userMessage, systemPrompt = '', context = {}) {
 
   console.log('🤖 Using AI Provider:', provider);
 
-  switch(provider) {
+  switch (provider) {
     case 'gemini':
       return await callGeminiAPI(userMessage, systemPrompt, context);
     case 'openai':
@@ -117,37 +117,26 @@ async function callGeminiAPI(userMessage, systemPrompt = '', context = {}) {
         ? '실시간 (사용자 N8N 인스턴스)'
         : n8nDocs.version;
 
-      const nodeListText = validNodes.slice(0, 50).map(node => {
-        let info = `- **${node.name}**`;
-
-        if (node.description) {
-          info += `: ${node.description}`;
-        }
-
-        // Resources 정보 추가
-        if (node.resources && node.resources.length > 0) {
-          info += `\n  Resources: ${node.resources.map(r => r.displayName || r.name).join(', ')}`;
-        }
-
-        // Operations 정보 추가
-        if (node.operations && node.operations.length > 0) {
-          info += `\n  Operations: ${node.operations.map(o => o.displayName || o.name).join(', ')}`;
-        }
-
-        return info;
-      }).join('\n');
+      // Node list injection removed to save tokens and reduce noise
+      // const nodeListText = validNodes.slice(0, 50).map(...) 
 
       enhancedSystemPrompt += `\n\n**N8N 환경 정보**:
 - 버전: ${versionInfo}
 - 사용 가능한 노드: ${validNodes.length}개
 
-**주요 노드 목록** (정확한 이름과 세부 작업):
-${nodeListText}
+**에러 분석 모드 지침 (엄격 준수)**:
+사용자가 에러 분석을 요청하면 다음 규칙을 반드시 따르세요:
 
-**중요**:
-1. 위 노드 목록에 있는 노드 이름을 정확히 사용하세요
-2. 여러 작업이 있는 노드는 위 Resources/Operations를 참고하여 정확한 작업 이름을 안내하세요
-   예: "YouTube 노드에서 'Video Search' 작업 선택" 같이 구체적으로`;
+1. **핵심만 간단히**: 답변은 **최대 3문장**으로 제한합니다. 서론/결론 없이 본론만 말하세요.
+2. **원인 1개만**: "가능한 원인"을 나열하지 말고, 가장 유력한 **단 하나의 원인**만 지목하세요.
+3. **해결책 1개만**: 가장 확실한 **단 하나의 해결 방법**만 제시하세요.
+4. **초보자 용어**: 개발 용어 대신 쉬운 말을 사용하세요. (예: "HTTP 401" -> "로그인이 안 됨")
+5. **시각적 피드백**: 에러가 발생한 필드가 명확하다면 응답 마지막에 JSON으로 \`{"action": "highlight_field", "field": "필드명"}\`을 포함하세요.
+
+**금지 사항**:
+- "워크플로우 요청 시..." 같은 템플릿 문구 금지
+- "URL 문제일 수도 있고, 인증 문제일 수도 있고..." 식의 나열 금지
+- 불필요한 인사말 금지`;
 
       console.log(`✅ [Gemini] N8N node info added to system prompt (source: ${n8nDocs.version === 'real-time' ? 'Real-time API' : 'Static docs'}, nodes: ${validNodes.length})`);
       console.log(`📝 [Gemini] First 10 nodes in prompt:`, validNodes.slice(0, 10).map(n => n.name).join(', '));
@@ -282,24 +271,24 @@ async function callOpenAIAPI(userMessage, systemPrompt = '', context = {}) {
 
 **주요 노드 목록** (정확한 이름과 세부 작업):
 ${validNodes.slice(0, 50).map(node => {
-  let info = `- **${node.name}**`;
+        let info = `- **${node.name}**`;
 
-  if (node.description) {
-    info += `: ${node.description}`;
-  }
+        if (node.description) {
+          info += `: ${node.description}`;
+        }
 
-  // Resources 정보 추가
-  if (node.resources && node.resources.length > 0) {
-    info += `\n  Resources: ${node.resources.map(r => r.displayName || r.name).join(', ')}`;
-  }
+        // Resources 정보 추가
+        if (node.resources && node.resources.length > 0) {
+          info += `\n  Resources: ${node.resources.map(r => r.displayName || r.name).join(', ')}`;
+        }
 
-  // Operations 정보 추가
-  if (node.operations && node.operations.length > 0) {
-    info += `\n  Operations: ${node.operations.map(o => o.displayName || o.name).join(', ')}`;
-  }
+        // Operations 정보 추가
+        if (node.operations && node.operations.length > 0) {
+          info += `\n  Operations: ${node.operations.map(o => o.displayName || o.name).join(', ')}`;
+        }
 
-  return info;
-}).join('\n')}
+        return info;
+      }).join('\n')}
 
 **중요**:
 1. 위 노드 목록에 있는 노드 이름을 정확히 사용하세요
@@ -397,24 +386,24 @@ async function callClaudeAPI(userMessage, systemPrompt = '', context = {}) {
 
 **주요 노드 목록** (정확한 이름과 세부 작업):
 ${validNodes.slice(0, 50).map(node => {
-  let info = `- **${node.name}**`;
+        let info = `- **${node.name}**`;
 
-  if (node.description) {
-    info += `: ${node.description}`;
-  }
+        if (node.description) {
+          info += `: ${node.description}`;
+        }
 
-  // Resources 정보 추가
-  if (node.resources && node.resources.length > 0) {
-    info += `\n  Resources: ${node.resources.map(r => r.displayName || r.name).join(', ')}`;
-  }
+        // Resources 정보 추가
+        if (node.resources && node.resources.length > 0) {
+          info += `\n  Resources: ${node.resources.map(r => r.displayName || r.name).join(', ')}`;
+        }
 
-  // Operations 정보 추가
-  if (node.operations && node.operations.length > 0) {
-    info += `\n  Operations: ${node.operations.map(o => o.displayName || o.name).join(', ')}`;
-  }
+        // Operations 정보 추가
+        if (node.operations && node.operations.length > 0) {
+          info += `\n  Operations: ${node.operations.map(o => o.displayName || o.name).join(', ')}`;
+        }
 
-  return info;
-}).join('\n')}
+        return info;
+      }).join('\n')}
 
 **중요**:
 1. 위 노드 목록에 있는 노드 이름을 정확히 사용하세요
@@ -477,21 +466,21 @@ function formatMessageWithContext(message, context) {
   if (!context || Object.keys(context).length === 0) {
     return message;
   }
-  
+
   let formattedMessage = message + '\n\n--- N8N 컨텍스트 ---\n';
-  
+
   if (context.currentNode) {
     formattedMessage += `\n현재 노드:\n- 타입: ${context.currentNode.type}\n- 이름: ${context.currentNode.name}\n`;
   }
-  
+
   if (context.error) {
     formattedMessage += `\n발생한 에러:\n${context.error.message}\n`;
   }
-  
+
   if (context.workflow) {
     formattedMessage += `\n워크플로우 정보:\n- 노드 개수: ${context.workflow.nodeCount}\n`;
   }
-  
+
   return formattedMessage;
 }
 
@@ -502,7 +491,7 @@ function formatMessageWithContext(message, context) {
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('📨 Message received:', request);
-  
+
   if (request.action === 'callClaude') {
     // Multi-Provider AI 호출 (callClaude 액션 이름 유지하되 선택된 provider 사용)
     callAI(request.message, request.systemPrompt, request.context)
@@ -519,7 +508,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     // 비동기 응답을 위해 true 반환
     return true;
   }
-  
+
   if (request.action === 'saveApiKey') {
     saveApiKey(request.apiKey)
       .then(() => {
@@ -528,10 +517,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch(error => {
         sendResponse({ error: true, message: error.message });
       });
-    
+
     return true;
   }
-  
+
   if (request.action === 'getApiKey') {
     getApiKey()
       .then(apiKey => {
@@ -693,6 +682,13 @@ async function loadN8NDocs() {
     }
 
     const docs = result.n8nDocs;
+
+    // 데이터 무결성 검사
+    if (!docs || !docs.nodes || !Array.isArray(docs.nodes)) {
+      console.warn('⚠️ Invalid docs structure found in storage, forcing update...');
+      return await updateN8NDocsNow();
+    }
+
     const expiresAt = new Date(docs.expiresAt);
 
     // 만료 체크

@@ -86,11 +86,11 @@ function maskApiKey(apiKey) {
   if (!apiKey || apiKey.length < 20) {
     return apiKey;
   }
-  
+
   // 앞 12자와 뒤 4자만 표시
   const start = apiKey.substring(0, 12);
   const end = apiKey.substring(apiKey.length - 4);
-  
+
   return `${start}${'*'.repeat(20)}${end}`;
 }
 
@@ -206,7 +206,7 @@ function handleProviderChange() {
   const modelSelect = document.getElementById('modelSelect');
 
   // provider에 따라 UI 변경
-  switch(provider) {
+  switch (provider) {
     case 'gemini':
       apiKeyLabel.textContent = '🆓 Google Gemini API Key (무료)';
       apiKeyInput.placeholder = 'AIzaSy...';
@@ -335,7 +335,7 @@ function isValidApiKey(apiKey, provider) {
   const providerSelect = document.getElementById('providerSelect');
   const currentProvider = provider || providerSelect?.value || 'gemini';
 
-  switch(currentProvider) {
+  switch (currentProvider) {
     case 'gemini':
       // Google Gemini API 키 형식: AIzaSy...
       return apiKey.startsWith('AIzaSy') && apiKey.length > 30;
@@ -520,6 +520,10 @@ async function testN8nConnection() {
     clearTimeout(timeoutId);
 
     if (response.ok) {
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Received HTML instead of JSON. Check N8N URL.');
+      }
       const data = await response.json();
       statusDiv.innerHTML = `<span style="color: #10b981;">✅ 연결 성공! (워크플로우 ${data.data ? data.data.length : 0}개)</span>`;
     } else if (response.status === 401) {
