@@ -609,15 +609,31 @@ class N8NAdapter extends BaseAdapter {
     try {
       let filledCount = 0;
       const fields = await this.getNodeSettings();
+      const threshold = 0.5; // Similarity threshold
 
       for (const [fieldName, value] of Object.entries(settings)) {
-        const field = fields.find(f =>
-          f.name.toLowerCase().includes(fieldName.toLowerCase())
-        );
+        let bestMatch = null;
+        let bestScore = 0;
 
-        if (field && field.element) {
-          this.setFieldValue(field.element, value);
+        // Find best matching field using fuzzy matching
+        for (const field of fields) {
+          const score = this.getSimilarityScore(
+            fieldName.toLowerCase(),
+            field.name.toLowerCase()
+          );
+
+          if (score > bestScore && score >= threshold) {
+            bestScore = score;
+            bestMatch = field;
+          }
+        }
+
+        if (bestMatch && bestMatch.element) {
+          console.log(`Fuzzy match: "${fieldName}" -> "${bestMatch.name}" (score: ${bestScore.toFixed(2)})`);
+          this.setFieldValue(bestMatch.element, value);
           filledCount++;
+        } else {
+          console.warn(`No matching field found for "${fieldName}"`);
         }
       }
 
@@ -633,40 +649,85 @@ class N8NAdapter extends BaseAdapter {
   }
 
   /**
-   * 입력 필드에 값 쓰기 (Vue 리액티브 트리거)
+   * Calculate Levenshtein distance between two strings
+   */
+  getEditDistance(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+
+    const matrix = [];
+
+    // increment along the first column of each row
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+
+    // increment each column in the first row
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+
+    // Fill in the rest of the matrix
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) === a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            Math.min(
+              matrix[i][j - 1] + 1, // insertion
+              matrix[i - 1][j] + 1 // deletion
+            )
+          );
+        }
+      }
+    }
+
+    return matrix[b.length][a.length];
+  }
+
+  /**
+   * Calculate similarity score (0 to 1)
+   */
+  getSimilarityScore(s1, s2) {
+    const longer = s1.length > s2.length ? s1 : s2;
+    if (longer.length === 0) {
+      return 1.0;
+    }
+    return (longer.length - this.getEditDistance(s1, s2)) / longer.length;
+  }
+
+  /**
+   * 스크립트 주입 (Page Context 실행용)
+   */
+  injectScript(code) {
+    const script = document.createElement('script');
+    script.textContent = code;
+    (document.head || document.documentElement).appendChild(script);
+    script.remove();
+  }
+
+  /**
+   * 입력 필드에 값 쓰기 (Vue 리액티브 트리거 + Monaco/CodeMirror 지원)
    */
   setFieldValue(fieldElement, value) {
     try {
-      /**
-       * 스크립트 주입 (Page Context 실행용)
-       */
-      injectScript(code) {
-        const script = document.createElement('script');
-        script.textContent = code;
-        (document.head || document.documentElement).appendChild(script);
-        script.remove();
+      console.log('N8NAdapter: Writing to field', fieldElement, value);
+
+      if (!fieldElement) {
+        console.error('Field element not found');
+        return false;
       }
 
-      /**
-       * 입력 필드에 값 쓰기 (Vue 리액티브 트리거 + Monaco/CodeMirror 지원)
-       */
-      setFieldValue(fieldElement, value) {
-        try {
-          console.log('N8NAdapter: Writing to field', fieldElement, value);
+      // 1. Monaco Editor 처리 (Script Injection)
+      if (fieldElement.classList.contains('monaco-editor') ||
+        fieldElement.closest('.monaco-editor') ||
+        (fieldElement.type === 'monaco')) {
 
-          if (!fieldElement) {
-            console.error('Field element not found');
-            return false;
-          }
+        console.log('N8NAdapter: Detected Monaco Editor, injecting script...');
 
-          // 1. Monaco Editor 처리 (Script Injection)
-          if (fieldElement.classList.contains('monaco-editor') ||
-            fieldElement.closest('.monaco-editor') ||
-            (fieldElement.type === 'monaco')) {
-
-            console.log('N8NAdapter: Detected Monaco Editor, injecting script...');
-
-            const scriptContent = `
+        const scriptContent = `
           (function() {
             try {
               console.log('🤖 [N8N Copilot] Attempting to update Monaco Editor...');
@@ -696,168 +757,168 @@ class N8NAdapter extends BaseAdapter {
             }
           })();
         `;
-            this.injectScript(scriptContent);
-            return true;
-          }
-
-          // 2. CodeMirror 처리
-          if (fieldElement.classList.contains('CodeMirror') && fieldElement.CodeMirror) {
-            console.log('N8NAdapter: Writing to CodeMirror');
-            fieldElement.CodeMirror.setValue(value);
-            fieldElement.CodeMirror.save();
-            return true;
-          }
-
-          // 3. 일반 Input/Textarea
-          fieldElement.value = value;
-
-          // 4. Vue 리액티브 이벤트 트리거
-          const events = ['input', 'change', 'blur'];
-
-          events.forEach(eventType => {
-            const event = new Event(eventType, {
-              bubbles: true,
-              cancelable: true
-            });
-            fieldElement.dispatchEvent(event);
-          });
-
-          // 5. Vue 컴포넌트 직접 업데이트 시도
-          this.triggerVueUpdate(fieldElement, value);
-
-          console.log('N8NAdapter: Value written successfully');
-          return true;
-        } catch (error) {
-          console.error('setFieldValue error:', error);
-          return false;
-        }
+        this.injectScript(scriptContent);
+        return true;
       }
 
-      /**
-       * Vue 컴포넌트 업데이트
-       */
-      triggerVueUpdate(element, value) {
-        try {
-          const vueInstance = element.__vueParentComponent || element.__vue__;
+      // 2. CodeMirror 처리
+      if (fieldElement.classList.contains('CodeMirror') && fieldElement.CodeMirror) {
+        console.log('N8NAdapter: Writing to CodeMirror');
+        fieldElement.CodeMirror.setValue(value);
+        fieldElement.CodeMirror.save();
+        return true;
+      }
 
-          if (vueInstance) {
-            console.log('N8NAdapter: Vue instance found, triggering update');
+      // 3. 일반 Input/Textarea
+      fieldElement.value = value;
 
-            if (vueInstance.emit) {
-              vueInstance.emit('update:modelValue', value);
-              vueInstance.emit('input', value);
-            }
+      // 4. Vue 리액티브 이벤트 트리거
+      const events = ['input', 'change', 'blur'];
 
-            if (vueInstance.props && vueInstance.props.modelValue !== undefined) {
-              vueInstance.props.modelValue = value;
-            }
-          }
-        } catch (error) {
-          console.log('Vue update failed (normal):', error.message);
+      events.forEach(eventType => {
+        const event = new Event(eventType, {
+          bubbles: true,
+          cancelable: true
+        });
+        fieldElement.dispatchEvent(event);
+      });
+
+      // 5. Vue 컴포넌트 직접 업데이트 시도
+      this.triggerVueUpdate(fieldElement, value);
+
+      console.log('N8NAdapter: Value written successfully');
+      return true;
+    } catch (error) {
+      console.error('setFieldValue error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Vue 컴포넌트 업데이트
+   */
+  triggerVueUpdate(element, value) {
+    try {
+      const vueInstance = element.__vueParentComponent || element.__vue__;
+
+      if (vueInstance) {
+        console.log('N8NAdapter: Vue instance found, triggering update');
+
+        if (vueInstance.emit) {
+          vueInstance.emit('update:modelValue', value);
+          vueInstance.emit('input', value);
+        }
+
+        if (vueInstance.props && vueInstance.props.modelValue !== undefined) {
+          vueInstance.props.modelValue = value;
         }
       }
+    } catch (error) {
+      console.log('Vue update failed (normal):', error.message);
+    }
+  }
 
   /**
    * 노드 생성 (추후 구현)
    */
   async createNode(nodeType, settings) {
-        console.log('N8NAdapter: createNode not yet implemented', nodeType, settings);
-        return {
-          success: false,
-          message: 'Node creation not yet implemented'
-        };
-      }
+    console.log('N8NAdapter: createNode not yet implemented', nodeType, settings);
+    return {
+      success: false,
+      message: 'Node creation not yet implemented'
+    };
+  }
 
   /**
    * 에러 수정 (추후 구현)
    */
   async fixError(fix) {
-        console.log('N8NAdapter: fixError not yet implemented', fix);
-        return {
-          success: false,
-          message: 'Error fixing not yet implemented'
-        };
-      }
+    console.log('N8NAdapter: fixError not yet implemented', fix);
+    return {
+      success: false,
+      message: 'Error fixing not yet implemented'
+    };
+  }
 
   /**
    * 데이터 흐름 추적 (Architecture V2 - DataFlowTracer 사용)
    */
   async traceDataFlow(nodeId) {
-        if (this.dataFlowTracer) {
-          return await this.dataFlowTracer.traceDataFlow(nodeId);
-        }
+    if (this.dataFlowTracer) {
+      return await this.dataFlowTracer.traceDataFlow(nodeId);
+    }
 
-        return {
-          targetNodeId: nodeId,
-          error: true,
-          message: 'DataFlowTracer not initialized'
-        };
-      }
+    return {
+      targetNodeId: nodeId,
+      error: true,
+      message: 'DataFlowTracer not initialized'
+    };
+  }
 
   /**
    * 비즈니스 의도 추론 (Architecture V2)
    */
   async inferBusinessIntent() {
-        try {
-          const structure = await this.getWorkflowStructure();
-          return await this.contextCollector?.inferBusinessIntent(structure) || {
-            goal: 'unknown',
-            pattern: 'unknown',
-            complexity: 'unknown'
-          };
-        } catch (error) {
-          console.error('inferBusinessIntent error:', error);
-          return { goal: 'unknown', pattern: 'unknown', complexity: 'unknown' };
-        }
-      }
+    try {
+      const structure = await this.getWorkflowStructure();
+      return await this.contextCollector?.inferBusinessIntent(structure) || {
+        goal: 'unknown',
+        pattern: 'unknown',
+        complexity: 'unknown'
+      };
+    } catch (error) {
+      console.error('inferBusinessIntent error:', error);
+      return { goal: 'unknown', pattern: 'unknown', complexity: 'unknown' };
+    }
+  }
 
   /**
    * 보안 검증 (Architecture V2)
    */
   async validateSecurity() {
-        if (!this.securityScanner) {
-          return { safe: false, message: 'SecurityScanner not initialized' };
-        }
+    if (!this.securityScanner) {
+      return { safe: false, message: 'SecurityScanner not initialized' };
+    }
 
-        try {
-          const context = await this.getContext();
-          return {
-            safe: true,
-            message: 'Security check passed',
-            context: context.security
-          };
-        } catch (error) {
-          return {
-            safe: false,
-            message: 'Security validation failed',
-            error: error.message
-          };
-        }
-      }
+    try {
+      const context = await this.getContext();
+      return {
+        safe: true,
+        message: 'Security check passed',
+        context: context.security
+      };
+    } catch (error) {
+      return {
+        safe: false,
+        message: 'Security validation failed',
+        error: error.message
+      };
+    }
+  }
 
   // Stub implementations for Architecture V2 methods
   async getPreviousNodes(nodeId) {
-        // TODO: Implement using DOM or n8n API
-        return [];
-      }
+    // TODO: Implement using DOM or n8n API
+    return [];
+  }
 
   async getNodeById(nodeId) {
-        // TODO: Implement
-        return null;
-      }
+    // TODO: Implement
+    return null;
+  }
 
   async getNodeLastOutput(nodeId) {
-        // TODO: Implement - requires n8n execution data access
-        return null;
-      }
+    // TODO: Implement - requires n8n execution data access
+    return null;
+  }
 
   async getNodeOutputSchema(nodeId) {
-        // TODO: Implement
-        return {};
-      }
-    }
+    // TODO: Implement
+    return {};
+  }
+}
 
 // Export
 if (typeof module !== 'undefined' && module.exports) {
-      module.exports = N8NAdapter;
-    }
+  module.exports = N8NAdapter;
+}
