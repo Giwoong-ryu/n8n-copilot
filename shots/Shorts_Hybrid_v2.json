@@ -1,0 +1,298 @@
+{
+    "name": "Shorts_Hybrid_v2 (High Retention)",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours"
+                        }
+                    ]
+                }
+            },
+            "id": "trigger-schedule",
+            "name": "Schedule Trigger",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1,
+            "position": [
+                -1200,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "content": "### 🎯 1. 기획 & 대본 (Planning & Script)\n- **Target**: 60대 이상 시니어\n- **Strategy**: Hook(공감) -> Solution(비법) -> Promise(효과)\n- **Persona**: 보람이 (손주)",
+                "height": 300,
+                "width": 400,
+                "color": 4
+            },
+            "id": "note-planning",
+            "name": "Sticky Note - Planning",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                -1000,
+                -200
+            ]
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "gpt-4o",
+                    "mode": "list",
+                    "cachedResultName": "gpt-4o"
+                },
+                "options": {
+                    "maxTokens": 3000,
+                    "temperature": 0.7
+                }
+            },
+            "id": "openai-chat-model",
+            "name": "OpenAI Chat Model",
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1,
+            "position": [
+                -800,
+                200
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsonSchemaExample": "{\n  \"topic\": \"주제\",\n  \"narration\": \"문장1. 문장2. 문장3. 문장4. 문장5. 문장6.\",\n  \"sentences\": [\n    \"문장1\",\n    \"문장2\",\n    \"문장3\",\n    \"문장4\",\n    \"문장5\",\n    \"문장6\"\n  ],\n  \"image_prompts\": [\n    \"프롬프트1\",\n    \"프롬프트2\",\n    \"프롬프트3\",\n    \"프롬프트4\",\n    \"프롬프트5\",\n    \"프롬프트6\"\n  ]\n}"
+            },
+            "id": "output-parser",
+            "name": "Structured Output Parser",
+            "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+            "typeVersion": 1,
+            "position": [
+                -600,
+                200
+            ]
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=# Context\n오늘 날짜: {{ $now.setZone('Asia/Seoul').toFormat('yyyy-MM-dd') }}\n타겟: 60대 이상 한국 시니어 (노안, 난청 고려)\n\n# Task\n시니어들이 가장 관심 가질만한 '건강 주제' (예: 무릎 통증, 당뇨, 불면증) 하나를 선정하고, '보람이' 페르소나로 30초 쇼츠 대본과 이미지 프롬프트를 작성하세요.\n\n# Persona (보람이)\n- 5살 손주, 귀엽고 예의바름\n- 말투: \"할머니~\", \"~해요!\", \"사랑해요!\"\n- 목소리 톤: 천천히, 또박또박\n\n# Script Rules (Retention Strategy)\n1. **Hook (문장1)**: 증상을 콕 집어서 질문 (예: \"할머니, 계단 내려갈 때 무릎 시리죠?\")\n2. **Solution (문장2~5)**: 어렵지 않은 해결책 1가지 제시 (전문 용어 금지)\n3. **Promise (문장6)**: 효과와 사랑 표현 (예: \"그럼 우리 산책 갈 수 있어요! 사랑해요!\")\n4. **Length**: 정확히 6문장. 문장당 40자 이내.\n\n# Visual Rules (Pixar Style)\n- 모든 이미지는 'Pixar style 3D animation' 스타일\n- 주인공 '보람이' (5살 한국 여자아이, 의사 가운)가 항상 등장\n- 상황에 맞는 동작 묘사 (예: 무릎을 가리키는 보람이)\n",
+                "options": {
+                    "systemMessage": "당신은 시니어 전문 유튜브 크리에이터 '보람이'의 두뇌입니다. 어르신들이 이해하기 쉽고, 듣기 편한 콘텐츠를 만듭니다."
+                }
+            },
+            "id": "agent-planner",
+            "name": "Agent - Strategy Planner",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1,
+            "position": [
+                -800,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// 🎵 Robust Sentence Splitter (from Advanced Workflow)\n// 문장을 정확히 6개로 분리하고, 부족하면 채워넣는 로직\n\nconst input = items[0].json;\nconst narrationText = input.narration || '';\n\nconsole.log('Input Narration:', narrationText);\n\nlet splitSentences = [];\n\n// 1. 문장부호로 분리\nsplitSentences = narrationText\n  .split(/[.!?。]\\s*/)\n  .map(s => s.trim())\n  .filter(s => s);\n\n// 2. 6개가 아니면 줄바꿈으로 재시도\nif (splitSentences.length !== 6) {\n  const newlineSplit = narrationText.split('\\n').map(s => s.trim()).filter(s => s);\n  if (newlineSplit.length >= 2) splitSentences = newlineSplit;\n}\n\n// 3. 그래도 부족하면 빈칸 채우기 (에러 방지)\nwhile (splitSentences.length < 6) splitSentences.push('사랑해요 할머니!');\n\n// 4. 6개 초과면 자르기\nsplitSentences = splitSentences.slice(0, 6);\n\n// 5. 이미지 프롬프트 매핑\nconst imagePrompts = input.image_prompts || [];\nwhile (imagePrompts.length < 6) imagePrompts.push('Pixar style 3D animation, cute girl smiling');\n\n// 결과 반환\nconst results = splitSentences.map((sentence, index) => ({\n  json: {\n    sentence: sentence,\n    image_prompt: imagePrompts[index],\n    index: index + 1,\n    total: 6\n  }\n}));\n\nreturn results;"
+            },
+            "id": "code-splitter",
+            "name": "Code - Robust Splitter",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -400,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "content": "### 🎨 2. 제작 (Production)\n- **Visual**: DALL-E 3 (Pixar Style)\n- **Audio**: OpenAI TTS (Nova, 0.85x)\n- **Render**: Creatomate",
+                "height": 300,
+                "width": 400,
+                "color": 5
+            },
+            "id": "note-production",
+            "name": "Sticky Note - Production",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                -200,
+                -200
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "image",
+                "operation": "generate",
+                "prompt": "={{ $json.image_prompt }}",
+                "model": "dall-e-3",
+                "options": {
+                    "size": "1024x1024",
+                    "quality": "standard",
+                    "style": "vivid"
+                }
+            },
+            "id": "dalle-image",
+            "name": "DALL-E 3 Image",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                0,
+                -100
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "resource": "audio",
+                "operation": "speech",
+                "model": "tts-1-hd",
+                "text": "={{ $json.sentence }}",
+                "options": {
+                    "voice": "nova",
+                    "speed": 0.85
+                }
+            },
+            "id": "openai-tts",
+            "name": "OpenAI TTS",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                0,
+                100
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.creatomate.com/v1/renders",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "template_id",
+                            "value": "YOUR_TEMPLATE_ID"
+                        },
+                        {
+                            "name": "modifications",
+                            "value": "={{ {\n  \"Image\": $('DALL-E 3 Image').item.json.url,\n  \"Audio\": $('OpenAI TTS').item.json.url,\n  \"Text\": $('Code - Robust Splitter').item.json.sentence\n} }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "creatomate-render",
+            "name": "Creatomate Render",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                300,
+                0
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "Tzlf95EWgm3pWD1A",
+                    "name": "Header Auth account"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Schedule Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Agent - Strategy Planner",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Agent - Strategy Planner",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Structured Output Parser": {
+            "ai_outputParser": [
+                [
+                    {
+                        "node": "Agent - Strategy Planner",
+                        "type": "ai_outputParser",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Agent - Strategy Planner": {
+            "main": [
+                [
+                    {
+                        "node": "Code - Robust Splitter",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code - Robust Splitter": {
+            "main": [
+                [
+                    {
+                        "node": "DALL-E 3 Image",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "OpenAI TTS",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "DALL-E 3 Image": {
+            "main": [
+                [
+                    {
+                        "node": "Creatomate Render",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI TTS": {
+            "main": [
+                [
+                    {
+                        "node": "Creatomate Render",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

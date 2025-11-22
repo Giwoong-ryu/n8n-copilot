@@ -1,0 +1,244 @@
+{
+    "nodes": [
+        {
+            "parameters": {},
+            "name": "Manual Trigger",
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "position": [
+                250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "search",
+                "searchMethod": "advanced",
+                "query": "'{FOLDER_ID}' in parents and mimeType='application/pdf'",
+                "returnAll": true
+            },
+            "name": "Google Drive Search PDFs",
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 1,
+            "position": [
+                500,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "batchSize": 1
+            },
+            "name": "Loop Over Items",
+            "type": "n8n-nodes-base.loop",
+            "typeVersion": 1,
+            "position": [
+                750,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "download",
+                "fileId": "={{$json.id}}"
+            },
+            "name": "Google Drive Download PDF",
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                300
+            ]
+        },
+        {
+            "parameters": {},
+            "name": "Extract from PDF",
+            "type": "n8n-nodes-base.extractFromPdf",
+            "typeVersion": 1,
+            "position": [
+                1250,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "model": "gpt-4.1-mini",
+                "systemMessage": "You are a senior HR analyst. Evaluate the CV for a senior C# developer role. Highlight name, email, years of C# experience, relevant projects, and give a binary recommendation (true/false).",
+                "userMessage": "Please analyze the following CV text and return a JSON object with the fields: { \"fullName\": \"\", \"email\": \"\", \"cSharpYears\": 0, \"relevantProjects\": [], \"recommended\": true/false }\n\nCV Text:\n{{ $json.text }}",
+                "outputFormat": "json",
+                "requireSpecificOutputFormat": true
+            },
+            "name": "AI Agent CV Summary",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                1500,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "operation": "send",
+                "toEmail": "hiring.manager@example.com",
+                "subject": "CV Review – {{ $json.fullName }}",
+                "body": "Candidate: {{ $json.fullName }}\nEmail: {{ $json.email }}\nC# Experience: {{ $json.cSharpYears }} years\nProjects: {{ $json.relevantProjects.join(', ') }}\nRecommendation: {{ $json.recommended ? '✅ Recommend' : '❌ Do not recommend' }}\n\nPlease click **Approve** to schedule an interview or **Disapprove** to skip.",
+                "options": {
+                    "buttons": [
+                        {
+                            "label": "Approve",
+                            "value": true
+                        },
+                        {
+                            "label": "Disapprove",
+                            "value": false
+                        }
+                    ]
+                }
+            },
+            "name": "Human‑in‑the‑Loop Gmail",
+            "type": "n8n-nodes-base.gmail",
+            "typeVersion": 1,
+            "position": [
+                1750,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{$json.approved}}",
+                            "operation": "equal",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "name": "If Approved",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 1,
+            "position": [
+                2000,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "workflowId": "AI_Agent_Interview_Scheduler"
+            },
+            "name": "Execute Subworkflow",
+            "type": "n8n-nodes-base.executeWorkflow",
+            "typeVersion": 1,
+            "position": [
+                2250,
+                200
+            ]
+        }
+    ],
+    "connections": {
+        "Manual Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Google Drive Search PDFs",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Drive Search PDFs": {
+            "main": [
+                [
+                    {
+                        "node": "Loop Over Items",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Loop Over Items": {
+            "main": [
+                [
+                    {
+                        "node": "Google Drive Download PDF",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Drive Download PDF": {
+            "main": [
+                [
+                    {
+                        "node": "Extract from PDF",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract from PDF": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent CV Summary",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent CV Summary": {
+            "main": [
+                [
+                    {
+                        "node": "Human‑in‑the‑Loop Gmail",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Human‑in‑the‑Loop Gmail": {
+            "main": [
+                [
+                    {
+                        "node": "If Approved",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "If Approved": {
+            "main": [
+                [
+                    {
+                        "node": "Execute Subworkflow",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                []
+            ]
+        },
+        "Execute Subworkflow": {
+            "main": [
+                [
+                    {
+                        "node": "Loop Over Items",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {},
+    "id": "Interview_Scheduler"
+}

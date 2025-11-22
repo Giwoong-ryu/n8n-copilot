@@ -1,0 +1,738 @@
+{
+    "name": "Shorts_v4_CrossValidation",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "hoursInterval": 24
+                        }
+                    ]
+                }
+            },
+            "id": "trigger-001",
+            "name": "1. 스케줄 트리거",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                -3000,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "https://www.googleapis.com/youtube/v3/videos",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "part",
+                            "value": "snippet"
+                        },
+                        {
+                            "name": "chart",
+                            "value": "mostPopular"
+                        },
+                        {
+                            "name": "regionCode",
+                            "value": "KR"
+                        },
+                        {
+                            "name": "videoCategoryId",
+                            "value": "26"
+                        },
+                        {
+                            "name": "maxResults",
+                            "value": "10"
+                        },
+                        {
+                            "name": "key",
+                            "value": "YOUR_YOUTUBE_API_KEY"
+                        }
+                    ]
+                }
+            },
+            "id": "youtube-api",
+            "name": "2-A. YouTube Trending API",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -2800,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "url": "https://trends.google.com/trends/trendingsearches/daily/rss?geo=KR",
+                "options": {}
+            },
+            "id": "trends-rss",
+            "name": "2-B. Google Trends RSS",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -2800,
+                100
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// YouTube 데이터 파싱\nconst items = $json.items || [];\nconst youtube_topics = items.slice(0, 10).map(item => ({\n  title: item.snippet.title,\n  description: item.snippet.description.substring(0, 200)\n}));\n\nreturn [{\n  json: {\n    youtube_data: JSON.stringify(youtube_topics, null, 2)\n  }\n}];"
+            },
+            "id": "parse-youtube",
+            "name": "2-C. YouTube 파싱",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -2600,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Google Trends XML 파싱\nconst xml2js = require('xml2js');\nconst xmlData = $binary.data.toString();\n\nlet trends_data = [];\ntry {\n  const result = await xml2js.parseStringPromise(xmlData);\n  const items = result.rss.channel[0].item || [];\n  trends_data = items.slice(0, 10).map(item => ({\n    title: item.title[0],\n    traffic: item['ht:approx_traffic'] ? item['ht:approx_traffic'][0] : 'N/A'\n  }));\n} catch (error) {\n  trends_data = [{title: 'Parse Error', traffic: '0'}];\n}\n\nreturn [{\n  json: {\n    trends_data: JSON.stringify(trends_data, null, 2)\n  }\n}];"
+            },
+            "id": "parse-trends",
+            "name": "2-D. Trends 파싱",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -2600,
+                100
+            ]
+        },
+        {
+            "parameters": {
+                "mode": "mergeByPosition"
+            },
+            "id": "merge-sources",
+            "name": "2-E. 소스 병합",
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3,
+            "position": [
+                -2400,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "chat",
+                "model": "gpt-4o",
+                "prompt": {
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "당신은 시니어 건강 전문 트렌드 분석가입니다. 두 가지 데이터 소스를 **교차 검증**하여 가장 신뢰할 수 있는 건강 주제를 선정하세요.\\n\\n[분석 규칙]\\n1. YouTube + Google Trends에서 **공통적으로 나타나는 키워드** 우선\\n2. 두 소스 중 하나에만 나타나면 신뢰도 낮음으로 배제\\n3. 60대+ 시니어가 '아직 모를 법한' 구체적 주제 선정\\n4. 뻔한 주제 배제 (예: 그냥 '걷기 운동')\\n5. 형식: '증상/문제 + 구체적 해결책' (예: 환절기 무릎 통증, 3분 스트레칭)\\n\\n[출력]\\n- 주제만 한 줄로 출력 (부연 설명 금지)"
+                        },
+                        {
+                            "role": "user",
+                            "content": "={{ '=== YouTube 인기 영상 (건강) ===\\n' + $json.youtube_data + '\\n\\n=== Google 실시간 Trends ===\\n' + $json.trends_data + '\\n\\n위 두 소스를 교차 검증하여 시니어 건강 주제 1개를 추출하세요.' }}"
+                        }
+                    ]
+                }
+            },
+            "id": "gpt-cross-validation",
+            "name": "2-F. AI 교차검증",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                -2200,
+                0
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": {
+                    "__rl": true,
+                    "value": "1LCRclOtWm5J7JncNcLn6USSwr6rchSOFewl2YJmwprM",
+                    "mode": "id"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "topic": "={{ $json.choices[0].message.content }}",
+                        "status": "planned",
+                        "video_url": "",
+                        "created_at": "={{ $now.toISO() }}"
+                    }
+                }
+            },
+            "id": "sheets-log",
+            "name": "3. 주제 로깅",
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.5,
+            "position": [
+                -2000,
+                0
+            ],
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "qHzPZhMeMIC0bqve",
+                    "name": "Google Sheets account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "resource": "chat",
+                "model": "gpt-4o",
+                "prompt": {
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": "당신은 5살 손녀 '보람이'입니다. 할머니께 건강 정보를 알려드리는 귀엽고 사랑스러운 어린이예요.\\n\\n[페르소나 규칙]\\n- 말투: '할머니~', '~해요!', '~드려요!'\\n- 성격: 밝고 긍정적\\n- 목적: 할머니의 건강을 진심으로 걱정\\n\\n[스크립트 규칙]\\n1. Hook (문장 1): 증상 질문 (예: 할머니~ 요즘 무릎 아프시죠?)\\n2. Solution (문장 2-5): 쉬운 해결책 4단계\\n3. Promise (문장 6): 효과 보장 및 사랑 표현\\n4. 총 6문장, 각 문장 40자 이내\\n5. 출력 형식: 문장1\\n문장2\\n...\\n문장6"
+                        },
+                        {
+                            "role": "user",
+                            "content": "={{ '주제: ' + $('3. 주제 로깅').item.json.topic + '\\n\\n위 주제로 시니어 타겟 쇼츠 대본을 작성하세요.' }}"
+                        }
+                    ]
+                }
+            },
+            "id": "gpt-boram",
+            "name": "4. 보람이 대본 작성",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                -1800,
+                0
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "// 보람이 대본을 정확히 6문장으로 분할\nconst script = $json.choices[0].message.content;\nlet sentences = script.split('\\n').map(s => s.trim()).filter(s => s);\n\nwhile (sentences.length < 6) {\n  sentences.push('사랑해요 할머니!');\n}\nsentences = sentences.slice(0, 6);\n\nreturn sentences.map((sentence, index) => ({\n  json: {\n    sentence: sentence,\n    index: index + 1,\n    topic: $('3. 주제 로깅').item.json.topic\n  }\n}));"
+            },
+            "id": "code-split",
+            "name": "5. 대본 6분할",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -1600,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "image",
+                "operation": "create",
+                "prompt": "={{ 'Pixar 3D style, cute 5-year-old Korean girl, white doctor coat, big eyes, sweet smile, colorful clinic. Scene: ' + $json.sentence }}",
+                "model": "dall-e-3",
+                "options": {
+                    "size": "1024x1024",
+                    "quality": "standard",
+                    "style": "vivid"
+                }
+            },
+            "id": "dalle",
+            "name": "6-A. DALL-E 이미지",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                -1400,
+                -100
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "resource": "audio",
+                "operation": "generate",
+                "input": "={{ $json.sentence }}",
+                "voice": "nova",
+                "options": {
+                    "model": "tts-1-hd",
+                    "response_format": "mp3",
+                    "speed": 0.85
+                }
+            },
+            "id": "tts",
+            "name": "6-B. TTS 오디오",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                -1400,
+                100
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "inputDataFieldName": "data",
+                "name": "={{ 'img_' + $json.index + '.png' }}",
+                "driveId": {
+                    "__rl": true,
+                    "value": "My Drive",
+                    "mode": "list"
+                },
+                "folderId": {
+                    "__rl": true,
+                    "value": "1gsDCi4sLLWl6w8HHklWDg1-RWbRdkTzr",
+                    "mode": "id"
+                }
+            },
+            "id": "drive-img",
+            "name": "7-A. Drive 이미지",
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 3,
+            "position": [
+                -1200,
+                -100
+            ],
+            "credentials": {
+                "googleDriveOAuth2Api": {
+                    "id": "WPZfhNj5Q0D1maw9",
+                    "name": "Google Drive account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "inputDataFieldName": "data",
+                "name": "={{ 'aud_' + $json.index + '.mp3' }}",
+                "driveId": {
+                    "__rl": true,
+                    "value": "My Drive",
+                    "mode": "list"
+                },
+                "folderId": {
+                    "__rl": true,
+                    "value": "1gsDCi4sLLWl6w8HHklWDg1-RWbRdkTzr",
+                    "mode": "id"
+                }
+            },
+            "id": "drive-aud",
+            "name": "7-B. Drive 오디오",
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 3,
+            "position": [
+                -1200,
+                100
+            ],
+            "credentials": {
+                "googleDriveOAuth2Api": {
+                    "id": "WPZfhNj5Q0D1maw9",
+                    "name": "Google Drive account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "mode": "mergeByPosition"
+            },
+            "id": "merge-assets",
+            "name": "8. 자산 병합",
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3,
+            "position": [
+                -1000,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.creatomate.com/v1/renders",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ {\n  template_id: 'YOUR_TEMPLATE_ID',\n  modifications: {\n    'Text-1': $('8. 자산 병합').all()[0].json.sentence,\n    'Image-1': $('7-A. Drive 이미지').all()[0].json.webContentLink,\n    'Audio-1': $('7-B. Drive 오디오').all()[0].json.webContentLink,\n    'Text-2': $('8. 자산 병합').all()[1].json.sentence,\n    'Image-2': $('7-A. Drive 이미지').all()[1].json.webContentLink,\n    'Audio-2': $('7-B. Drive 오디오').all()[1].json.webContentLink,\n    'Text-3': $('8. 자산 병합').all()[2].json.sentence,\n    'Image-3': $('7-A. Drive 이미지').all()[2].json.webContentLink,\n    'Audio-3': $('7-B. Drive 오디오').all()[2].json.webContentLink,\n    'Text-4': $('8. 자산 병합').all()[3].json.sentence,\n    'Image-4': $('7-A. Drive 이미지').all()[3].json.webContentLink,\n    'Audio-4': $('7-B. Drive 오디오').all()[3].json.webContentLink,\n    'Text-5': $('8. 자산 병합').all()[4].json.sentence,\n    'Image-5': $('7-A. Drive 이미지').all()[4].json.webContentLink,\n    'Audio-5': $('7-B. Drive 오디오').all()[4].json.webContentLink,\n    'Text-6': $('8. 자산 병합').all()[5].json.sentence,\n    'Image-6': $('7-A. Drive 이미지').all()[5].json.webContentLink,\n    'Audio-6': $('7-B. Drive 오디오').all()[5].json.webContentLink\n  }\n} }}"
+            },
+            "id": "creatomate",
+            "name": "9. Creatomate 렌더링",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -800,
+                0
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "Tzlf95EWgm3pWD1A",
+                    "name": "Header Auth account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "amount": 30,
+                "unit": "seconds"
+            },
+            "id": "wait",
+            "name": "10. 대기 30초",
+            "type": "n8n-nodes-base.wait",
+            "typeVersion": 1,
+            "position": [
+                -600,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "url": "={{ $json.url }}",
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "file"
+                        }
+                    }
+                }
+            },
+            "id": "download",
+            "name": "11. 영상 다운로드",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -400,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "number": [
+                        {
+                            "value1": "={{ $binary.data.fileSize }}",
+                            "operation": "larger",
+                            "value2": 2000000
+                        }
+                    ]
+                }
+            },
+            "id": "verify",
+            "name": "12. 영상 검증",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                -200,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "video",
+                "operation": "upload",
+                "title": "={{ $('3. 주제 로깅').item.json.topic + ' - 보람이' }}",
+                "description": "시니어 건강 꿀팁 #Shorts #건강 #보람이",
+                "categoryId": "26",
+                "privacyStatus": "unlisted",
+                "options": {}
+            },
+            "id": "youtube",
+            "name": "13. YouTube 업로드",
+            "type": "n8n-nodes-base.youTube",
+            "typeVersion": 1,
+            "position": [
+                0,
+                0
+            ],
+            "credentials": {
+                "youTubeOAuth2Api": {
+                    "id": "oLZPXMvaa8mS5fz0",
+                    "name": "YouTube account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "update",
+                "documentId": {
+                    "__rl": true,
+                    "value": "1LCRclOtWm5J7JncNcLn6USSwr6rchSOFewl2YJmwprM",
+                    "mode": "id"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "status": "published",
+                        "video_url": "={{ $json.id }}",
+                        "published_at": "={{ $now.toISO() }}"
+                    }
+                },
+                "options": {}
+            },
+            "id": "sheets-update",
+            "name": "14. 상태 업데이트",
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.5,
+            "position": [
+                200,
+                0
+            ],
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "qHzPZhMeMIC0bqve",
+                    "name": "Google Sheets account"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "1. 스케줄 트리거": {
+            "main": [
+                [
+                    {
+                        "node": "2-A. YouTube Trending API",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "2-B. Google Trends RSS",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "2-A. YouTube Trending API": {
+            "main": [
+                [
+                    {
+                        "node": "2-C. YouTube 파싱",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "2-B. Google Trends RSS": {
+            "main": [
+                [
+                    {
+                        "node": "2-D. Trends 파싱",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "2-C. YouTube 파싱": {
+            "main": [
+                [
+                    {
+                        "node": "2-E. 소스 병합",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "2-D. Trends 파싱": {
+            "main": [
+                [
+                    {
+                        "node": "2-E. 소스 병합",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "2-E. 소스 병합": {
+            "main": [
+                [
+                    {
+                        "node": "2-F. AI 교차검증",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "2-F. AI 교차검증": {
+            "main": [
+                [
+                    {
+                        "node": "3. 주제 로깅",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "3. 주제 로깅": {
+            "main": [
+                [
+                    {
+                        "node": "4. 보람이 대본 작성",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "4. 보람이 대본 작성": {
+            "main": [
+                [
+                    {
+                        "node": "5. 대본 6분할",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "5. 대본 6분할": {
+            "main": [
+                [
+                    {
+                        "node": "6-A. DALL-E 이미지",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "6-B. TTS 오디오",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "6-A. DALL-E 이미지": {
+            "main": [
+                [
+                    {
+                        "node": "7-A. Drive 이미지",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "6-B. TTS 오디오": {
+            "main": [
+                [
+                    {
+                        "node": "7-B. Drive 오디오",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "7-A. Drive 이미지": {
+            "main": [
+                [
+                    {
+                        "node": "8. 자산 병합",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "7-B. Drive 오디오": {
+            "main": [
+                [
+                    {
+                        "node": "8. 자산 병합",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "8. 자산 병합": {
+            "main": [
+                [
+                    {
+                        "node": "9. Creatomate 렌더링",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "9. Creatomate 렌더링": {
+            "main": [
+                [
+                    {
+                        "node": "10. 대기 30초",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "10. 대기 30초": {
+            "main": [
+                [
+                    {
+                        "node": "11. 영상 다운로드",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "11. 영상 다운로드": {
+            "main": [
+                [
+                    {
+                        "node": "12. 영상 검증",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "12. 영상 검증": {
+            "main": [
+                [
+                    {
+                        "node": "13. YouTube 업로드",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "13. YouTube 업로드": {
+            "main": [
+                [
+                    {
+                        "node": "14. 상태 업데이트",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

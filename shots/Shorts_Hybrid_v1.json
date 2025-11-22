@@ -1,0 +1,281 @@
+{
+    "name": "Shorts_Hybrid_v1 (Boram + Advanced)",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours"
+                        }
+                    ]
+                }
+            },
+            "id": "trigger-schedule",
+            "name": "Schedule Trigger",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1,
+            "position": [
+                -1000,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "content": "### 1. 기획 (Planning)\n- **Persona**: 보람이 (5살 손주)\n- **Topic**: 시니어 건강\n- **Agent**: LangChain으로 대본 작성",
+                "height": 300,
+                "width": 400
+            },
+            "id": "note-planning",
+            "name": "Sticky Note - Planning",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                -800,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "gpt-4o",
+                    "mode": "list",
+                    "cachedResultName": "gpt-4o"
+                },
+                "options": {
+                    "maxTokens": 2000,
+                    "temperature": 0.7
+                }
+            },
+            "id": "openai-chat-model",
+            "name": "OpenAI Chat Model",
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1,
+            "position": [
+                -600,
+                100
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsonSchemaExample": "{\n  \"narration\": \"문장1 + 문장2 + 문장3 + 문장4 + 문장5 + 문장6\",\n  \"sentences\": [\n    \"문장1\",\n    \"문장2\",\n    \"문장3\",\n    \"문장4\",\n    \"문장5\",\n    \"문장6\"\n  ]\n}"
+            },
+            "id": "output-parser",
+            "name": "Structured Output Parser",
+            "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+            "typeVersion": 1,
+            "position": [
+                -400,
+                100
+            ]
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=# Context\n오늘 날짜는 {{ $now.setZone('Asia/Seoul').toFormat('yyyy-MM-dd') }} 입니다.\n시니어 건강을 위한 주제를 하나 선정하고, '보람이' 페르소나로 6문장 대본을 작성하세요.\n\n# Persona (보람이)\n- 5살 한국 여자아이, 할머니를 사랑하는 꼬마 의사\n- 말투: \"할머니~ 사랑해요~\", \"꼭 약속해요!\"\n\n# Rules\n1. 문장 6개로 구성\n2. 전체 30초 분량\n3. 어려운 의학 용어는 쉽게 풀어서 설명\n",
+                "options": {
+                    "systemMessage": "당신은 시니어 건강 전문 키즈 크리에이터 '보람이'의 두뇌입니다."
+                }
+            },
+            "id": "agent-script",
+            "name": "Agent - Script Writer",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1,
+            "position": [
+                -600,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "fieldToSplitOut": "sentences",
+                "options": {}
+            },
+            "id": "split-out",
+            "name": "Split Out Sentences",
+            "type": "n8n-nodes-base.splitOut",
+            "typeVersion": 1,
+            "position": [
+                -200,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "image",
+                "operation": "generate",
+                "prompt": "={{ 'Pixar style 3D animation, cute 5-year-old Korean girl (Boram) wearing a toy doctor gown, ' + $json }}",
+                "model": "dall-e-3",
+                "options": {
+                    "size": "1024x1024",
+                    "quality": "standard",
+                    "style": "vivid"
+                }
+            },
+            "id": "dalle-image",
+            "name": "DALL-E 3 Image",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                0,
+                -200
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "resource": "audio",
+                "operation": "speech",
+                "model": "tts-1-hd",
+                "text": "={{ $json }}",
+                "options": {
+                    "voice": "nova"
+                }
+            },
+            "id": "openai-tts",
+            "name": "OpenAI TTS",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                0,
+                0
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.creatomate.com/v1/renders",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "template_id",
+                            "value": "YOUR_TEMPLATE_ID"
+                        },
+                        {
+                            "name": "modifications",
+                            "value": "={{ {\n  \"Image\": $('DALL-E 3 Image').item.json.url,\n  \"Audio\": $('OpenAI TTS').item.json.url,\n  \"Text\": $('Split Out Sentences').item.json\n} }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "creatomate-render",
+            "name": "Creatomate Render",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                300,
+                -100
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "Tzlf95EWgm3pWD1A",
+                    "name": "Header Auth account"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Schedule Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "Agent - Script Writer",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Agent - Script Writer",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Structured Output Parser": {
+            "ai_outputParser": [
+                [
+                    {
+                        "node": "Agent - Script Writer",
+                        "type": "ai_outputParser",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Agent - Script Writer": {
+            "main": [
+                [
+                    {
+                        "node": "Split Out Sentences",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Split Out Sentences": {
+            "main": [
+                [
+                    {
+                        "node": "DALL-E 3 Image",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "OpenAI TTS",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "DALL-E 3 Image": {
+            "main": [
+                [
+                    {
+                        "node": "Creatomate Render",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI TTS": {
+            "main": [
+                [
+                    {
+                        "node": "Creatomate Render",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

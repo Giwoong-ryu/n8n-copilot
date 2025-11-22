@@ -1,0 +1,87 @@
+{
+    "name": "자막 추출 워크플로우 (노드 7-9)",
+    "nodes": [
+        {
+            "parameters": {
+                "command": "npx -y youtube-transcript {{ $json.videoId }} --lang=ko",
+                "options": {}
+            },
+            "id": "node-7-execute-command",
+            "name": "7. 자막 추출 (Execute Command)",
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+                0,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "string": [
+                        {
+                            "value1": "={{ $json.stdout }}",
+                            "operation": "isNotEmpty"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "node-8-check",
+            "name": "8. 자막 유무 확인",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                200,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// Execute Command 출력 파싱\nconst output = $json.stdout || '';\n\nif (!output || output.trim() === '') {\n  throw new Error('자막을 찾을 수 없습니다.');\n}\n\ntry {\n  const transcriptData = JSON.parse(output);\n  const transcript = transcriptData.map(item => item.text).join(' ');\n  \n  return {\n    json: {\n      videoId: $('7. 자막 추출 (Execute Command)').item.json.videoId,\n      transcript: transcript,\n      transcriptLength: transcript.length\n    }\n  };\n} catch (error) {\n  throw new Error('자막 파싱 실패: ' + error.message);\n}"
+            },
+            "id": "node-9-parse",
+            "name": "9. 자막 파싱",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                400,
+                -100
+            ]
+        }
+    ],
+    "connections": {
+        "7. 자막 추출 (Execute Command)": {
+            "main": [
+                [
+                    {
+                        "node": "8. 자막 유무 확인",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "8. 자막 유무 확인": {
+            "main": [
+                [
+                    {
+                        "node": "9. 자막 파싱",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                []
+            ]
+        }
+    },
+    "pinData": {},
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "tags": [],
+    "triggerCount": 0,
+    "updatedAt": "2025-11-22T12:15:00.000Z",
+    "versionId": "subtitle-extraction-mini"
+}

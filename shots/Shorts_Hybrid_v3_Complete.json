@@ -1,0 +1,568 @@
+{
+    "name": "Shorts_Hybrid_v3_Complete (Cloud-Native)",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "hoursInterval": 24
+                        }
+                    ]
+                }
+            },
+            "id": "trigger-schedule",
+            "name": "Every Morning 9AM",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                -1600,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "content": "### 🧠 Stage 1: Trend Analysis (Brain)\n- **Role**: 매일 아침 '시니어 건강' 트렌드 분석\n- **Output**: 오늘의 주제 (예: 환절기 무릎 통증)\n- **Log**: 구글 시트에 '기획 중' 상태로 저장",
+                "height": 260,
+                "width": 360,
+                "color": 4
+            },
+            "id": "note-stage1",
+            "name": "Note - Stage 1",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                -1400,
+                -140
+            ]
+        },
+        {
+            "parameters": {
+                "model": {
+                    "__rl": true,
+                    "value": "gpt-4o",
+                    "mode": "list",
+                    "cachedResultName": "gpt-4o"
+                },
+                "options": {
+                    "systemMessage": "당신은 유튜브 트렌드 분석가입니다. 현재 날짜와 계절을 고려하여 60대 이상 시니어들이 가장 관심 가질만한 '건강 주제'를 하나 선정하세요."
+                }
+            },
+            "id": "openai-trend",
+            "name": "Trend Analyst AI",
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1,
+            "position": [
+                -1200,
+                0
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": {
+                    "__rl": true,
+                    "value": "YOUR_GOOGLE_SHEET_ID",
+                    "mode": "id"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "Sheet1",
+                    "mode": "id"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "Date": "={{ $now.toFormat('yyyy-MM-dd') }}",
+                        "Topic": "={{ $json.text }}",
+                        "Status": "Planned"
+                    }
+                }
+            },
+            "id": "sheets-log-topic",
+            "name": "Log Topic (Sheets)",
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.5,
+            "position": [
+                -1000,
+                0
+            ],
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "qHzPZhMeMIC0bqve",
+                    "name": "Google Sheets account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "content": "### ✍️ Stage 2: Creative (Boram)\n- **Role**: '보람이' 페르소나로 대본 작성\n- **Logic**: Hook -> Solution -> Promise\n- **Splitter**: 6문장 강제 분할 (Code Node)",
+                "height": 260,
+                "width": 360,
+                "color": 5
+            },
+            "id": "note-stage2",
+            "name": "Note - Stage 2",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                -800,
+                -140
+            ]
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "={{ $json.Topic }} 주제로 시니어 타겟 쇼츠 대본을 작성하세요.\n\n# Persona (보람이)\n- 5살 손주, 귀엽고 예의바름\n- 말투: \"할머니~\", \"~해요!\"\n\n# Rules\n1. Hook (문장1): 증상 질문\n2. Solution (문장2~5): 쉬운 해결책\n3. Promise (문장6): 효과 보장\n4. 총 6문장 필수.",
+                "options": {}
+            },
+            "id": "agent-boram",
+            "name": "Agent - Boram Writer",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1,
+            "position": [
+                -800,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// 🎵 Robust Sentence Splitter (v3)\n// 문장을 정확히 6개로 분리하고, 부족하면 채워넣는 로직\n\nconst input = items[0].json;\nconst narrationText = input.output || input.text || '';\n\nlet splitSentences = narrationText\n  .split(/[.!?]\\s*/)\n  .map(s => s.trim())\n  .filter(s => s);\n\n// 6개가 아니면 줄바꿈으로 재시도\nif (splitSentences.length !== 6) {\n  const newlineSplit = narrationText.split('\\n').map(s => s.trim()).filter(s => s);\n  if (newlineSplit.length >= 2) splitSentences = newlineSplit;\n}\n\n// 부족하면 채우기\nwhile (splitSentences.length < 6) splitSentences.push('사랑해요 할머니!');\n\n// 6개 초과면 자르기\nsplitSentences = splitSentences.slice(0, 6);\n\n// 결과 반환\nreturn splitSentences.map((sentence, index) => ({\n  json: {\n    sentence: sentence,\n    index: index + 1,\n    total: 6,\n    topic: input.Topic // Keep context\n  }\n}));"
+            },
+            "id": "code-splitter",
+            "name": "Code - Robust Splitter",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -600,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "content": "### 🎨 Stage 3: Production (Factory)\n- **Visual**: DALL-E 3 (Pixar Style)\n- **Audio**: OpenAI TTS (Nova, 0.85x)\n- **Backup**: 구글 드라이브에 자산 저장",
+                "height": 260,
+                "width": 360,
+                "color": 3
+            },
+            "id": "note-stage3",
+            "name": "Note - Stage 3",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                -400,
+                -140
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "image",
+                "operation": "generate",
+                "prompt": "={{ 'Pixar style 3D animation, cute 5-year-old Korean girl (Boram) wearing doctor gown, ' + $json.sentence }}",
+                "model": "dall-e-3",
+                "options": {
+                    "size": "1024x1024",
+                    "quality": "standard",
+                    "style": "vivid"
+                }
+            },
+            "id": "dalle-image",
+            "name": "DALL-E 3 Image",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                -400,
+                -100
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "resource": "audio",
+                "operation": "speech",
+                "model": "tts-1-hd",
+                "text": "={{ $json.sentence }}",
+                "options": {
+                    "voice": "nova",
+                    "speed": 0.85
+                }
+            },
+            "id": "openai-tts",
+            "name": "OpenAI TTS",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                -400,
+                100
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "authentication": "oAuth2",
+                "operation": "upload",
+                "fileId": "={{ $json.id }}",
+                "options": {}
+            },
+            "id": "drive-backup",
+            "name": "Backup to Drive",
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 3,
+            "position": [
+                -200,
+                0
+            ],
+            "credentials": {
+                "googleDriveOAuth2Api": {
+                    "id": "LHO6WdTb8YMFt3uX",
+                    "name": "Google Drive account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "content": "### 🎬 Stage 4: Rendering (Cloud)\n- **Engine**: Creatomate (No Local FFmpeg)\n- **Logic**: 6개 자산 합쳐서 렌더링\n- **Verify**: 파일 크기 체크 (>2MB)",
+                "height": 260,
+                "width": 360,
+                "color": 2
+            },
+            "id": "note-stage4",
+            "name": "Note - Stage 4",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                0,
+                -140
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.creatomate.com/v1/renders",
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "template_id",
+                            "value": "YOUR_TEMPLATE_ID"
+                        },
+                        {
+                            "name": "modifications",
+                            "value": "={{ {\n  \"Image_1\": $('DALL-E 3 Image').all()[0].json.url,\n  \"Audio_1\": $('OpenAI TTS').all()[0].json.url,\n  \"Text_1\": $('Code - Robust Splitter').all()[0].json.sentence,\n  \"Image_2\": $('DALL-E 3 Image').all()[1].json.url,\n  \"Audio_2\": $('OpenAI TTS').all()[1].json.url,\n  \"Text_2\": $('Code - Robust Splitter').all()[1].json.sentence\n  // ... Add up to 6\n} }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "creatomate-render",
+            "name": "Creatomate Render",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                0,
+                0
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "Tzlf95EWgm3pWD1A",
+                    "name": "Header Auth account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "amount": 30,
+                "unit": "seconds"
+            },
+            "id": "wait-render",
+            "name": "Wait for Render",
+            "type": "n8n-nodes-base.wait",
+            "typeVersion": 1,
+            "position": [
+                200,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "url": "={{ $json.url }}",
+                "options": {}
+            },
+            "id": "get-video",
+            "name": "Get Final Video",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                400,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "number": [
+                        {
+                            "value1": "={{ $binary.data.fileSizeInBytes }}",
+                            "operation": "larger",
+                            "value2": 2000000
+                        }
+                    ]
+                }
+            },
+            "id": "verify-size",
+            "name": "Verify Size (>2MB)",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 1,
+            "position": [
+                600,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "content": "### 📢 Stage 5: Distribution\n- **YouTube**: Unlisted Upload\n- **Sheets**: Update 'Published' & URL\n- **Notify**: Complete Alert",
+                "height": 260,
+                "width": 360,
+                "color": 7
+            },
+            "id": "note-stage5",
+            "name": "Note - Stage 5",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                800,
+                -140
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "video",
+                "operation": "upload",
+                "title": "={{ $('Log Topic (Sheets)').item.json.Topic }} - 보람이의 건강정보",
+                "description": "시니어 건강 꿀팁! #Shorts #건강 #보람이",
+                "privacyStatus": "unlisted",
+                "options": {
+                    "notifySubscribers": false,
+                    "selfDeclaredMadeForKids": false
+                }
+            },
+            "id": "youtube-upload",
+            "name": "YouTube Upload",
+            "type": "n8n-nodes-base.youTube",
+            "typeVersion": 1,
+            "position": [
+                800,
+                -100
+            ],
+            "credentials": {
+                "youTubeOAuth2Api": {
+                    "id": "cpLeI7xNofzl0Q7R",
+                    "name": "YouTube account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "update",
+                "documentId": {
+                    "__rl": true,
+                    "value": "YOUR_GOOGLE_SHEET_ID",
+                    "mode": "id"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "Sheet1",
+                    "mode": "id"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "Status": "Published",
+                        "Video URL": "={{ $json.url }}"
+                    }
+                }
+            },
+            "id": "sheets-update",
+            "name": "Update Sheets",
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.5,
+            "position": [
+                1000,
+                0
+            ],
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "qHzPZhMeMIC0bqve",
+                    "name": "Google Sheets account"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Every Morning 9AM": {
+            "main": [
+                [
+                    {
+                        "node": "Trend Analyst AI",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Trend Analyst AI": {
+            "main": [
+                [
+                    {
+                        "node": "Log Topic (Sheets)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Log Topic (Sheets)':": {
+            "main": [
+                [
+                    {
+                        "node": "Agent - Boram Writer",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Agent - Boram Writer": {
+            "main": [
+                [
+                    {
+                        "node": "Code - Robust Splitter",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code - Robust Splitter": {
+            "main": [
+                [
+                    {
+                        "node": "DALL-E 3 Image",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "OpenAI TTS",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "DALL-E 3 Image": {
+            "main": [
+                [
+                    {
+                        "node": "Backup to Drive",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI TTS": {
+            "main": [
+                [
+                    {
+                        "node": "Backup to Drive",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Backup to Drive": {
+            "main": [
+                [
+                    {
+                        "node": "Creatomate Render",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Creatomate Render": {
+            "main": [
+                [
+                    {
+                        "node": "Wait for Render",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Wait for Render": {
+            "main": [
+                [
+                    {
+                        "node": "Get Final Video",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Final Video": {
+            "main": [
+                [
+                    {
+                        "node": "Verify Size (>2MB)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Verify Size (>2MB)": {
+            "main": [
+                [
+                    {
+                        "node": "YouTube Upload",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "YouTube Upload": {
+            "main": [
+                [
+                    {
+                        "node": "Update Sheets",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

@@ -1,0 +1,435 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "97be1602-9041-4b03-9636-25bf5e6c9c7e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "responses": {
+          "values": [
+            {}
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "422ca6a8-e92e-49a0-b5e6-057a8f9beec0",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "classify",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "c071fd62-8087-4ede-8d05-358cc0fbf2db",
+      "name": "Classify text for violations",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        768,
+        0
+      ],
+      "id": "883281ae-b74b-4b19-964d-de92abd9954a",
+      "name": "Generate audio",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        833.5,
+        0
+      ],
+      "id": "45df236d-73de-42af-967d-d5942a38d242",
+      "name": "Transcribe a recording",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "conversation",
+        "messages": {
+          "values": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        833.5,
+        0
+      ],
+      "id": "b2c91b41-f26d-474b-806e-31511aad771d",
+      "name": "Create a conversation",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "conversation",
+        "operation": "get"
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        833.5,
+        0
+      ],
+      "id": "fcfb9c70-50d3-4f11-b7c2-ebad15fef73b",
+      "name": "Get a conversation",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        833.5,
+        0
+      ],
+      "id": "cd3add3d-0037-450f-8126-c53fe35d3cc3",
+      "name": "Analyze image",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        833.5,
+        0
+      ],
+      "id": "c64ee843-f6c3-4202-83af-f9a2b7a0b31a",
+      "name": "Generate an image",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "edit",
+        "images": {
+          "values": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        833.5,
+        0
+      ],
+      "id": "ce3b5c38-b1ce-4d0e-9730-d1cfbfe8b4b2",
+      "name": "Edit image",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "conversation",
+        "operation": "remove"
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        833.5,
+        0
+      ],
+      "id": "94564a67-2b6d-4457-a45e-47c88a507f4d",
+      "name": "Remove a conversation",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "conversation",
+        "operation": "update"
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        833.5,
+        0
+      ],
+      "id": "fe803a4a-069f-4f9f-85a9-f4413e56962d",
+      "name": "Update a conversation",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2,
+      "position": [
+        833.5,
+        0
+      ],
+      "id": "26de0453-1123-40fa-8ed3-dafe7fc51910",
+      "name": "Generate a video",
+      "credentials": {
+        "openAiApi": {
+          "id": "sJPPMgnhjsgphIV9",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Classify text for violations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify text for violations": {
+      "main": [
+        [
+          {
+            "node": "Generate audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate audio": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Create a conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a conversation": {
+      "main": [
+        [
+          {
+            "node": "Get a conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a conversation": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Edit image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit image": {
+      "main": [
+        [
+          {
+            "node": "Remove a conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove a conversation": {
+      "main": [
+        [
+          {
+            "node": "Update a conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a conversation": {
+      "main": [
+        [
+          {
+            "node": "Generate a video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c5bd7aa2-9c7d-4455-80a6-fa3e0350e98b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4aae468442c323b9d7aeb70601530b18fe7dbbd836a0eb2623b1cb66bb4f0b2a"
+  },
+  "id": "lOcsmCULFdrifngl",
+  "tags": []
+}

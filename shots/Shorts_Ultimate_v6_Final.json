@@ -1,0 +1,870 @@
+{
+    "name": "Shorts_Ultimate_v6_TrendMaster_Final",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "hoursInterval": 6
+                        }
+                    ]
+                }
+            },
+            "id": "trigger-001",
+            "name": "1. 6시간마다 실행",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                -3200,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// 모니터링할 시니어 건강 채널 리스트 (검증된 5개)\nconst targetChannels = [\n  { id: 'YOUR_CHANNEL_ID_1', name: '건강박사TV', avgViews: 10000 },\n  { id: 'YOUR_CHANNEL_ID_2', name: '시니어건강연구소', avgViews: 15000 },\n  { id: 'YOUR_CHANNEL_ID_3', name: '실버라이프', avgViews: 8000 },\n  { id: 'YOUR_CHANNEL_ID_4', name: '할머니건강비법', avgViews: 12000 },\n  { id: 'YOUR_CHANNEL_ID_5', name: '노년건강', avgViews: 9000 }\n];\n\nreturn targetChannels.map(channel => ({\n  json: channel\n}));"
+            },
+            "id": "channel-list",
+            "name": "2. 타겟 채널 리스트",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -3000,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "https://www.googleapis.com/youtube/v3/search",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "part",
+                            "value": "snippet"
+                        },
+                        {
+                            "name": "channelId",
+                            "value": "={{ $json.id }}"
+                        },
+                        {
+                            "name": "order",
+                            "value": "date"
+                        },
+                        {
+                            "name": "type",
+                            "value": "video"
+                        },
+                        {
+                            "name": "videoDuration",
+                            "value": "short"
+                        },
+                        {
+                            "name": "publishedAfter",
+                            "value": "={{ $now.minus({days: 7}).toISO() }}"
+                        },
+                        {
+                            "name": "maxResults",
+                            "value": "10"
+                        },
+                        {
+                            "name": "key",
+                            "value": "YOUR_YOUTUBE_API_KEY"
+                        }
+                    ]
+                }
+            },
+            "id": "fetch-channel-videos",
+            "name": "3. 채널별 최근 1주 영상",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -2800,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "https://www.googleapis.com/youtube/v3/videos",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "part",
+                            "value": "statistics,contentDetails"
+                        },
+                        {
+                            "name": "id",
+                            "value": "={{ $json.items.map(item => item.id.videoId).join(',') }}"
+                        },
+                        {
+                            "name": "key",
+                            "value": "YOUR_YOUTUBE_API_KEY"
+                        }
+                    ]
+                }
+            },
+            "id": "fetch-statistics",
+            "name": "4. 통계 수집",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -2600,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "// 채널별 이상치 감지 알고리즘\nconst channelId = $('2. 타겟 채널 리스트').item.json.id;\nconst channelName = $('2. 타겟 채널 리스트').item.json.name;\nconst expectedAvg = $('2. 타겟 채널 리스트').item.json.avgViews;\n\nconst videos = $json.items || [];\n\nconst viewCounts = videos.map(v => parseInt(v.statistics.viewCount) || 0);\nconst actualAvg = viewCounts.reduce((a, b) => a + b, 0) / Math.max(viewCounts.length, 1);\n\nconst scoredVideos = videos.map((video, index) => {\n  const viewCount = parseInt(video.statistics.viewCount) || 0;\n  const likeCount = parseInt(video.statistics.likeCount) || 0;\n  const commentCount = parseInt(video.statistics.commentCount) || 0;\n  \n  const viewRatio = viewCount / Math.max(actualAvg, 1);\n  const engagementRate = (likeCount + commentCount * 2) / Math.max(viewCount, 1);\n  const outlierScore = viewRatio * (1 + engagementRate * 10);\n  \n  return {\n    videoId: video.id,\n    channelId: channelId,\n    channelName: channelName,\n    title: video.snippet?.title || 'No title',\n    publishedAt: video.snippet?.publishedAt,\n    viewCount: viewCount,\n    likeCount: likeCount,\n    commentCount: commentCount,\n    avgViews: Math.round(actualAvg),\n    viewRatio: viewRatio.toFixed(2),\n    engagementRate: (engagementRate * 100).toFixed(2) + '%',\n    outlierScore: outlierScore.toFixed(2),\n    isOutlier: viewRatio >= 2.0\n  };\n});\n\nconst outliers = scoredVideos.filter(v => v.isOutlier);\n\nif (outliers.length === 0) {\n  console.log(`${channelName}: 이상치 없음`);\n  return [];\n}\n\noutliers.sort((a, b) => b.outlierScore - a.outlierScore);\nconsole.log(`${channelName}: ${outliers.length}개 이상치 발견`);\n\nreturn outliers.map(v => ({ json: v }));"
+            },
+            "id": "detect-outliers",
+            "name": "5. 이상치 감지 및 스코어링",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -2400,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const allOutliers = $input.all().map(item => item.json);\n\nif (allOutliers.length === 0) {\n  throw new Error('이상치가 발견되지 않았습니다. 다음 실행을 기다립니다.');\n}\n\nallOutliers.sort((a, b) => b.outlierScore - a.outlierScore);\nconst top5 = allOutliers.slice(0, 5);\n\nconsole.log('=== TOP 5 급상승 영상 ===');\ntop5.forEach((v, i) => {\n  console.log(`${i+1}. [${v.channelName}] ${v.title} (${v.viewCount} views, ${v.viewRatio}x)`);\n});\n\nreturn top5.map(v => ({ json: v }));"
+            },
+            "id": "select-top5",
+            "name": "6. TOP 5 선택",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -2200,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "method": "GET",
+                "url": "={{ 'https://youtube.com/api/timedtext?v=' + $json.videoId + '&lang=ko' }}",
+                "options": {
+                    "response": {
+                        "response": {
+                            "neverError": true
+                        }
+                    }
+                }
+            },
+            "id": "fetch-transcript",
+            "name": "7. 자막 추출 시도",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                -2000,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "string": [
+                        {
+                            "value1": "={{ $json }}",
+                            "operation": "isNotEmpty"
+                        }
+                    ]
+                }
+            },
+            "id": "check-transcript",
+            "name": "8. 자막 유무 확인",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                -1800,
+                0
+            ]
+        },
+        {
+            "parameters": {
+                "jsCode": "const transcriptXml = $json.toString();\n\nconst textMatches = transcriptXml.match(/<text[^>]*>([^<]+)<\\/text>/g) || [];\nconst transcript = textMatches\n  .map(match => match.replace(/<[^>]*>/g, '').trim())\n  .filter(text => text.length > 0)\n  .join(' ');\n\nif (!transcript) {\n  throw new Error('자막을 파싱할 수 없습니다.');\n}\n\nreturn {\n  json: {\n    ...($('6. TOP 5 선택').item.json),\n    transcript: transcript,\n    transcriptLength: transcript.length\n  }\n};"
+            },
+            "id": "parse-transcript",
+            "name": "9. 자막 파싱",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -1600,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "modelId": {
+                    "__rl": true,
+                    "mode": "list",
+                    "value": "gpt-4o-mini"
+                },
+                "messages": {
+                    "values": [
+                        {
+                            "role": "system",
+                            "content": "당신은 유튜브 쇼츠 트렌드 분석 전문가입니다.\n\n영상의 메타데이터와 자막을 분석하여 다음을 추출하세요:\n\n1. **구조 분석**: 문장별 역할 (Hook, Problem, Solution, Proof, CTA 등)\n2. **바이럴 요소**: 파워 워드, 호기심 유발 기법\n3. **감정 곡선**: 각 섹션의 감정 강도 (0-100%)\n4. **시각적 스타일**: 색상, 텍스트 스타일 추정\n5. **성공 요인**: 왜 이 영상이 급상승했는지\n\nJSON 응답 형식:\n{\n  \"structure\": [\"Hook\", \"Problem\", \"Solution\", \"Proof\", \"Reason\", \"CTA\"],\n  \"viralElements\": {\n    \"powerWords\": [\"단 3일\", \"의사도 놀란\"],\n    \"curiosityGaps\": [\"왜냐하면...\"],\n    \"hooks\": [\"❌\", \"⚠️\"]\n  },\n  \"emotionalArc\": [\n    {\"section\": 1, \"emotion\": \"공감\", \"intensity\": 40},\n    {\"section\": 2, \"emotion\": \"놀라움\", \"intensity\": 80}\n  ],\n  \"visualStyle\": \"파스텔 블루, 큰 텍스트, 동작 일러스트\",\n  \"successFactor\": \"간단하고 즉시 실천 가능한 팁\"\n}"
+                        },
+                        {
+                            "role": "user",
+                            "content": "={{ '제목: ' + $json.title + '\\n\\n자막:\\n' + $json.transcript + '\\n\\n조회수: ' + $json.viewCount + ' (평균 대비 ' + $json.viewRatio + '배)\\n\\n위 급상승 영상을 분석하세요.' }}"
+                        }
+                    ]
+                },
+                "options": {
+                    "responseFormat": "json_object"
+                }
+            },
+            "id": "analyze-trend",
+            "name": "10. GPT 트렌드 분석",
+            "type": "@n8n/n8n-nodes-langchain.openAi",
+            "typeVersion": 2,
+            "position": [
+                -1400,
+                -100
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "modelId": {
+                    "__rl": true,
+                    "mode": "list",
+                    "value": "gpt-4o-mini"
+                },
+                "messages": {
+                    "values": [
+                        {
+                            "role": "system",
+                            "content": "당신은 유튜브 쇼츠 각색 전문가입니다.\n\n원본 영상의 주제를 '보람이' 페르소나에 맞게 재해석하세요.\n\n[보람이 페르소나]\n- 5살 손녀\n- 할머니의 건강을 진심으로 걱정\n- 귀엽고 사랑스러운 말투\n- 하지만 전문적인 건강 정보 전달\n\n[요구사항]\n1. 원본 주제의 핵심은 유지\n2. 시니어 타겟에 맞게 조정\n3. 보람이가 할머니께 알려드리는 형식\n4. 한 문장으로 주제 요약\n\n예시:\n원본: '무릎 통증 완화 3분 스트레칭'\n보람이: '할머니 무릎 아플 때 보람이가 알려주는 앉아서 하는 마법 스트레칭'"
+                        },
+                        {
+                            "role": "user",
+                            "content": "={{ '원본 제목: ' + $('9. 자막 파싱').item.json.title + '\\n\\n트렌드 분석:\\n' + JSON.stringify($json, null, 2) + '\\n\\n보람이 버전으로 주제를 재해석하세요.' }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "adapt-topic",
+            "name": "11. 주제 재해석 (보람이)",
+            "type": "@n8n/n8n-nodes-langchain.openAi",
+            "typeVersion": 2,
+            "position": [
+                -1200,
+                -100
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "modelId": {
+                    "__rl": true,
+                    "mode": "list",
+                    "value": "gpt-4o-mini"
+                },
+                "messages": {
+                    "values": [
+                        {
+                            "role": "system",
+                            "content": "당신은 '슈퍼 보람이' 대본 생성 AI입니다.\n\n[미션]\n원본 급상승 영상의 구조와 바이럴 요소를 정확히 복제하되,\n보람이 페르소나와 시니어 최적화를 적용하세요.\n\n[원본 구조 복제 규칙]\n1. 원본의 문장 구조를 그대로 따를 것\n2. 원본의 파워 워드를 보람이 스타일로 변환\n3. 원본의 호기심 유발 기법 유지\n4. 원본의 감정 곡선 재현\n\n[보람이 페르소나]\n- 말투: '할머니~', '~해요!', '~드려요!'\n- 감정: 밝고 긍정적, 할머니를 진심으로 걱정\n- 전문성: 건강 정보는 정확하게\n\n[시니어 최적화]\n- 각 문장 15단어 이하 (짧고 명확하게)\n- 숫자 활용 ('3번', '10초', '단 3일')\n- 핵심 동작 2번 반복 설명\n- 의성어/의태어 사용 ('빙글빙글', '쭉쭉')\n\n[바이럴 요소]\n원본 분석에서 추출된 파워 워드와 훅을 보람이 스타일로 변환:\n- \"의사도 놀란\" → \"의사 선생님도 깜짝 놀란\"\n- \"단 3일\" → \"딱 3일만\"\n- \"❌ 이건 절대\" → \"❌ 할머니~ 이건 하시면 안 돼요\"\n\n[출력 형식]\n정확히 6문장으로 작성:\n1. Hook (할머니 공감 + 놀라움)\n2-4. 해결책 3단계 (구체적 동작)\n5. 효과 설명 (이유)\n6. CTA (행동 유도 + 사랑 표현)\n\n각 문장 뒤에 줄바꿈(\\n)만 넣고, 번호는 붙이지 마세요."
+                        },
+                        {
+                            "role": "user",
+                            "content": "={{ '원본 분석:\\n' + $('10. GPT 트렌드 분석').item.json + '\\n\\n보람이 주제:\\n' + $json + '\\n\\n위 구조와 바이럴 요소를 정확히 복제한 보람이 대본 6문장을 작성하세요.' }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "generate-super-boram",
+            "name": "12. 슈퍼 보람이 대본 생성",
+            "type": "@n8n/n8n-nodes-langchain.openAi",
+            "typeVersion": 2,
+            "position": [
+                -1000,
+                -100
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const script = $json.toString();\nlet sentences = script.split('\\n').map(s => s.trim()).filter(s => s);\n\nsentences = sentences.map(s => s.replace(/^\\d+\\.\\s*/, ''));\n\nwhile (sentences.length < 6) {\n  sentences.push('사랑해요 할머니! 건강하세요!');\n}\n\nsentences = sentences.slice(0, 6);\n\nreturn sentences.map((sentence, index) => ({\n  json: {\n    sentence: sentence,\n    index: index + 1,\n    topic: $('11. 주제 재해석 (보람이)').item.json.toString(),\n    originalVideo: {\n      id: $('9. 자막 파싱').item.json.videoId,\n      title: $('9. 자막 파싱').item.json.title,\n      channel: $('9. 자막 파싱').item.json.channelName\n    }\n  }\n}));"
+            },
+            "id": "split-script",
+            "name": "13. 대본 6분할",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -800,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "image",
+                "prompt": "={{ 'Pixar style 3D animation, cute 5-year-old Korean girl wearing white doctor gown, big eyes, sweet smile. Colorful medical clinic background. Scene: ' + $json.sentence }}",
+                "options": {
+                    "model": "dall-e-3",
+                    "size": "1024x1024",
+                    "quality": "standard"
+                }
+            },
+            "id": "dalle-image",
+            "name": "14. 이미지 생성 (DALL-E)",
+            "type": "@n8n/n8n-nodes-langchain.openAi",
+            "typeVersion": 2,
+            "position": [
+                -600,
+                -200
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "resource": "audio",
+                "text": "={{ $json.sentence }}",
+                "options": {
+                    "model": "tts-1-hd",
+                    "voice": "nova",
+                    "speed": 0.85
+                }
+            },
+            "id": "tts-audio",
+            "name": "15. 오디오 생성 (TTS)",
+            "type": "@n8n/n8n-nodes-langchain.openAi",
+            "typeVersion": 2,
+            "position": [
+                -600,
+                0
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "sJPPMgnhjsgphIV9",
+                    "name": "OpenAi account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "inputDataFieldName": "data",
+                "name": "={{ 'image_' + $json.index + '.png' }}",
+                "driveId": {
+                    "__rl": true,
+                    "value": "My Drive",
+                    "mode": "list"
+                },
+                "folderId": {
+                    "__rl": true,
+                    "value": "YOUR_DRIVE_FOLDER_ID",
+                    "mode": "id"
+                }
+            },
+            "id": "drive-image",
+            "name": "16. 이미지 백업 (Drive)",
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 3,
+            "position": [
+                -400,
+                -200
+            ],
+            "credentials": {
+                "googleDriveOAuth2Api": {
+                    "id": "WPZfhNj5Q0D1maw9",
+                    "name": "Google Drive account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "inputDataFieldName": "data",
+                "name": "={{ 'audio_' + $json.index + '.mp3' }}",
+                "driveId": {
+                    "__rl": true,
+                    "value": "My Drive",
+                    "mode": "list"
+                },
+                "folderId": {
+                    "__rl": true,
+                    "value": "YOUR_DRIVE_FOLDER_ID",
+                    "mode": "id"
+                }
+            },
+            "id": "drive-audio",
+            "name": "17. 오디오 백업 (Drive)",
+            "type": "n8n-nodes-base.googleDrive",
+            "typeVersion": 3,
+            "position": [
+                -400,
+                0
+            ],
+            "credentials": {
+                "googleDriveOAuth2Api": {
+                    "id": "WPZfhNj5Q0D1maw9",
+                    "name": "Google Drive account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "mode": "mergeByPosition"
+            },
+            "id": "merge-assets",
+            "name": "18. 자산 병합",
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3,
+            "position": [
+                -200,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://api.creatomate.com/v1/renders",
+                "authentication": "genericCredentialType",
+                "genericAuthType": "httpHeaderAuth",
+                "sendBody": true,
+                "specifyBody": "json",
+                "jsonBody": "={{ {\n  template_id: 'YOUR_CREATOMATE_TEMPLATE_ID',\n  modifications: {\n    'Subtitle-1': $('18. 자산 병합').all()[0].json.sentence,\n    'Image-1': $('16. 이미지 백업 (Drive)').all()[0].json.webContentLink,\n    'Audio-1': $('17. 오디오 백업 (Drive)').all()[0].json.webContentLink,\n    'Subtitle-2': $('18. 자산 병합').all()[1].json.sentence,\n    'Image-2': $('16. 이미지 백업 (Drive)').all()[1].json.webContentLink,\n    'Audio-2': $('17. 오디오 백업 (Drive)').all()[1].json.webContentLink,\n    'Subtitle-3': $('18. 자산 병합').all()[2].json.sentence,\n    'Image-3': $('16. 이미지 백업 (Drive)').all()[2].json.webContentLink,\n    'Audio-3': $('17. 오디오 백업 (Drive)').all()[2].json.webContentLink,\n    'Subtitle-4': $('18. 자산 병합').all()[3].json.sentence,\n    'Image-4': $('16. 이미지 백업 (Drive)').all()[3].json.webContentLink,\n    'Audio-4': $('17. 오디오 백업 (Drive)').all()[3].json.webContentLink,\n    'Subtitle-5': $('18. 자산 병합').all()[4].json.sentence,\n    'Image-5': $('16. 이미지 백업 (Drive)').all()[4].json.webContentLink,\n    'Audio-5': $('17. 오디오 백업 (Drive)').all()[4].json.webContentLink,\n    'Subtitle-6': $('18. 자산 병합').all()[5].json.sentence,\n    'Image-6': $('16. 이미지 백업 (Drive)').all()[5].json.webContentLink,\n    'Audio-6': $('17. 오디오 백업 (Drive)').all()[5].json.webContentLink\n  }\n} }}"
+            },
+            "id": "creatomate",
+            "name": "19. 영상 렌더링 (Creatomate)",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                0,
+                -100
+            ],
+            "credentials": {
+                "httpHeaderAuth": {
+                    "id": "Tzlf95EWgm3pWD1A",
+                    "name": "Header Auth account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "amount": 30,
+                "unit": "seconds"
+            },
+            "id": "wait-render",
+            "name": "20. 대기 (30초)",
+            "type": "n8n-nodes-base.wait",
+            "typeVersion": 1,
+            "position": [
+                200,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "url": "={{ $json.url }}",
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "file"
+                        }
+                    }
+                }
+            },
+            "id": "download-video",
+            "name": "21. 영상 다운로드",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.2,
+            "position": [
+                400,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "number": [
+                        {
+                            "value1": "={{ $binary.data.fileSize }}",
+                            "operation": "larger",
+                            "value2": 2000000
+                        }
+                    ]
+                }
+            },
+            "id": "verify-video",
+            "name": "22. 영상 검증 (>2MB)",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                600,
+                -100
+            ]
+        },
+        {
+            "parameters": {
+                "resource": "video",
+                "operation": "upload",
+                "title": "={{ $('13. 대본 6분할').first().json.topic }}",
+                "description": "={{ '시니어 건강 꿀팁! #Shorts #건강 #보람이\\n\\n참고: ' + $('13. 대본 6분할').first().json.originalVideo.title }}",
+                "categoryId": "26",
+                "privacyStatus": "unlisted",
+                "options": {}
+            },
+            "id": "youtube-upload",
+            "name": "23. 유튜브 업로드",
+            "type": "n8n-nodes-base.youTube",
+            "typeVersion": 1,
+            "position": [
+                800,
+                -100
+            ],
+            "credentials": {
+                "youTubeOAuth2Api": {
+                    "id": "oLZPXMvaa8mS5fz0",
+                    "name": "YouTube account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": {
+                    "__rl": true,
+                    "value": "YOUR_GOOGLE_SHEET_ID",
+                    "mode": "id"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "date": "={{ $now.toFormat('yyyy-MM-dd HH:mm') }}",
+                        "our_topic": "={{ $('13. 대본 6분할').first().json.topic }}",
+                        "our_video_id": "={{ $json.id }}",
+                        "our_video_url": "={{ 'https://youtube.com/watch?v=' + $json.id }}",
+                        "original_video_id": "={{ $('13. 대본 6분할').first().json.originalVideo.id }}",
+                        "original_title": "={{ $('13. 대본 6분할').first().json.originalVideo.title }}",
+                        "original_channel": "={{ $('13. 대본 6분할').first().json.originalVideo.channel }}",
+                        "original_views": "={{ $('9. 자막 파싱').item.json.viewCount }}",
+                        "outlier_score": "={{ $('9. 자막 파싱').item.json.outlierScore }}",
+                        "status": "uploaded"
+                    }
+                }
+            },
+            "id": "sheets-log",
+            "name": "24. 원본 참조 기록 (Sheets)",
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.5,
+            "position": [
+                1000,
+                -100
+            ],
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "qHzPZhMeMIC0bqve",
+                    "name": "Google Sheets account"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "1. 6시간마다 실행": {
+            "main": [
+                [
+                    {
+                        "node": "2. 타겟 채널 리스트",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "2. 타겟 채널 리스트": {
+            "main": [
+                [
+                    {
+                        "node": "3. 채널별 최근 1주 영상",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "3. 채널별 최근 1주 영상": {
+            "main": [
+                [
+                    {
+                        "node": "4. 통계 수집",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "4. 통계 수집": {
+            "main": [
+                [
+                    {
+                        "node": "5. 이상치 감지 및 스코어링",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "5. 이상치 감지 및 스코어링": {
+            "main": [
+                [
+                    {
+                        "node": "6. TOP 5 선택",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "6. TOP 5 선택": {
+            "main": [
+                [
+                    {
+                        "node": "7. 자막 추출 시도",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "7. 자막 추출 시도": {
+            "main": [
+                [
+                    {
+                        "node": "8. 자막 유무 확인",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "8. 자막 유무 확인": {
+            "main": [
+                [
+                    {
+                        "node": "9. 자막 파싱",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                []
+            ]
+        },
+        "9. 자막 파싱": {
+            "main": [
+                [
+                    {
+                        "node": "10. GPT 트렌드 분석",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "10. GPT 트렌드 분석": {
+            "main": [
+                [
+                    {
+                        "node": "11. 주제 재해석 (보람이)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "11. 주제 재해석 (보람이)": {
+            "main": [
+                [
+                    {
+                        "node": "12. 슈퍼 보람이 대본 생성",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "12. 슈퍼 보람이 대본 생성": {
+            "main": [
+                [
+                    {
+                        "node": "13. 대본 6분할",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "13. 대본 6분할": {
+            "main": [
+                [
+                    {
+                        "node": "14. 이미지 생성 (DALL-E)",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "15. 오디오 생성 (TTS)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "14. 이미지 생성 (DALL-E)": {
+            "main": [
+                [
+                    {
+                        "node": "16. 이미지 백업 (Drive)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "15. 오디오 생성 (TTS)": {
+            "main": [
+                [
+                    {
+                        "node": "17. 오디오 백업 (Drive)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "16. 이미지 백업 (Drive)": {
+            "main": [
+                [
+                    {
+                        "node": "18. 자산 병합",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "17. 오디오 백업 (Drive)": {
+            "main": [
+                [
+                    {
+                        "node": "18. 자산 병합",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "18. 자산 병합": {
+            "main": [
+                [
+                    {
+                        "node": "19. 영상 렌더링 (Creatomate)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "19. 영상 렌더링 (Creatomate)": {
+            "main": [
+                [
+                    {
+                        "node": "20. 대기 (30초)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "20. 대기 (30초)": {
+            "main": [
+                [
+                    {
+                        "node": "21. 영상 다운로드",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "21. 영상 다운로드": {
+            "main": [
+                [
+                    {
+                        "node": "22. 영상 검증 (>2MB)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "22. 영상 검증 (>2MB)": {
+            "main": [
+                [
+                    {
+                        "node": "23. 유튜브 업로드",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "23. 유튜브 업로드": {
+            "main": [
+                [
+                    {
+                        "node": "24. 원본 참조 기록 (Sheets)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "tags": [
+        "production",
+        "v6-final",
+        "langchain",
+        "gpt-4o-mini"
+    ],
+    "triggerCount": 1,
+    "updatedAt": "2025-11-22T04:16:00.000Z",
+    "versionId": "v6-ultimate-final"
+}
